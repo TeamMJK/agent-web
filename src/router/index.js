@@ -1,28 +1,35 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginScreen from '../components/LoginScreen.vue'
 import MainScreen from '../components/MainScreen.vue'
+import WorkSpaceScreen from '../components/WorkSpaceScreen.vue'
 
 // 라우트 정의
 const routes = [
-    {
-        path: '/',
-        name: 'Login',
-        component: LoginScreen // 기본 경로를 로그인 화면으로 설정
-    },
-    {
-        path: '/main',
-        name: 'Main',
-        component: MainScreen
-        // 실제 앱에서는 네비게이션 가드 등을 사용하여 로그인 여부 확인 후 접근 제어
-        // meta: { requiresAuth: true } 
-    }
-    // 추가적인 라우트가 필요하면 여기에 정의
+  {
+    path: '/',
+    name: 'Login',
+    component: LoginScreen // 기본 경로를 로그인 화면으로 설정
+  },
+  {
+    path: '/main',
+    name: 'Main',
+    component: MainScreen
+    // 실제 앱에서는 네비게이션 가드 등을 사용하여 로그인 여부 확인 후 접근 제어
+    // meta: { requiresAuth: true } 
+  },
+  {
+    path: '/workspace',
+    name: 'WorkSpace',
+    component: WorkSpaceScreen
+    // meta: { requiresAuth: true }
+  }
+  // 추가적인 라우트가 필요하면 여기에 정의
 ]
 
 // 라우터 인스턴스 생성
 const router = createRouter({
-    history: createWebHistory(process.env.BASE_URL), // HTML5 히스토리 모드 사용
-    routes
+  history: createWebHistory(process.env.BASE_URL), // HTML5 히스토리 모드 사용
+  routes
 })
 
 /*
