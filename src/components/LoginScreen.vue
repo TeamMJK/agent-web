@@ -1,7 +1,7 @@
 <template>
     <div class="login-outer">
         <div class="login-container">
-            <h1 class="login-title">오신 걸 환영합니다</h1>
+            <h1 class="login-title">앙 기모띠이이</h1>
             <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" />
             <button class="continue-btn" @click="handleEmailContinue">계속</button>
             <div class="signup-row">
@@ -31,16 +31,7 @@
                 </span>
                 <span class="btn-text">Google로 계속하기</span>
             </button>
-            <button class="social-btn naver" @click="handleNaverLogin">
-                <span class="icon">
-                    <!-- Naver SVG -->
-                    <svg width="20" height="20" viewBox="0 0 20 20">
-                        <rect width="20" height="20" rx="4" fill="#03DC65FF" />
-                        <path d="M6 6H9.2L11 10.1H11.1V6H14V14H10.8L9 9.9H8.9V14H6V6Z" fill="white" />
-                    </svg>
-                </span>
-                <span class="btn-text">Naver로 계속하기</span>
-            </button>
+            
         </div>
     </div>
 </template>
