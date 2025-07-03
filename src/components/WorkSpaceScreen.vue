@@ -4,22 +4,19 @@
         <div class="workspace-header">
             <h1 class="workspace-title">워크스페이스</h1>
             <button class="add-schedule-btn" @click="showAddScheduleModal = true">
-                + 일정 추가
+                <i class="pi pi-plus"></i>
+                <span>일정 추가</span>
             </button>
         </div>
 
         <!-- 캘린더 네비게이션 -->
         <div class="calendar-nav">
             <button class="nav-btn" @click="previousMonth">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                <i class="pi pi-angle-left"></i>
             </button>
             <h2 class="current-month">{{ currentMonthYear }}</h2>
             <button class="nav-btn" @click="nextMonth">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                <i class="pi pi-angle-right"></i>
             </button>
         </div>
 
@@ -84,9 +81,7 @@
                         <p v-if="event.description" class="event-description">{{ event.description }}</p>
                     </div>
                     <button class="delete-event-btn" @click="deleteEvent(event.id)">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
+                        <i class="pi pi-trash"></i>
                     </button>
                 </div>
             </div>
@@ -98,9 +93,7 @@
                 <div class="modal-header">
                     <h3>일정 추가</h3>
                     <button class="close-btn" @click="closeModal">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
+                        <i class="pi pi-times"></i>
                     </button>
                 </div>
                 <form @submit.prevent="addSchedule" class="schedule-form">
@@ -399,40 +392,54 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     flex-wrap: wrap;
     gap: 16px;
 }
 
 .workspace-title {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 600;
     color: #fff;
     margin: 0;
+    background: linear-gradient(90deg, #4A90E2, #00D0FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
 }
 
 .add-schedule-btn {
-    background: #4A90E2;
+    background: linear-gradient(45deg, #4A90E2, #66A6FF);
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 15px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
     white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+    display: flex; /* 아이콘과 텍스트를 한 줄에 표시 */
+    align-items: center; /* 세로 중앙 정렬 */
+}
+
+.add-schedule-btn i {
+    margin-right: 8px; /* 아이콘과 텍스트 사이 간격 */
+    font-size: 18px;
 }
 
 .add-schedule-btn:hover {
-    background: #357ABD;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
 }
 
 .calendar-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     padding: 0 10px;
 }
 
@@ -440,24 +447,30 @@ export default {
     background: #2D2D2D;
     border: none;
     color: #A0A0A0;
-    padding: 8px;
-    border-radius: 6px;
+    padding: 10px;
+    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s;
-    min-width: 36px;
-    height: 36px;
+    transition: all 0.2s ease;
+    min-width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .nav-btn:hover {
     background: #3A3A3A;
     color: #fff;
+    transform: translateY(-1px);
+}
+
+.nav-btn i {
+    font-size: 20px;
 }
 
 .current-month {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 600;
     color: #fff;
     margin: 0;
@@ -467,62 +480,75 @@ export default {
 
 .calendar-container {
     background: #232323;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     width: 100%;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.calendar-container:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
 .calendar-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    background: #2D2D2D;
+    background: linear-gradient(to right, #2D2D2D, #353535);
 }
 
 .day-header {
-    padding: 16px 8px;
+    padding: 20px 8px;
     text-align: center;
     font-weight: 600;
-    color: #A0A0A0;
-    font-size: 14px;
+    color: #B0B0B0;
+    font-size: 15px;
     min-height: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: #2D2D2D;
+    gap: 2px;
+    background: #2A2A2A;
+    padding: 2px;
 }
 
 .calendar-date {
     min-height: 120px;
-    padding: 8px;
-    background: #232323;
+    padding: 10px;
+    background: #1E1E1E;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
     position: relative;
     display: flex;
     flex-direction: column;
+    border-radius: 4px;
 }
 
 .calendar-date:hover {
     background: #2D2D2D;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .calendar-date.other-month {
     color: #555;
-    background: #1A1A1A;
+    background: #171717;
 }
 
 .calendar-date.today {
-    background: #4A90E2;
+    background: linear-gradient(45deg, #4A90E2, #66A6FF);
     color: white;
 }
 
 .calendar-date.selected {
     background: #357ABD;
     color: white;
+    box-shadow: 0 4px 12px rgba(53, 122, 189, 0.4);
 }
 
 .calendar-date.has-events .date-number {
@@ -531,9 +557,10 @@ export default {
 
 .date-number {
     display: block;
-    font-size: 14px;
-    margin-bottom: 4px;
+    font-size: 16px;
+    margin-bottom: 8px;
     line-height: 1.2;
+    text-align: right;
 }
 
 .events-container {
@@ -547,7 +574,7 @@ export default {
 
 .event-bar {
     position: absolute;
-    height: 14px;
+    height: 16px;
     left: 2px;
     right: 2px;
     border-radius: 4px;
@@ -558,28 +585,37 @@ export default {
     overflow: hidden;
     z-index: 1;
     margin: 2px 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-bar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
 .event-bar.single-day {
-    border-radius: 6px;
-    left: 4px;
-    right: 4px;
+    border-radius: 8px;
+    left: 6px;
+    right: 6px;
 }
 
 .event-bar.start-day {
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     right: 0;
+    margin-left: 6px;
 }
 
 .event-bar.end-day {
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     left: 0;
+    margin-right: 6px;
 }
 
 .event-bar.middle-day {
@@ -589,24 +625,24 @@ export default {
 }
 
 .event-title-bar {
-    padding-left: 4px;
+    padding-left: 6px;
     font-weight: 500;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-size: 8px;
+    font-size: 9px;
     line-height: 1;
 }
 
 .more-events {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    font-size: 8px;
+    bottom: 4px;
+    right: 4px;
+    font-size: 9px;
     color: #A0A0A0;
     background: rgba(0, 0, 0, 0.7);
-    padding: 1px 3px;
-    border-radius: 2px;
+    padding: 2px 4px;
+    border-radius: 4px;
     z-index: 2;
 }
 
@@ -621,39 +657,48 @@ export default {
 
 .selected-date-events {
     background: #232323;
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 24px;
     width: 100%;
     box-sizing: border-box;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
 .events-title {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: #fff;
-    margin: 0 0 16px 0;
+    margin: 0 0 20px 0;
 }
 
 .no-events {
     color: #A0A0A0;
     text-align: center;
-    padding: 20px;
+    padding: 30px;
+    font-size: 15px;
 }
 
 .events-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
 }
 
 .event-item {
     background: #2D2D2D;
-    border-radius: 8px;
-    padding: 16px;
-    border-left: 4px solid;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 5px solid;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.event-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .event-info {
@@ -661,22 +706,23 @@ export default {
 }
 
 .event-title {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: #fff;
-    margin: 0 0 4px 0;
+    margin: 0 0 6px 0;
 }
 
 .event-time {
     font-size: 14px;
-    color: #A0A0A0;
-    margin: 0 0 8px 0;
+    color: #B0B0B0;
+    margin: 0 0 10px 0;
 }
 
 .event-description {
-    font-size: 14px;
-    color: #B0B0B0;
+    font-size: 15px;
+    color: #C0C0C0;
     margin: 0;
+    line-height: 1.5;
 }
 
 .delete-event-btn {
@@ -684,13 +730,19 @@ export default {
     border: none;
     color: #A0A0A0;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: color 0.2s;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    margin-left: 10px;
 }
 
 .delete-event-btn:hover {
-    color: #D0021B;
+    color: #FF5252;
+    background: rgba(255, 82, 82, 0.1);
+}
+
+.delete-event-btn i {
+    font-size: 16px;
 }
 
 .modal-overlay {
@@ -699,31 +751,45 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
     background: #232323;
-    border-radius: 12px;
+    border-radius: 16px;
     width: 90%;
-    max-width: 500px;
+    max-width: 550px;
     max-height: 90vh;
     overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 20px 0 20px;
+    padding: 24px 24px 0 24px;
 }
 
 .modal-header h3 {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 600;
     color: #fff;
     margin: 0;
@@ -735,28 +801,33 @@ export default {
     color: #A0A0A0;
     cursor: pointer;
     padding: 8px;
-    border-radius: 4px;
-    transition: color 0.2s;
+    border-radius: 50%;
+    transition: all 0.2s ease;
 }
 
 .close-btn:hover {
     color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.close-btn i {
+    font-size: 20px;
 }
 
 .schedule-form {
-    padding: 20px;
+    padding: 24px;
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .form-group label {
     display: block;
     font-weight: 500;
     color: #fff;
-    margin-bottom: 8px;
-    font-size: 14px;
+    margin-bottom: 10px;
+    font-size: 15px;
 }
 
 .form-row {
@@ -770,79 +841,94 @@ export default {
 
 .form-input, .form-textarea {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     background: #2D2D2D;
     border: 1px solid #3A3A3A;
-    border-radius: 6px;
+    border-radius: 10px;
     color: #fff;
-    font-size: 14px;
+    font-size: 15px;
     box-sizing: border-box;
+    transition: all 0.2s ease;
 }
 
 .form-input:focus, .form-textarea:focus {
     outline: none;
     border-color: #4A90E2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
 }
 
 .form-textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 100px;
+    line-height: 1.5;
 }
 
 .color-picker {
     display: flex;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
 }
 
 .color-option {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     cursor: pointer;
     border: 3px solid transparent;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.color-option:hover {
+    transform: scale(1.1);
 }
 
 .color-option.selected {
     border-color: #fff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
 }
 
 .form-actions {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     justify-content: flex-end;
-    margin-top: 24px;
+    margin-top: 32px;
 }
 
 .cancel-btn {
     background: #3A3A3A;
     color: #fff;
     border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 
 .cancel-btn:hover {
     background: #4A4A4A;
+    transform: translateY(-1px);
 }
 
 .submit-btn {
-    background: #4A90E2;
+    background: linear-gradient(45deg, #4A90E2, #66A6FF);
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 15px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
 }
 
 .submit-btn:hover {
-    background: #357ABD;
+    box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
+    transform: translateY(-1px);
 }
 
 /* 반응형 스타일 */

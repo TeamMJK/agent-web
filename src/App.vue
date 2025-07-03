@@ -1,16 +1,41 @@
 <!-- filepath: /Users/jaeyoung/Desktop/trip-agent-web/src/App.vue -->
 <template>
-    <div id="app-container">
-        <!-- 현재 라우트에 해당하는 컴포넌트가 렌더링되는 영역 -->
-        <router-view />
-    </div>
+  <div id="app-container" :class="{ 'sidebar-layout': showSidebar }">
+    <AppSidebar v-if="showSidebar" v-model:is-collapsed="sidebarCollapsed" />
+    <main class="main-content" :style="mainContentStyle">
+      <router-view />
+    </main>
+  </div>
 </template>
 
 <script>
+import AppSidebar from './components/Sidebar.vue';
+
 export default {
-    name: 'App'
-    // 전역적으로 필요한 로직이나 데이터는 여기에 정의 가능
-}
+  name: 'App',
+  components: {
+    AppSidebar
+  },
+  data() {
+    return {
+      sidebarCollapsed: false,
+    };
+  },
+  computed: {
+    showSidebar() {
+      return this.$route.name !== 'Login';
+    },
+    mainContentStyle() {
+      if (this.showSidebar) {
+        return {
+          marginLeft: this.sidebarCollapsed ? '80px' : '260px',
+          width: this.sidebarCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 260px)',
+        };
+      }
+      return {};
+    },
+  },
+};
 </script>
 
 <style>
@@ -20,33 +45,34 @@ body {
     margin: 0;
     padding: 0;
     width: 100%;
-    /* body와 html이 전체 너비를 차지하도록 보장 */
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #181818FF;
-    /* 전체 배경색을 어둡게 설정 */
+    background-color: #121212;
     color: #E0E0E0;
-    /* 기본 텍스트 색상 */
     overflow-x: hidden;
-    /* 의도치 않은 가로 스크롤 방지 */
 }
 
 #app-container {
-    width: 100vw;
-    /* 뷰포트 전체 너비 사용 */
-    min-height: 100vh;
-    /* 최소 뷰포트 전체 높이 사용 */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    /* 자식 요소들(router-view)을 수평 중앙 정렬 */
-    justify-content: center;
-    /* 자식 요소들(router-view)을 수직 중앙 정렬 */
-    box-sizing: border-box;
-    /* padding과 border를 요소의 전체 크기에 포함 */
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
 }
 
-/* 버튼 기본 스타일 (필요에 따라 각 컴포넌트에서 오버라이드) */
+.sidebar-layout {
+  /* padding-left는 mainContentStyle에서 동적으로 설정 */
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+/* 버튼 기본 스타일 */
 button {
     padding: 10px 20px;
     border: none;
@@ -54,5 +80,10 @@ button {
     cursor: pointer;
     font-size: 16px;
     margin: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
 }
 </style>
