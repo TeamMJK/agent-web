@@ -195,7 +195,7 @@ export default {
 }
 
 .email-input:focus {
-    border-color: #4A90E2;
+    border-color: var(--color-primary);
 }
 
 .email-input::placeholder {
@@ -205,7 +205,7 @@ export default {
 .continue-btn {
     width: 100%;
     padding: 18px 0;
-    background: #2056b3;
+    background: var(--color-primary);
     color: #fff;
     border: none;
     border-radius: 999px;
@@ -216,7 +216,7 @@ export default {
 }
 
 .continue-btn:hover {
-    background: #163d7a;
+    background: var(--color-primary-hover);
 }
 
 .signup-row {
@@ -228,7 +228,7 @@ export default {
 }
 
 .signup-link {
-    color: #2056b3;
+    color: var(--color-primary);
     margin-left: 4px;
     text-decoration: none;
     font-weight: 500;
@@ -281,7 +281,7 @@ export default {
 
 .social-btn:hover {
     background: #333333;
-    border-color: #4A90E2;
+    border-color: var(--color-primary);
 }
 
 .social-btn .icon {

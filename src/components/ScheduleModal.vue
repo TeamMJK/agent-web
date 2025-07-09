@@ -86,9 +86,9 @@ export default {
         startDate: '',
         endDate: '',
         description: '',
-        color: '#4A90E2'
+        color: '#8b5cf6'
       },
-      availableColors: ['#4A90E2', '#7ED321', '#F5A623', '#D0021B', '#9013FE', '#50E3C2'],
+      availableColors: ['#8b5cf6', '#7ED321', '#F5A623', '#D0021B', '#9013FE', '#50E3C2'],
     };
   },
   methods: {
@@ -118,7 +118,7 @@ export default {
         startDate: '',
         endDate: '',
         description: '',
-        color: '#4A90E2'
+        color: '#8b5cf6'
       };
     }
   }
@@ -132,16 +132,16 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--color-bg-modal);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: var(--z-modal);
 }
 
 .modal-content {
-    background: #232323;
-    border-radius: 12px;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-xl);
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
@@ -152,49 +152,48 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 20px 0 20px;
+    padding: var(--spacing-xl) var(--spacing-xl) 0 var(--spacing-xl);
 }
 
 .modal-header h3 {
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: #fff;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
     margin: 0;
 }
 
 .close-btn {
     background: none;
     border: none;
-    color: #A0A0A0;
+    color: var(--color-text-muted);
     cursor: pointer;
-    padding: 8px;
-    border-radius: 4px;
-    
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
 }
 
 .close-btn:hover {
-    color: #fff;
+    color: var(--color-text-primary);
 }
 
 .schedule-form {
-    padding: 20px;
+    padding: var(--spacing-xl);
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-xl);
 }
 
 .form-group label {
     display: block;
-    font-weight: 500;
-    color: #fff;
-    margin-bottom: 8px;
-    font-size: 14px;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-sm);
 }
 
 .form-row {
     display: flex;
-    gap: 16px;
+    gap: var(--spacing-lg);
 }
 
 .form-group.half {
@@ -203,18 +202,18 @@ export default {
 
 .form-input, .form-textarea {
     width: 100%;
-    padding: 12px;
-    background: #2a2a2a;
-    border: 1px solid #3A3A3A;
-    border-radius: 6px;
-    color: #fff;
-    font-size: 14px;
+    padding: var(--spacing-md);
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
     box-sizing: border-box;
 }
 
 .form-input:focus, .form-textarea:focus {
     outline: none;
-    border-color: #4A90E2;
+    border-color: var(--color-primary);
 }
 
 .form-textarea {
@@ -224,7 +223,7 @@ export default {
 
 .color-picker {
     display: flex;
-    gap: 8px;
+    gap: var(--spacing-sm);
 }
 
 .color-option {
@@ -233,46 +232,45 @@ export default {
     border-radius: 50%;
     cursor: pointer;
     border: 3px solid transparent;
-    
 }
 
 .color-option.selected {
-    border-color: #fff;
+    border-color: var(--color-text-primary);
 }
 
 .form-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--spacing-md);
     justify-content: flex-end;
-    margin-top: 24px;
+    margin-top: var(--spacing-2xl);
 }
 
 .cancel-btn {
-    background: #3A3A3A;
-    color: #fff;
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
     border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: var(--spacing-md) var(--spacing-2xl);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
     cursor: pointer;
 }
 
 .cancel-btn:hover {
-    background: #4A4A4A;
+    background: var(--color-bg-card-hover);
 }
 
 .submit-btn {
-    background: #4A90E2;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-text-primary);
     border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: var(--spacing-md) var(--spacing-2xl);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
 }
 
 .submit-btn:hover {
-    background: #357ABD;
+    background: var(--color-primary-hover);
 }
 </style>

@@ -29,19 +29,25 @@ export default {
 </script>
 
 <style>
-/* 전역 스타일 */
+/* 전역 스타일 import */
+@import './styles/variables.css';
+@import './styles/components.css';
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+/* 기본 리셋 */
 html,
 body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #1a1a1a;
-    color: #E0E0E0;
+    font-family: var(--font-family-primary);
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-secondary);
     overflow: hidden;
 }
 
+/* 레이아웃 */
 #app-container {
   display: flex;
   width: 100%;
@@ -51,9 +57,9 @@ body {
 
 .main-content {
   flex-grow: 1;
-  background-color: #1a1a1a;
+  background-color: var(--color-bg-primary);
   box-sizing: border-box;
-  margin-left: 112px; /* 사이드바 너비(80px) + 좌우 마진(32px) */
+  margin-left: var(--main-content-margin);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -63,21 +69,10 @@ body {
 }
 
 .main-content.workspace-layout {
-  margin-left: 112px;
+  margin-left: var(--main-content-margin);
   justify-content: flex-start;
   align-items: stretch;
   overflow: hidden;
-}
-
-/* 버튼 기본 스타일 */
-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    margin: 5px;
-    font-family: inherit;
 }
 
 /* 반응형 조정 */
@@ -101,3 +96,6 @@ button {
     }
 }
 </style>
+    .main-content.workspace-layout {
+        margin-left: 80px;
+    }

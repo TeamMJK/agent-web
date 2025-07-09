@@ -8,8 +8,8 @@
         <div class="prompt-section">
             <div class="prompt-input-wrapper">
                 <!-- 파일 업로드 아이콘 -->
-                <button class="icon-btn file-upload-btn" @click="handleFileUpload" title="파일 업로드">
-                    <i class="pi pi-paperclip"></i>
+                <button class="icon-btn file-upload-btn">
+                    <i class="pi pi-user"></i>
                 </button>
 
                 <!-- 검색창 -->
@@ -114,14 +114,14 @@ export default {
 
 .logo-text .pro-badge {
     font-size: 1rem;
-    color: #4A90E2;
+    color: var(--color-primary);
     vertical-align: super;
     margin-left: 0.5rem;
-    border: 1px solid #4A90E2;
+    border: 1px solid var(--color-primary);
     padding: 4px 8px;
     border-radius: 4px;
     font-weight: 400;
-    background: rgba(74, 144, 226, 0.1);
+    background: var(--color-primary-light);
 }
 
 .prompt-section {
@@ -164,7 +164,6 @@ export default {
     background: none;
     border: none;
     color: #888888;
-    font-size: 1.2rem;
     cursor: pointer;
     padding: 12px;
     border-radius: 50%;
@@ -178,11 +177,6 @@ export default {
 .icon-btn:hover {
     color: #ffffff;
     background-color: rgba(255, 255, 255, 0.1);
-}
-
-.submit-btn {
-    background-color: #4A90E2;
-    color: white;
 }
 
 .submit-btn:hover {
@@ -210,14 +204,14 @@ export default {
 }
 
 .filter-btn.active {
-    background-color: #4A90E2;
+    background-color: var(--color-primary);
     color: #ffffff;
-    border-color: #4A90E2;
+    border-color: var(--color-primary);
 }
 
 .filter-btn:hover:not(.active) {
     background-color: #2a2a2a;
-    border-color: #4A90E2;
+    border-color: var(--color-primary);
     color: #ffffff;
 }
 

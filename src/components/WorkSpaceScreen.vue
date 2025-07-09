@@ -95,10 +95,10 @@ export default {
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
 .workspace-container {
-    font-family: "Pretendard Variable", Pretendard, sans-serif;
+    font-family: var(--font-family-primary);
     width: 100%;
     height: 100vh;
-    background: #1a1a1a;
+    background: var(--color-bg-primary);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -110,12 +110,12 @@ export default {
     z-index: 50;
     background: rgba(26, 26, 26, 0.95);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 32px 24px 24px;
+    border-bottom: 1px solid var(--color-border-secondary);
+    padding: var(--spacing-4xl) var(--spacing-2xl) var(--spacing-2xl);
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    gap: 24px;
+    gap: var(--spacing-2xl);
     flex-shrink: 0;
 }
 
@@ -126,7 +126,7 @@ export default {
 .workspace-title {
     font-size: 2.5rem;
     font-weight: 600;
-    background: linear-gradient(135deg, #ffffff 0%, #4A90E2 100%);
+    background: var(--gradient-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0 0 8px 0;
@@ -141,25 +141,25 @@ export default {
 }
 
 .add-schedule-btn {
-    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
-    color: white;
+    background: var(--gradient-accent);
+    color: var(--color-text-primary);
     border: none;
-    padding: 16px 24px;
-    border-radius: 16px;
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    border-radius: var(--radius-2xl);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 8px 32px rgba(74, 144, 226, 0.4);
+    gap: var(--spacing-sm);
+    box-shadow: var(--shadow-lg);
     backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--color-border-secondary);
 }
 
 .add-schedule-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(74, 144, 226, 0.6);
+    box-shadow: var(--shadow-xl);
 }
 
 .add-schedule-btn:active {

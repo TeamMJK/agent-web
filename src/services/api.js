@@ -1,31 +1,37 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-
-// API 기본 URL 설정
-const BASE_URL = 'http://15.164.89.233:8080';
+import { API_BASE_URL, TOKEN_KEYS, TOKEN_EXPIRY, HTTP_STATUS } from '../utils/constants';
 
 // 토큰 관리 유틸리티
 export const tokenManager = {
   // 토큰 저장
   setTokens(accessToken, refreshToken) {
-    Cookies.set('accessToken', accessToken, { expires: 7, secure: true, sameSite: 'strict' });
-    Cookies.set('refreshToken', refreshToken, { expires: 30, secure: true, sameSite: 'strict' });
+    Cookies.set(TOKEN_KEYS.ACCESS_TOKEN, accessToken, { 
+      expires: TOKEN_EXPIRY.ACCESS_TOKEN, 
+      secure: true, 
+      sameSite: 'strict' 
+    });
+    Cookies.set(TOKEN_KEYS.REFRESH_TOKEN, refreshToken, { 
+      expires: TOKEN_EXPIRY.REFRESH_TOKEN, 
+      secure: true, 
+      sameSite: 'strict' 
+    });
   },
 
   // 액세스 토큰 조회
   getAccessToken() {
-    return Cookies.get('accessToken');
+    return Cookies.get(TOKEN_KEYS.ACCESS_TOKEN);
   },
 
   // 리프레시 토큰 조회
   getRefreshToken() {
-    return Cookies.get('refreshToken');
+    return Cookies.get(TOKEN_KEYS.REFRESH_TOKEN);
   },
 
   // 토큰 삭제 (로그아웃)
   clearTokens() {
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
+    Cookies.remove(TOKEN_KEYS.ACCESS_TOKEN);
+    Cookies.remove(TOKEN_KEYS.REFRESH_TOKEN);
   },
 
   // 토큰 존재 여부 확인
@@ -36,7 +42,7 @@ export const tokenManager = {
 
 // Axios 인스턴스 생성
 const apiClient = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
@@ -62,14 +68,14 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
     
     // 401 에러이고 아직 재시도하지 않은 경우
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
       originalRequest._retry = true;
       
       try {
         const refreshToken = tokenManager.getRefreshToken();
         if (refreshToken) {
           // 토큰 갱신 시도
-          const response = await axios.post(`${BASE_URL}/auth/refresh`, {
+          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
             refreshToken
           });
           
@@ -107,10 +113,12 @@ export const apiService = {
   // 사용자 정보 관련 API
   user: {
     getProfile: () => apiClient.get('/members/me'),
-    updateProfile: (userData) => apiClient.patch('/members/me', userData)
+    updateProfile: (userData) => apiClient.patch('/members/me', userData),
+    updateSensitiveInfo: (sensitiveData) => apiClient.post('/members/sensitive-member-info', sensitiveData),
+    updatePassportInfo: (passportData) => apiClient.post('/members/sensitive-passport-info', passportData)
   },
 
-  // 일정 관련 API (추후 구현)
+  // 일정 관련 API
   schedule: {
     getAll: () => apiClient.get('/schedules'),
     create: (scheduleData) => apiClient.post('/schedules', scheduleData),

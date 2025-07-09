@@ -30,73 +30,139 @@
     <div v-if="showUserModal" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>내 정보</h3>
+          <div class="header-info">
+            <div class="profile-icon">
+              <i class="pi pi-user"></i>
+            </div>
+            <div class="header-text">
+              <h3>내 정보</h3>
+              <p class="header-subtitle">개인정보를 확인하고 수정할 수 있습니다</p>
+            </div>
+          </div>
           <button class="close-btn" @click="closeModal">
             <i class="pi pi-times"></i>
           </button>
         </div>
+        
         <div class="modal-body">
-          <div class="form-group" v-for="field in userFields" :key="field.key">
-            <label>{{ field.label }}</label>
-            <div class="field-container">
-              <input 
-                v-if="!editingFields[field.key]"
-                :value="userInfo[field.key] || '-'"
-                :type="field.type"
-                readonly
-                class="readonly-field"
-              />
-              <input 
-                v-else
-                v-model="userInfo[field.key]"
-                :type="field.type"
-                class="editable-field"
-                @blur="stopEditing(field.key)"
-                @keyup.enter="stopEditing(field.key)"
-                ref="editInput"
-              />
-              <button 
-                class="edit-btn" 
-                @click="toggleEdit(field.key)"
-                :title="editingFields[field.key] ? '저장' : '수정'"
-              >
-                <i :class="editingFields[field.key] ? 'pi pi-check' : 'pi pi-pencil'"></i>
-              </button>
+          <div class="form-section">
+            <div class="section-title">
+              <i class="pi pi-id-card"></i>
+              <span>기본 정보</span>
+            </div>
+            
+            <div class="form-grid">
+              <div class="form-group" v-for="field in basicFields" :key="field.key">
+                <label>{{ field.label }}</label>
+                <div class="field-container">
+                  <div class="input-wrapper">
+                    <input 
+                      v-if="!editingFields[field.key]"
+                      :value="userInfo[field.key] || '-'"
+                      :type="field.type"
+                      readonly
+                      class="readonly-field"
+                    />
+                    <input 
+                      v-else
+                      v-model="userInfo[field.key]"
+                      :type="field.type"
+                      class="editable-field"
+                      @blur="stopEditing(field.key)"
+                      @keyup.enter="stopEditing(field.key)"
+                      ref="editInput"
+                    />
+                  </div>
+                  <button 
+                    class="edit-btn" 
+                    @click="toggleEdit(field.key)"
+                    :title="editingFields[field.key] ? '저장' : '수정'"
+                  >
+                    <i :class="editingFields[field.key] ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>성별</label>
+                <div class="field-container">
+                  <div class="input-wrapper">
+                    <select 
+                      v-if="editingFields.gender"
+                      v-model="userInfo.gender"
+                      @blur="stopEditing('gender')"
+                      class="editable-field"
+                    >
+                      <option value="">선택하세요</option>
+                      <option value="MALE">남성</option>
+                      <option value="FEMALE">여성</option>
+                    </select>
+                    <input 
+                      v-else
+                      :value="getGenderDisplay(userInfo.gender)"
+                      readonly
+                      class="readonly-field"
+                    />
+                  </div>
+                  <button 
+                    class="edit-btn" 
+                    @click="toggleEdit('gender')"
+                    :title="editingFields.gender ? '저장' : '수정'"
+                  >
+                    <i :class="editingFields.gender ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div class="form-group">
-            <label>성별</label>
-            <div class="field-container">
-              <select 
-                v-if="editingFields.gender"
-                v-model="userInfo.gender"
-                @blur="stopEditing('gender')"
-                class="editable-field"
-              >
-                <option value="">선택하세요</option>
-                <option value="MALE">남성</option>
-                <option value="FEMALE">여성</option>
-              </select>
-              <input 
-                v-else
-                :value="getGenderDisplay(userInfo.gender)"
-                readonly
-                class="readonly-field"
-              />
-              <button 
-                class="edit-btn" 
-                @click="toggleEdit('gender')"
-                :title="editingFields.gender ? '저장' : '수정'"
-              >
-                <i :class="editingFields.gender ? 'pi pi-check' : 'pi pi-pencil'"></i>
-              </button>
+          <div class="form-section" v-if="passportFields.some(field => userInfo[field.key])">
+            <div class="section-title">
+              <i class="pi pi-bookmark"></i>
+              <span>여권 정보</span>
+            </div>
+            
+            <div class="form-grid">
+              <div class="form-group" v-for="field in passportFields" :key="field.key">
+                <label>{{ field.label }}</label>
+                <div class="field-container">
+                  <div class="input-wrapper">
+                    <input 
+                      v-if="!editingFields[field.key]"
+                      :value="userInfo[field.key] || '-'"
+                      :type="field.type"
+                      readonly
+                      class="readonly-field"
+                    />
+                    <input 
+                      v-else
+                      v-model="userInfo[field.key]"
+                      :type="field.type"
+                      class="editable-field"
+                      @blur="stopEditing(field.key)"
+                      @keyup.enter="stopEditing(field.key)"
+                      ref="editInput"
+                    />
+                  </div>
+                  <button 
+                    class="edit-btn" 
+                    @click="toggleEdit(field.key)"
+                    :title="editingFields[field.key] ? '저장' : '수정'"
+                  >
+                    <i :class="editingFields[field.key] ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           
           <div class="form-actions">
-            <button type="button" @click="closeModal" class="cancel-btn">닫기</button>
+            <button type="button" @click="closeModal" class="cancel-btn">
+              <i class="pi pi-times"></i>
+              닫기
+            </button>
             <button @click="saveAllChanges" class="save-btn" :disabled="!hasUnsavedChanges">
+              <i class="pi pi-save"></i>
               전체 저장
             </button>
           </div>
@@ -127,13 +193,15 @@ export default {
       },
       editingFields: {},
       originalUserInfo: {},
-      userFields: [
+      basicFields: [
         { key: 'name', label: '이름', type: 'text' },
         { key: 'email', label: '이메일', type: 'email' },
-        { key: 'firstName', label: '성', type: 'text' },
-        { key: 'lastName', label: '이름', type: 'text' },
+        { key: 'firstName', label: '성(영문)', type: 'text' },
+        { key: 'lastName', label: '이름(영문)', type: 'text' },
         { key: 'phoneNumber', label: '전화번호', type: 'tel' },
-        { key: 'birthDate', label: '생년월일', type: 'date' },
+        { key: 'birthDate', label: '생년월일', type: 'date' }
+      ],
+      passportFields: [
         { key: 'passportNumber', label: '여권번호', type: 'text' },
         { key: 'passportExpireDate', label: '여권 만료일', type: 'date' }
       ]
@@ -242,36 +310,36 @@ export default {
 
 <style scoped>
 .sidebar {
-  width: 80px;
-  background-color: #232323;
+  width: var(--sidebar-width);
+  background-color: var(--color-bg-secondary);
   display: flex;
   flex-direction: column;
-  padding: 24px 0;
+  padding: var(--spacing-2xl) 0;
   position: fixed;
-  top: 16px;
-  left: 16px;
-  bottom: 16px;
-  z-index: 100;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  top: var(--sidebar-margin);
+  left: var(--sidebar-margin);
+  bottom: var(--sidebar-margin);
+  z-index: var(--z-sidebar);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
 }
 
 .sidebar-header {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 32px;
-  padding: 0 16px;
+  margin-bottom: var(--spacing-4xl);
+  padding: 0 var(--spacing-lg);
 }
 
 .sidebar-logo-button {
   background: none;
   border: none;
   cursor: pointer;
-  color: #ffffff;
+  color: var(--color-text-primary);
   font-size: 1.8rem;
-  padding: 12px;
-  border-radius: 8px;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -280,7 +348,7 @@ export default {
 }
 
 .sidebar-logo-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-bg-card-hover);
 }
 
 .menu-items {
@@ -290,8 +358,8 @@ export default {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 16px;
+  gap: var(--spacing-sm);
+  padding: 0 var(--spacing-lg);
 }
 
 .menu-items li {
@@ -302,23 +370,23 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  color: #888888;
+  padding: var(--spacing-lg);
+  color: var(--color-text-muted);
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   width: 100%;
   box-sizing: border-box;
   min-height: 48px;
 }
 
 .menu-items a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background-color: var(--color-bg-card-hover);
+  color: var(--color-text-primary);
 }
 
 .menu-items li.active a {
-  background-color: #4A90E2;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
 .menu-items a i {
@@ -331,24 +399,24 @@ export default {
   left: 100%;
   top: 50%;
   transform: translateY(-50%);
-  margin-left: 16px;
-  background-color: #2a2a2a;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
+  margin-left: var(--spacing-lg);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
   font-size: 14px;
   white-space: nowrap;
   z-index: 101;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  border: 1px solid #333333;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-primary);
 }
 
 .sidebar-footer {
   margin-top: auto;
-  padding: 0 16px;
+  padding: 0 var(--spacing-lg);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .footer-button {
@@ -356,9 +424,9 @@ export default {
   background: none;
   border: none;
   cursor: pointer;
-  color: #888888;
-  padding: 16px;
-  border-radius: 8px;
+  color: var(--color-text-muted);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -367,8 +435,8 @@ export default {
 }
 
 .footer-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background-color: var(--color-bg-card-hover);
+  color: var(--color-text-primary);
 }
 
 .footer-button i {
@@ -381,16 +449,16 @@ export default {
   left: 100%;
   top: 50%;
   transform: translateY(-50%);
-  margin-left: 16px;
-  background-color: #2a2a2a;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
+  margin-left: var(--spacing-lg);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
   font-size: 14px;
   white-space: nowrap;
   z-index: 101;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  border: 1px solid #333333;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border-primary);
 }
 
 /* 모달 스타일 */
@@ -400,192 +468,335 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--color-bg-modal);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(12px);
+  padding: var(--spacing-lg);
 }
 
 .modal-content {
-  background-color: #232323;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
-  border: 1px solid #333333;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-2xl);
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow: hidden;
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(20px);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px;
-  border-bottom: 1px solid #333333;
+  padding: var(--spacing-3xl);
+  background: var(--gradient-accent);
+  border-bottom: 1px solid var(--color-border-secondary);
+  position: relative;
 }
 
-.modal-header h3 {
-  color: #ffffff;
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.profile-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-icon i {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-primary);
+}
+
+.header-text h3 {
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.header-subtitle {
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
 }
 
 .close-btn {
-  background: none;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
-  color: #888888;
-  font-size: 1.2rem;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .close-btn:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 0;
+  max-height: calc(85vh - 120px);
+  overflow-y: auto;
+}
+
+.form-section {
+  padding: var(--spacing-3xl);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.section-title i {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-2xl);
 }
 
 .form-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
 .form-group label {
-  display: block;
-  color: #ffffff;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 12px;
-  background-color: #1a1a1a;
-  border: 1px solid #333333;
-  border-radius: 6px;
-  color: #ffffff;
-  font-size: 0.9rem;
-  box-sizing: border-box;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #4A90E2;
-}
-
-.form-group select option {
-  background-color: #1a1a1a;
-  color: #ffffff;
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 32px;
-}
-
-.cancel-btn,
-.save-btn {
-  padding: 12px 24px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-}
-
-.cancel-btn {
-  background-color: #333333;
-  color: #ffffff;
-}
-
-.cancel-btn:hover {
-  background-color: #444444;
-}
-
-.save-btn {
-  background-color: #4A90E2;
-  color: #ffffff;
-}
-
-.save-btn:hover {
-  background-color: #357ABD;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-xs);
 }
 
 .field-container {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: stretch;
+  gap: var(--spacing-sm);
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xs);
+  border: 1px solid var(--color-border-primary);
+}
+
+.input-wrapper {
+  flex: 1;
+}
+
+.readonly-field,
+.editable-field {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-primary);
+  box-sizing: border-box;
+  outline: none;
 }
 
 .readonly-field {
-  flex: 1;
-  padding: 12px;
-  background-color: #2a2a2a;
-  border: 1px solid #333333;
-  border-radius: 6px;
-  color: #cccccc;
-  font-size: 0.9rem;
-  box-sizing: border-box;
+  background: transparent;
+  color: var(--color-text-secondary);
   cursor: default;
 }
 
 .editable-field {
-  flex: 1;
-  padding: 12px;
-  background-color: #1a1a1a;
-  border: 1px solid #4A90E2;
-  border-radius: 6px;
-  color: #ffffff;
-  font-size: 0.9rem;
-  box-sizing: border-box;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-primary);
 }
 
 .editable-field:focus {
-  outline: none;
-  border-color: #357ABD;
-  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  border-color: var(--color-primary-hover);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.editable-field option {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
 }
 
 .edit-btn {
-  background: none;
+  background: var(--color-bg-card);
   border: none;
-  color: #888888;
-  padding: 8px;
-  border-radius: 4px;
+  color: var(--color-text-muted);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 32px;
+  min-width: 40px;
+  height: auto;
+  border: 1px solid transparent;
 }
 
 .edit-btn:hover {
-  color: #4A90E2;
-  background-color: rgba(74, 144, 226, 0.1);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border-color: var(--color-primary-border);
+  transform: scale(1.05);
 }
 
 .edit-btn i {
-  font-size: 0.9rem;
+  font-size: var(--font-size-sm);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-lg);
+  justify-content: flex-end;
+  padding: var(--spacing-3xl);
+  background: var(--color-bg-tertiary);
+  border-top: 1px solid var(--color-border-secondary);
+}
+
+.cancel-btn,
+.save-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-family-primary);
+}
+
+.cancel-btn {
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-primary);
+}
+
+.cancel-btn:hover {
+  background: var(--color-bg-card-hover);
+  color: var(--color-text-primary);
+  transform: translateY(-1px);
+}
+
+.save-btn {
+  background: var(--gradient-accent);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .save-btn:disabled {
-  background-color: #333333;
-  color: #666666;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-disabled);
   cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
 }
 
-.save-btn:disabled:hover {
-  background-color: #333333;
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: var(--spacing-md);
+  }
+  
+  .modal-content {
+    max-width: 100%;
+  }
+  
+  .modal-header {
+    padding: var(--spacing-2xl);
+  }
+  
+  .header-info {
+    gap: var(--spacing-md);
+  }
+  
+  .profile-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .profile-icon i {
+    font-size: var(--font-size-lg);
+  }
+  
+  .form-section {
+    padding: var(--spacing-2xl);
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-2xl);
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-text h3 {
+    font-size: var(--font-size-lg);
+  }
+  
+  .header-subtitle {
+    font-size: var(--font-size-xs);
+  }
+  
+  .section-title {
+    font-size: var(--font-size-base);
+  }
 }
 </style>
