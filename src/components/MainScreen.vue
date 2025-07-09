@@ -7,13 +7,13 @@
         <!-- 프롬프트 입력 영역 -->
         <div class="prompt-section">
             <div class="prompt-input-wrapper">
-                <!-- 파일 업로드 아이콘 (SVG로 변경) -->
+                <!-- 파일 업로드 아이콘 -->
                 <button class="icon-btn file-upload-btn" @click="handleFileUpload" title="파일 업로드">
                     <i class="pi pi-paperclip"></i>
                 </button>
 
                 <!-- 검색창 -->
-                <input type="text" v-model="prompt" placeholder="3월1일부터 3월10일까지 도쿄로 출장 예정이야. 금연 숙소를 원하고, 최저가로 예약해줘..."
+                <input type="text" v-model="prompt" placeholder="어떤 출장을 계획하고 계신가요?"
                     class="prompt-input" @keyup.enter="submitPrompt" />
 
                 <!-- 전송 버튼 -->
@@ -31,12 +31,10 @@
             </div>
         </div>
 
-        <!-- 챗봇 응답 표시 영역 (구현 예정) -->
+        <!-- 챗봇 응답 표시 영역 -->
         <div class="chat-response-area">
-            <!-- 여기에 챗봇의 응답이 표시됩니다. -->
-            <!-- 예: <div v-for="message in messages" :key="message.id">{{ message.text }}</div> -->
-            <p v-if="!chatResponse">에이전트에게 출장 자동 예약을 요청하세요.</p>
-            <p v-else>{{ chatResponse }}</p>
+            <p v-if="!chatResponse" class="placeholder-text">에이전트에게 출장 자동 예약을 요청하세요.</p>
+            <p v-else class="response-text">{{ chatResponse }}</p>
         </div>
     </div>
 </template>
@@ -92,144 +90,197 @@ export default {
 <style scoped>
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 
-/* 메인 화면 스타일 */
 .main-container {
-    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    font-family: "Pretendard Variable", Pretendard, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* 변경: 수직 중앙 정렬 */
-    /* 상단 정렬 */
     width: 100%;
     height: 100vh;
-
-    /* 상단 여백 */
+    overflow: hidden;
     box-sizing: border-box;
+    padding: 0 20px;
 }
 
 .logo-text {
-    font-size: 50px;
+    font-size: 3.5rem;
     font-weight: 300;
-    color: #E0E0E0;
-    margin-bottom: 40px;
+    color: #ffffff;
+    margin-bottom: 3rem;
+    text-align: center;
+    letter-spacing: -1px;
 }
 
 .logo-text .pro-badge {
-    font-size: 20px;
-    color: #0B70E3FF;
-    /* Pro 뱃지 색상 */
+    font-size: 1rem;
+    color: #4A90E2;
     vertical-align: super;
-    margin-left: 8px;
-    border: 0.8px solid #317CD2FF;
-    padding: 2px 6px;
-    border-radius: 2px;
-    font-weight: 300;
+    margin-left: 0.5rem;
+    border: 1px solid #4A90E2;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 400;
+    background: rgba(74, 144, 226, 0.1);
 }
 
 .prompt-section {
     width: 100%;
     max-width: 700px;
-    /* 프롬프트 영역 최대 너비 */
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 2rem;
 }
 
 .prompt-input-wrapper {
     display: flex;
     align-items: center;
     width: 100%;
-    background-color: #2D2D2D;
-    /* 입력창 배경 */
-    border-radius: 24px;
-    /* 둥근 모서리 */
-    padding: 8px 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px;
+    background-color: #232323;
+    border: 1px solid #333333;
+    border-radius: 50px;
+    padding: 4px 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1.5rem;
 }
 
 .prompt-input {
     flex-grow: 1;
     background-color: transparent;
     border: none;
-    color: #E0E0E0;
-    font-size: 14px;
-    padding: 12px;
+    color: #ffffff;
+    font-size: 1rem;
+    padding: 16px 20px;
     outline: none;
-    /* 포커스 시 테두리 제거 */
+    font-family: inherit;
 }
 
 .prompt-input::placeholder {
-    color: #6B6B6BFF;
+    color: #888888;
 }
 
 .icon-btn {
     background: none;
     border: none;
-    color: #A0A0A0;
-    font-size: 20px;
+    color: #888888;
+    font-size: 1.2rem;
     cursor: pointer;
-    padding: 8px;
-    margin: 0 5px;
-}
-
-.icon-btn:hover {
-    color: #E0E0E0;
-}
-
-.submit-btn {
-    /* 배경색 제거 */
+    padding: 12px;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    /* background-color, color 속성 제거됨 */
+    width: 44px;
+    height: 44px;
+}
+
+.icon-btn:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.submit-btn {
+    background-color: #4A90E2;
+    color: white;
 }
 
 .submit-btn:hover {
-    /* 배경색 제거 */
-    background-color: transparent;
+    background-color: #357ABD;
+    color: white;
 }
-
 
 .filter-buttons {
     display: flex;
-    gap: 10px;
-    /* 버튼 사이 간격 */
-    margin-bottom: 30px;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .filter-btn {
-    background-color: #3A3A3A;
-    color: #B0B0B0;
-    padding: 8px 15px;
-    border-radius: 18px;
-    /* 둥근 버튼 */
-    font-size: 14px;
-    border: 1px solid #505050;
+    background-color: #232323;
+    color: #888888;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid #333333;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
 .filter-btn.active {
-    background-color: #505050;
-    color: #FFFFFF;
-    border-color: #707070;
+    background-color: #4A90E2;
+    color: #ffffff;
+    border-color: #4A90E2;
 }
 
-.filter-btn:hover {
-    background-color: #4A4A4A;
+.filter-btn:hover:not(.active) {
+    background-color: #2a2a2a;
+    border-color: #4A90E2;
+    color: #ffffff;
 }
 
 .chat-response-area {
-    margin-top: 10px;
     width: 100%;
     max-width: 700px;
     text-align: center;
-    color: #A0A0A0;
-    font-size: 14px;
-    /* 실제 채팅 UI는 더 복잡하게 구성될 수 있습니다. */
+    opacity: 0.7;
+}
+
+.placeholder-text {
+    color: #888888;
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+.response-text {
+    color: #ffffff;
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 0 16px;
+    }
+    
+    .logo-text {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .prompt-section {
+        max-width: 100%;
+    }
+    
+    .filter-buttons {
+        gap: 8px;
+    }
+    
+    .filter-btn {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-text {
+        font-size: 2rem;
+    }
+    
+    .prompt-input {
+        font-size: 0.9rem;
+        padding: 14px 16px;
+    }
+    
+    .icon-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
 }
 </style>

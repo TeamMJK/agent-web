@@ -21,3 +21,9 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+copilot-instructions.md
+.env
+GEMINI.md
+api-swagger.md
+prompt.md

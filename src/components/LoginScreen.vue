@@ -1,9 +1,19 @@
 <template>
     <div class="login-outer">
         <div class="login-container">
-            <h1 class="login-title">앙 기모띠이이</h1>
-            <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" />
-            <button class="continue-btn" @click="handleEmailContinue">계속</button>
+            <h1 class="login-title">로그인</h1>
+            <div v-if="!showPasswordInput" class="login-form">
+                <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" />
+                <button class="continue-btn" @click="handleEmailContinue">계속</button>
+            </div>
+            <div v-else class="login-form">
+                <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" disabled />
+                <input type="password" v-model="password" placeholder="비밀번호" class="email-input password-input" />
+                <button class="continue-btn" @click="handleLogin">로그인</button>
+            </div>
+
+            <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+
             <div class="signup-row">
                 <span>계정이 없으신가요?</span>
                 <a href="#" @click.prevent="showSignUpPopup = true" class="signup-link">회원 가입</a>
@@ -39,6 +49,7 @@
 
 <script>
 import SignUpPopup from './SignUpPopup.vue';
+import { apiService, tokenManager } from '../services/api';
 
 export default {
     name: 'LoginScreen',
@@ -48,21 +59,85 @@ export default {
     data() {
         return {
             email: '',
+            password: '', // Added password data property
             showSignUpPopup: false,
+            showPasswordInput: false, // Added showPasswordInput
+            errorMessage: '', // Added errorMessage
         };
     },
     methods: {
         handleGoogleLogin() {
             console.log('Google 로그인 시도');
+            this.errorMessage = 'Google 로그인은 현재 지원되지 않습니다.';
         },
         handleNaverLogin() {
             console.log('Naver 로그인 시도');
+            this.errorMessage = 'Naver 로그인은 현재 지원되지 않습니다.';
         },
         handleEmailContinue() {
-            if (this.email) {
-                console.log(`이메일로 계속: ${this.email}`);
-            } else {
-                alert('이메일을 입력해주세요.');
+            this.errorMessage = ''; // Clear previous error message
+
+            if (!this.email) {
+                this.errorMessage = '이메일을 입력해주세요.';
+                return;
+            }
+            // Basic email format validation
+            if (!/^[^@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
+                this.errorMessage = '유효한 이메일 주소를 입력해주세요.';
+                return;
+            }
+            this.showPasswordInput = true; // Show password input
+        },
+        async handleLogin() {
+            this.errorMessage = '';
+
+            if (!this.password) {
+                this.errorMessage = '비밀번호를 입력해주세요.';
+                return;
+            }
+
+            try {
+                const response = await apiService.auth.login({
+                    email: this.email,
+                    password: this.password,
+                });
+
+                if (response.data && response.data.accessToken && response.data.refreshToken) {
+                    tokenManager.setTokens(response.data.accessToken, response.data.refreshToken);
+
+                    // 사용자 정보 확인
+                    try {
+                        const memberInfoResponse = await apiService.user.getProfile();
+                        const memberData = memberInfoResponse.data;
+
+                        // 민감 정보 확인
+                        if (!memberData || Object.keys(memberData).length === 0 || 
+                            !memberData.name || !memberData.firstName || !memberData.lastName || 
+                            !memberData.phoneNumber || !memberData.gender || !memberData.birthDate) {
+                            this.$router.push('/sensitive-info');
+                        }
+                        // 여권 정보 확인
+                        else if (!memberData.passportNumber || memberData.passportNumber === '' ||
+                                 !memberData.passportExpireDate || memberData.passportExpireDate === '') {
+                            this.$router.push('/passport-info');
+                        }
+                        else {
+                            this.$router.push('/main');
+                        }
+                    } catch (memberInfoError) {
+                        console.error('Failed to fetch member info:', memberInfoError);
+                        this.$router.push('/main');
+                    }
+                } else {
+                    this.errorMessage = '로그인 응답 형식이 올바르지 않습니다.';
+                }
+            } catch (error) {
+                console.error('로그인 실패:', error);
+                if (error.response && error.response.data && error.response.data.message) {
+                    this.errorMessage = `로그인 실패: ${error.response.data.message}`;
+                } else {
+                    this.errorMessage = '로그인 중 오류가 발생했습니다. 다시 시도해주세요.';
+                }
             }
         }
     }
@@ -77,6 +152,8 @@ export default {
     min-height: 100vh;
     width: 100vw;
     background: #181818;
+    padding: 24px;
+    box-sizing: border-box;
 }
 
 .login-container {
@@ -85,17 +162,23 @@ export default {
     align-items: center;
     width: 100%;
     max-width: 400px;
-    padding: 0 24px;
 }
 
 .login-title {
     font-size: 2.4rem;
-    font-weight: 600;
-    margin-bottom: 40px;
-    margin-top: 0;
+    font-weight: 400;
+    margin: 0 0 48px 0;
     color: #fff;
     text-align: center;
     letter-spacing: -1px;
+}
+
+.login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 24px;
 }
 
 .email-input {
@@ -104,12 +187,11 @@ export default {
     padding: 18px 20px;
     border: 1.5px solid #232323;
     border-radius: 999px;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     background: #232323;
     color: #fff;
     outline: none;
     box-sizing: border-box;
-    transition: border 0.2s;
 }
 
 .email-input:focus {
@@ -124,32 +206,29 @@ export default {
     width: 100%;
     padding: 18px 0;
     background: #2056b3;
-    /* 더 진한 파랑 */
     color: #fff;
     border: none;
     border-radius: 999px;
     font-size: 1.1rem;
     font-weight: 500;
-    margin-bottom: 28px;
     cursor: pointer;
+    margin-bottom: 8px;
 }
 
 .continue-btn:hover {
     background: #163d7a;
-    /* 더 진한 파랑 */
 }
 
 .signup-row {
     width: 100%;
     text-align: center;
-    margin-bottom: 18px;
+    margin-bottom: 24px;
     font-size: 1rem;
     color: #bbb;
 }
 
 .signup-link {
     color: #2056b3;
-    /* 더 진한 파랑 */
     margin-left: 4px;
     text-decoration: none;
     font-weight: 500;
@@ -163,7 +242,7 @@ export default {
     display: flex;
     align-items: center;
     width: 100%;
-    margin: 18px 0 18px 0;
+    margin: 24px 0;
 }
 
 .divider {
@@ -183,18 +262,17 @@ export default {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-    padding: 15px 18px;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 20px;
     border: 1.5px solid #232323;
     border-radius: 999px;
     background: #232323;
     color: #fff;
     font-size: 1.08rem;
     font-weight: 500;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     cursor: pointer;
-    transition: background 0.2s, border 0.2s;
 }
 
 .social-btn:last-child {
@@ -204,7 +282,6 @@ export default {
 .social-btn:hover {
     background: #222;
     border-color: #2056b3;
-    /* 더 진한 파랑 */
 }
 
 .social-btn .icon {
@@ -216,26 +293,24 @@ export default {
 }
 
 .social-btn .btn-text {
-    flex: 1;
-    text-align: left;
-    margin-left: 8px;
     font-size: 1.08rem;
     font-weight: 500;
     color: #fff;
 }
 
-.google .btn-text {
-    color: #fff;
+.error-message {
+    color: #ff4d4d;
+    font-size: 0.9rem;
+    margin: 16px 0;
+    text-align: center;
+    width: 100%;
+    padding: 12px 16px;
+    background-color: rgba(255, 77, 77, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 77, 77, 0.3);
 }
 
-.naver {
-    border: 1.5px solid #02B050FF;
-    background: #02B050FF;
-    color: #fff;
-}
-
-.naver:hover {
-    background: #029946FF;
-    border-color: #01642EFF;
+.password-input {
+    margin-bottom: 16px;
 }
 </style>

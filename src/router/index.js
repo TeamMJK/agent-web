@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginScreen from '../components/LoginScreen.vue'
 import MainScreen from '../components/MainScreen.vue'
 import WorkSpaceScreen from '../components/WorkSpaceScreen.vue'
+import SensitiveInfoForm from '../components/SensitiveInfoForm.vue'
+import PassportInfoForm from '../components/PassportInfoForm.vue' // New import
 
 // 라우트 정의
 const routes = [
@@ -22,6 +24,16 @@ const routes = [
     name: 'WorkSpace',
     component: WorkSpaceScreen
     // meta: { requiresAuth: true }
+  },
+  {
+    path: '/sensitive-info',
+    name: 'SensitiveInfo',
+    component: SensitiveInfoForm
+  },
+  {
+    path: '/passport-info',
+    name: 'PassportInfo',
+    component: PassportInfoForm
   }
   // 추가적인 라우트가 필요하면 여기에 정의
 ]

@@ -14,12 +14,14 @@
         </div>
         <button type="submit" class="signup-btn">회원가입</button>
       </form>
+      <p v-if="successMessage" class="message success-message">{{ successMessage }}</p>
+      <p v-if="errorMessage" class="message error-message">{{ errorMessage }}</p>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+import { apiService } from '../services/api';
 
 export default {
   name: 'SignUpPopup',
@@ -27,6 +29,8 @@ export default {
     return {
       email: '',
       password: '',
+      successMessage: '', // Added
+      errorMessage: '',   // Added
     };
   },
   methods: {
@@ -34,16 +38,27 @@ export default {
       this.$emit('close');
     },
     async handleSignUp() {
+      this.successMessage = ''; // Clear previous messages
+      this.errorMessage = '';   // Clear previous messages
+
       try {
-        const response = await axios.post('/members', {
+          const response = await apiService.auth.register({
           email: this.email,
           password: this.password,
         });
         console.log('회원가입 성공:', response.data);
-        this.closePopup();
+        this.successMessage = '회원가입이 성공적으로 완료되었습니다!';
+        // Delay closing to allow user to see success message
+        setTimeout(() => {
+            this.closePopup();
+        }, 2000); // Close after 2 seconds
       } catch (error) {
         console.error('회원가입 실패:', error);
-        // 사용자에게 에러 메시지를 보여주는 로직 추가 가능
+        if (error.response && error.response.data && error.response.data.message) {
+            this.errorMessage = `회원가입 실패: ${error.response.data.message}`;
+        } else {
+            this.errorMessage = '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.';
+        }
       }
     },
   },
@@ -72,29 +87,51 @@ export default {
   max-width: 90%;
   position: relative;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .close-btn {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 16px;
+  right: 16px;
   background: none;
   border: none;
   color: #aaa;
-  font-size: 28px;
+  font-size: 24px;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .popup-title {
   color: #fff;
   text-align: center;
-  margin-bottom: 30px;
+  margin: 0 0 32px 0;
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 500;
+  width: 100%;
+}
+
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  width: 100%;
 }
 
 .input-group label {
@@ -102,32 +139,60 @@ export default {
   color: #bbb;
   margin-bottom: 8px;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .input-group input {
   width: 100%;
-  padding: 12px;
+  padding: 14px 16px;
   border: 1px solid #444;
   border-radius: 8px;
   background-color: #333;
   color: #fff;
   font-size: 16px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: #4A90E2;
 }
 
 .signup-btn {
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   background-color: #2056b3;
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  margin-bottom: 16px;
 }
 
 .signup-btn:hover {
   background-color: #163d7a;
+}
+
+.message {
+  text-align: center;
+  margin: 8px 0 0 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.success-message {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.error-message {
+  background-color: #f44336;
+  color: white;
 }
 </style>
