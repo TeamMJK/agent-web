@@ -6,7 +6,7 @@
             <button class="continue-btn" @click="handleEmailContinue">계속</button>
             <div class="signup-row">
                 <span>계정이 없으신가요?</span>
-                <a href="#" class="signup-link">회원 가입</a>
+                <a href="#" @click.prevent="showSignUpPopup = true" class="signup-link">회원 가입</a>
             </div>
             <div class="divider-row">
                 <div class="divider"></div>
@@ -15,33 +15,28 @@
             </div>
             <button class="social-btn google" @click="handleGoogleLogin">
                 <span class="icon">
-                    <!-- Google SVG -->
-                    <svg width="20" height="20" viewBox="0 0 20 20">
-                        <g>
-                            <path fill="#4285F4"
-                                d="M19.6 10.23c0-.68-.06-1.36-.18-2H10v3.78h5.5a4.7 4.7 0 01-2.04 3.08v2.56h3.3c1.93-1.78 3.04-4.4 3.04-7.42z" />
-                            <path fill="#34A853"
-                                d="M10 20c2.7 0 4.96-.9 6.62-2.44l-3.3-2.56c-.92.62-2.1.98-3.32.98-2.56 0-4.73-1.73-5.5-4.06H1.04v2.56A9.99 9.99 0 0010 20z" />
-                            <path fill="#FBBC05"
-                                d="M4.5 12.92A5.98 5.98 0 013.68 10c0-.5.09-.98.18-1.92V5.52H1.04A10.01 10.01 0 000 10c0 1.56.37 3.04 1.04 4.48l3.46-2.56z" />
-                            <path fill="#EA4335"
-                                d="M10 4.04c1.48 0 2.8.5 3.84 1.48l2.88-2.88C14.96 1.1 12.7 0 10 0A9.99 9.99 0 001.04 5.52l3.46 2.56C5.27 5.77 7.44 4.04 10 4.04z" />
-                        </g>
-                    </svg>
+                    <i class="pi pi-google"></i>
                 </span>
                 <span class="btn-text">Google로 계속하기</span>
             </button>
             
         </div>
+        <SignUpPopup v-if="showSignUpPopup" @close="showSignUpPopup = false" />
     </div>
 </template>
 
 <script>
+import SignUpPopup from './SignUpPopup.vue';
+
 export default {
     name: 'LoginScreen',
+    components: {
+        SignUpPopup,
+    },
     data() {
         return {
-            email: ''
+            email: '',
+            showSignUpPopup: false,
         };
     },
     methods: {
@@ -125,7 +120,6 @@ export default {
     font-weight: 500;
     margin-bottom: 28px;
     cursor: pointer;
-    transition: background 0.2s;
 }
 
 .continue-btn:hover {

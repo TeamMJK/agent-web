@@ -9,12 +9,7 @@
             <div class="prompt-input-wrapper">
                 <!-- 파일 업로드 아이콘 (SVG로 변경) -->
                 <button class="icon-btn file-upload-btn" @click="handleFileUpload" title="파일 업로드">
-                    <!-- paperclip SVG -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 20 20">
-                        <path
-                            d="M7.5 10.8333L13.3333 5C14.2538 4.07953 15.7462 4.07953 16.6667 5C17.5871 5.92047 17.5871 7.41287 16.6667 8.33333L8.33333 16.6667C6.49238 18.5076 3.50762 18.5076 1.66667 16.6667C-0.174285 14.8257 -0.174285 11.841 1.66667 10L9.16667 2.5"
-                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
+                    <i class="pi pi-paperclip"></i>
                 </button>
 
                 <!-- 검색창 -->
@@ -23,11 +18,7 @@
 
                 <!-- 전송 버튼 -->
                 <button class="icon-btn submit-btn" @click="submitPrompt" title="전송">
-                    <!-- paper plane SVG 아이콘 -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 20 20">
-                        <path d="M2.5 10L17.5 3.33333L14.1667 17.5L10 12.5L2.5 10Z" stroke="currentColor"
-                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
+                    <i class="pi pi-send"></i>
                 </button>
             </div>
 
