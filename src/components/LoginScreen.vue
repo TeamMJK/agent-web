@@ -151,7 +151,7 @@ export default {
     justify-content: center;
     min-height: 100vh;
     width: 100vw;
-    background: #181818;
+    background: #1a1a1a;
     padding: 24px;
     box-sizing: border-box;
 }
@@ -185,10 +185,10 @@ export default {
     width: 100%;
     font-size: 1.1rem;
     padding: 18px 20px;
-    border: 1.5px solid #232323;
+    border: 1.5px solid #2a2a2a;
     border-radius: 999px;
     margin-bottom: 16px;
-    background: #232323;
+    background: #2a2a2a;
     color: #fff;
     outline: none;
     box-sizing: border-box;
@@ -265,9 +265,9 @@ export default {
     justify-content: center;
     gap: 12px;
     padding: 16px 20px;
-    border: 1.5px solid #232323;
+    border: 1.5px solid #2a2a2a;
     border-radius: 999px;
-    background: #232323;
+    background: #2a2a2a;
     color: #fff;
     font-size: 1.08rem;
     font-weight: 500;
@@ -280,8 +280,8 @@ export default {
 }
 
 .social-btn:hover {
-    background: #222;
-    border-color: #2056b3;
+    background: #333333;
+    border-color: #4A90E2;
 }
 
 .social-btn .icon {

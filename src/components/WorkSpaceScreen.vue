@@ -2,25 +2,31 @@
   <div class="workspace-container">
     <!-- 헤더 영역 -->
     <div class="workspace-header">
-      <h1 class="workspace-title">워크스페이스</h1>
+      <div class="header-content">
+        <h1 class="workspace-title">워크스페이스</h1>
+        <p class="workspace-subtitle">일정을 관리하고 여행을 계획하세요</p>
+      </div>
       <button class="add-schedule-btn" @click="showAddScheduleModal = true">
-        + 일정 추가
+        <i class="pi pi-plus"></i>
+        <span>일정 추가</span>
       </button>
     </div>
 
-    <CalendarGrid
-        :events="events"
-        :selected-date="selectedDate"
-        @update:selectedDate="handleDateSelected"
-        @change-month="handleMonthChanged"
-    />
+    <div class="workspace-content">
+      <CalendarGrid
+          :events="events"
+          :selected-date="selectedDate"
+          @update:selectedDate="handleDateSelected"
+          @change-month="handleMonthChanged"
+      />
 
-    <EventDetails
-        v-if="selectedDate"
-        :selected-date="selectedDate"
-        :events="events"
-        @delete-event="handleDeleteEvent"
-    />
+      <EventDetails
+          v-if="selectedDate"
+          :selected-date="selectedDate"
+          :events="events"
+          @delete-event="handleDeleteEvent"
+      />
+    </div>
 
     <ScheduleModal
         :show="showAddScheduleModal"
@@ -90,89 +96,124 @@ export default {
 
 .workspace-container {
     font-family: "Pretendard Variable", Pretendard, sans-serif;
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-    color: #E0E0E0;
-    min-height: 100vh;
-    box-sizing: border-box;
-    padding: 32px 24px;
+    width: 100%;
+    height: 100vh;
+    background: #1a1a1a;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .workspace-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 32px 24px 24px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-    flex-wrap: wrap;
-    gap: 16px;
+    align-items: flex-end;
+    gap: 24px;
+    flex-shrink: 0;
+}
+
+.header-content {
+    flex: 1;
 }
 
 .workspace-title {
-    font-size: 2rem;
-    font-weight: 500;
-    color: #fff;
+    font-size: 2.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ffffff 0%, #4A90E2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+}
+
+.workspace-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
     margin: 0;
+    font-weight: 400;
 }
 
 .add-schedule-btn {
-    background: #4A90E2;
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
     color: white;
     border: none;
-    padding: 14px 24px;
-    border-radius: 8px;
+    padding: 16px 24px;
+    border-radius: 16px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    white-space: nowrap;
     display: flex;
     align-items: center;
-    justify-content: center;
-    min-height: 48px;
+    gap: 8px;
+    box-shadow: 0 8px 32px rgba(74, 144, 226, 0.4);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .add-schedule-btn:hover {
-    background: #357ABD;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(74, 144, 226, 0.6);
+}
+
+.add-schedule-btn:active {
+    transform: translateY(0);
+}
+
+.workspace-content {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    overflow-y: auto;
 }
 
 /* Responsive styles */
 @media (max-width: 768px) {
-    .workspace-container {
-        width: 95%;
-        padding: 24px 16px;
-    }
-
     .workspace-header {
         flex-direction: column;
         align-items: stretch;
-        gap: 16px;
-        text-align: center;
+        gap: 20px;
+        padding: 24px 16px 20px;
     }
 
     .workspace-title {
-        font-size: 1.5rem;
+        font-size: 2rem;
+    }
+
+    .workspace-subtitle {
+        font-size: 0.9rem;
     }
 
     .add-schedule-btn {
-        width: 100%;
-        padding: 16px 24px;
+        justify-content: center;
+        padding: 18px 24px;
+    }
+
+    .workspace-content {
+        padding: 16px;
+        gap: 24px;
     }
 }
 
 @media (max-width: 480px) {
-    .workspace-container {
-        width: 100%;
-        padding: 16px 12px;
-    }
-
     .workspace-title {
-        font-size: 1.3rem;
+        font-size: 1.8rem;
     }
-}
 
-@media (min-width: 1400px) {
-    .workspace-container {
-        padding: 48px 32px;
+    .workspace-header {
+        padding: 20px 12px 16px;
+    }
+
+    .workspace-content {
+        padding: 12px;
     }
 }
 </style>

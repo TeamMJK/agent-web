@@ -2,7 +2,7 @@
   <!--  eslint-disable-next-line vue/no-multiple-template-root -->
   <div v-if="showSidebar" id="app-container">
     <AppSidebar />
-    <main class="main-content">
+    <main :class="['main-content', { 'workspace-layout': isWorkspace }]">
       <router-view />
     </main>
   </div>
@@ -21,6 +21,9 @@ export default {
     showSidebar() {
       return this.$route.name !== 'Login';
     },
+    isWorkspace() {
+      return this.$route.name === 'WorkSpace';
+    },
   },
 };
 </script>
@@ -34,7 +37,7 @@ body {
     width: 100%;
     height: 100%;
     font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #181818;
+    background-color: #1a1a1a;
     color: #E0E0E0;
     overflow: hidden;
 }
@@ -48,12 +51,21 @@ body {
 
 .main-content {
   flex-grow: 1;
-  background-color: #181818;
+  background-color: #1a1a1a;
   box-sizing: border-box;
   margin-left: 112px; /* 사이드바 너비(80px) + 좌우 마진(32px) */
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+.main-content.workspace-layout {
+  margin-left: 112px;
+  justify-content: flex-start;
+  align-items: stretch;
   overflow: hidden;
 }
 
@@ -73,10 +85,18 @@ button {
     .main-content {
         margin-left: 96px;
     }
+    
+    .main-content.workspace-layout {
+        margin-left: 96px;
+    }
 }
 
 @media (max-width: 480px) {
     .main-content {
+        margin-left: 80px;
+    }
+    
+    .main-content.workspace-layout {
         margin-left: 80px;
     }
 }

@@ -106,7 +106,7 @@ export default {
   max-width: 500px;
   margin: 50px auto;
   padding: 30px;
-  background-color: #2a2a2a;
+  background-color: #232323;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   color: #e0e0e0;
@@ -145,7 +145,7 @@ export default {
 .sensitive-info-form select {
   width: 100%;
   padding: 12px;
-  background-color: #333;
+  background-color: #2a2a2a;
   border: 1px solid #444;
   border-radius: 8px;
   color: #fff;

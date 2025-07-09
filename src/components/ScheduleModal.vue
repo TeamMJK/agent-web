@@ -204,7 +204,7 @@ export default {
 .form-input, .form-textarea {
     width: 100%;
     padding: 12px;
-    background: #2D2D2D;
+    background: #2a2a2a;
     border: 1px solid #3A3A3A;
     border-radius: 6px;
     color: #fff;
@@ -255,7 +255,6 @@ export default {
     border-radius: 6px;
     font-size: 14px;
     cursor: pointer;
-    
 }
 
 .cancel-btn:hover {
@@ -271,7 +270,6 @@ export default {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    
 }
 
 .submit-btn:hover {

@@ -42,7 +42,7 @@
                 :class="['event-bar', getEventBarClass(event, date.date)]"
                 :style="{
                     backgroundColor: event.color,
-                    top: `${24 + index * 18}px`
+                    top: `${28 + index * 20}px`
                 }"
             >
               <span v-if="isEventStart(event, date.date)" class="event-title-bar">
@@ -173,108 +173,120 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 0 10px;
+    margin-bottom: 24px;
+    padding: 0 8px;
 }
 
 .nav-btn {
-    background: #2D2D2D;
-    border: none;
-    color: #A0A0A0;
-    padding: 8px;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 12px;
+    border-radius: 12px;
     cursor: pointer;
-    
-    min-width: 36px;
-    height: 36px;
+    min-width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .nav-btn:hover {
-    background: #3A3A3A;
+    background: rgba(255, 255, 255, 0.2);
     color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
 }
 
 .current-month {
-    font-size: 1.5rem;
-    font-weight: 500;
+    font-size: 1.75rem;
+    font-weight: 600;
     color: #fff;
     margin: 0;
     text-align: center;
     flex: 1;
+    letter-spacing: -0.01em;
 }
 
 .calendar-container {
-    background: #232323;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
     overflow: hidden;
     margin-bottom: 30px;
     width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .calendar-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    background: #2D2D2D;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .day-header {
-    padding: 16px 8px;
+    padding: 20px 8px;
     text-align: center;
-    font-weight: 500;
-    color: #A0A0A0;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
     font-size: 14px;
-    min-height: 20px;
+    letter-spacing: 0.5px;
 }
 
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
-    background: #2D2D2D;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .calendar-date {
     min-height: 120px;
-    padding: 8px;
-    background: #232323;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
     cursor: pointer;
-    
     position: relative;
     display: flex;
     flex-direction: column;
+    border: 1px solid transparent;
 }
 
 .calendar-date:hover {
-    background: #2D2D2D;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(167, 139, 250, 0.3);
 }
 
 .calendar-date.other-month {
-    color: #555;
-    background: #1A1A1A;
+    color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.01);
 }
 
 .calendar-date.today {
-    background: #4A90E2;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .calendar-date.selected {
-    background: #357ABD;
+    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
     color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(167, 139, 250, 0.4);
 }
 
 .calendar-date.has-events .date-number {
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .date-number {
     display: block;
-    font-size: 14px;
-    margin-bottom: 4px;
+    font-size: 15px;
+    margin-bottom: 6px;
     line-height: 1.2;
+    font-weight: 500;
 }
 
 .events-container {
@@ -288,66 +300,71 @@ export default {
 
 .event-bar {
     position: absolute;
-    height: 14px;
-    left: 2px;
-    right: 2px;
-    border-radius: 4px;
-    font-size: 10px;
+    height: 16px;
+    left: 4px;
+    right: 4px;
+    border-radius: 8px;
+    font-size: 11px;
     color: white;
     display: flex;
     align-items: center;
     overflow: hidden;
     z-index: 1;
     margin: 2px 0;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .event-bar.single-day {
-    border-radius: 6px;
-    left: 4px;
-    right: 4px;
+    border-radius: 8px;
+    left: 6px;
+    right: 6px;
 }
 
 .event-bar.start-day {
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    right: 0;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    right: 2px;
 }
 
 .event-bar.end-day {
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    left: 0;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    left: 2px;
 }
 
 .event-bar.middle-day {
-    border-radius: 0;
-    left: 0;
-    right: 0;
+    border-radius: 4px;
+    left: 2px;
+    right: 2px;
 }
 
 .event-title-bar {
-    padding-left: 4px;
-    font-weight: 500;
+    padding-left: 6px;
+    font-weight: 600;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-size: 8px;
+    font-size: 10px;
     line-height: 1;
 }
 
 .more-events {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    font-size: 8px;
-    color: #A0A0A0;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 1px 3px;
-    border-radius: 2px;
+    bottom: 4px;
+    right: 4px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    padding: 2px 6px;
+    border-radius: 6px;
     z-index: 2;
+    font-weight: 600;
 }
 </style>

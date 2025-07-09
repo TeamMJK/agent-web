@@ -80,7 +80,7 @@ export default {
 }
 
 .popup-container {
-  background-color: #2a2a2a;
+  background-color: #232323;
   padding: 40px;
   border-radius: 12px;
   width: 400px;
@@ -147,7 +147,7 @@ form {
   padding: 14px 16px;
   border: 1px solid #444;
   border-radius: 8px;
-  background-color: #333;
+  background-color: #2a2a2a;
   color: #fff;
   font-size: 16px;
   box-sizing: border-box;
@@ -161,7 +161,7 @@ form {
 .signup-btn {
   width: 100%;
   padding: 16px;
-  background-color: #2056b3;
+  background-color: #4A90E2;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -172,7 +172,7 @@ form {
 }
 
 .signup-btn:hover {
-  background-color: #163d7a;
+  background-color: #357ABD;
 }
 
 .message {
