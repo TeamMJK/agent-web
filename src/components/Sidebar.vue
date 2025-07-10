@@ -217,7 +217,9 @@ export default {
       this.$router.push('/main');
     },
     logout() {
-      this.$router.push('/');
+      apiService.auth.logout().then(() => {
+        this.$router.push('/login');
+      });
     },
     async showUserInfo() {
       this.showUserModal = true;

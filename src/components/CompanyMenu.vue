@@ -4,17 +4,26 @@
       <i class="pi pi-building"></i>
     </button>
     <div v-if="showMenu" class="company-menu-modal" @mouseenter="cancelHideMenu" @mouseleave="hideMenuWithDelay">
-      <div v-if="userCompanies && userCompanies.length > 0" class="company-list">
-        <div v-for="company in userCompanies" :key="company.id" class="company-item">
-          {{ company.name }}
+      <div v-if="userCompany" class="company-info">
+        <div class="company-item">
+          {{ userCompany }}
         </div>
       </div>
       <div v-else class="no-company-info">
         회사 정보 없음
       </div>
       <div class="menu-divider"></div>
-      <button class="menu-item" @click="openCreateCompanyModal">회사 생성</button>
-      <button class="menu-item">회사 초대 코드 생성</button>
+      
+      <!-- 회사가 있는 경우: 초대 코드 생성만 표시 -->
+      <template v-if="userCompany">
+        <button class="menu-item">회사 초대 코드 생성</button>
+      </template>
+      
+      <!-- 회사가 없는 경우: 생성과 참여 둘 다 표시 -->
+      <template v-else>
+        <button class="menu-item" @click="openCreateCompanyModal">회사 생성</button>
+        <button class="menu-item" @click="openJoinCompanyModal">회사 초대 코드로 참여</button>
+      </template>
     </div>
 
     <!-- Company Creation Modal -->
@@ -32,6 +41,22 @@
         </div>
       </div>
     </div>
+
+    <!-- Company Join Modal -->
+    <div v-if="showJoinCompanyModal" class="modal-overlay" @click.self="closeJoinCompanyModal">
+      <div class="modal-content">
+        <h2>회사 참가</h2>
+        <p>초대 코드를 입력하여 기존 회사에 참가하세요.</p>
+        <input type="text" v-model="invitationCode" placeholder="초대 코드를 입력하세요" class="company-name-input"/>
+        <div v-if="joinMessage" :class="['creation-message', `message-${joinMessageType}`]">
+          {{ joinMessage }}
+        </div>
+        <div class="modal-actions">
+          <button @click="closeJoinCompanyModal" class="btn-cancel">취소</button>
+          <button @click="handleJoinCompany" class="btn-confirm">참가</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -44,11 +69,15 @@ export default {
     return {
       showMenu: false,
       showCreateCompanyModal: false,
+      showJoinCompanyModal: false,
       companyName: '',
+      invitationCode: '',
       hideMenuTimeout: null,
-      userCompanies: [],
+      userCompany: null, // 사용자의 회사 정보 (string 또는 null)
       creationMessage: '',
-      creationMessageType: '', // 'success' or 'error'
+      creationMessageType: '',
+      joinMessage: '',
+      joinMessageType: '',
     };
   },
   methods: {
@@ -76,6 +105,42 @@ export default {
       this.creationMessage = '';
       this.creationMessageType = '';
     },
+    openJoinCompanyModal() {
+      this.showMenu = false;
+      this.showJoinCompanyModal = true;
+      this.joinMessage = '';
+      this.joinMessageType = '';
+    },
+    closeJoinCompanyModal() {
+      this.showJoinCompanyModal = false;
+      this.invitationCode = '';
+      this.joinMessage = '';
+      this.joinMessageType = '';
+    },
+    async handleJoinCompany() {
+      this.joinMessage = '';
+      if (!this.invitationCode.trim()) {
+        this.joinMessage = '초대 코드를 입력해주세요.';
+        this.joinMessageType = 'error';
+        return;
+      }
+      try {
+        const response = await apiService.company.join({ invitationCode: this.invitationCode });
+        if (response.status === 200) {
+          const companyName = response.data;
+          this.joinMessage = `'${companyName}' 회사에 성공적으로 참가했습니다.`;
+          this.joinMessageType = 'success';
+          await this.fetchUserCompany();
+          setTimeout(() => {
+            this.closeJoinCompanyModal();
+          }, 1500);
+        }
+      } catch (error) {
+        console.error('Failed to join company:', error);
+        this.joinMessage = '회사 참가에 실패했습니다. 초대 코드를 확인해주세요.';
+        this.joinMessageType = 'error';
+      }
+    },
     async handleCreateCompany() {
       this.creationMessage = '';
       if (!this.companyName.trim()) {
@@ -88,7 +153,7 @@ export default {
         if (response.status === 201) {
             this.creationMessage = '회사가 성공적으로 생성되었습니다.';
             this.creationMessageType = 'success';
-            await this.fetchUserCompanies();
+            await this.fetchUserCompany();
             setTimeout(() => {
               this.closeCreateCompanyModal();
             }, 1500);
@@ -99,20 +164,18 @@ export default {
         this.creationMessageType = 'error';
       }
     },
-    async fetchUserCompanies() {
+    async fetchUserCompany() {
       try {
-        // NOTE: 실제 API 서비스에 맞게 수정이 필요할 수 있습니다.
-        // 현재는 getList와 같은 메소드가 있다고 가정합니다.
         const response = await apiService.company.getList();
-        this.userCompanies = response.data;
+        this.userCompany = response.data; // API 응답이 string이므로 직접 할당
       } catch (error) {
-        console.error('Failed to fetch user companies:', error);
-        this.userCompanies = [];
+        console.error('Failed to fetch user company:', error);
+        this.userCompany = null;
       }
     },
   },
   mounted() {
-    this.fetchUserCompanies();
+    this.fetchUserCompany();
   },
   beforeUnmount() {
     if (this.hideMenuTimeout) {
@@ -158,6 +221,10 @@ export default {
   min-width: 220px;
   z-index: 100;
   box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+.company-info {
+  padding: 4px;
 }
 
 .company-list {

@@ -102,11 +102,15 @@ export default {
 .workspace-container {
     font-family: var(--font-family-primary);
     width: 100%;
+    max-width: 100vw;
     height: 100vh;
     background: var(--color-bg-primary);
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
+    box-sizing: border-box;
 }
 
 .workspace-header {
@@ -122,16 +126,21 @@ export default {
     align-items: center;
     gap: var(--spacing-2xl);
     flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 .header-content {
     flex: 1;
+    min-width: 0;
 }
 
 .header-actions {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
+    flex-shrink: 0;
 }
 
 .workspace-title {
@@ -142,6 +151,8 @@ export default {
     -webkit-text-fill-color: transparent;
     margin: 0 0 8px 0;
     letter-spacing: -0.02em;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .workspace-subtitle {
@@ -149,6 +160,8 @@ export default {
     font-size: 1rem;
     margin: 0;
     font-weight: 400;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .add-schedule-btn {
@@ -166,6 +179,8 @@ export default {
     box-shadow: var(--shadow-lg);
     backdrop-filter: blur(4px);
     border: 1px solid var(--color-border-secondary);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .add-schedule-btn:hover {
@@ -184,10 +199,18 @@ export default {
     flex-direction: column;
     gap: 32px;
     overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 /* Responsive styles */
 @media (max-width: 768px) {
+    .workspace-container {
+        padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
+    }
+    
     .workspace-header {
         flex-direction: column;
         align-items: stretch;
@@ -206,6 +229,7 @@ export default {
     .add-schedule-btn {
         justify-content: center;
         padding: 18px 24px;
+        width: 100%;
     }
 
     .workspace-content {
@@ -215,6 +239,10 @@ export default {
 }
 
 @media (max-width: 480px) {
+    .workspace-container {
+        padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
+    }
+    
     .workspace-title {
         font-size: 1.8rem;
     }
@@ -225,6 +253,30 @@ export default {
 
     .workspace-content {
         padding: 12px;
+    }
+    
+    .add-schedule-btn {
+        font-size: 13px;
+        padding: 16px 20px;
+    }
+}
+
+/* 매우 작은 화면에 대한 추가 대응 */
+@media (max-width: 320px) {
+    .workspace-title {
+        font-size: 1.5rem;
+    }
+    
+    .workspace-subtitle {
+        font-size: 0.8rem;
+    }
+    
+    .workspace-header {
+        padding: 16px 8px 12px;
+    }
+    
+    .workspace-content {
+        padding: 8px;
     }
 }
 </style>

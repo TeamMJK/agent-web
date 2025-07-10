@@ -74,11 +74,19 @@
           <i class="pi pi-users"></i>
           성별
         </label>
-        <select id="gender" v-model="formData.gender" required>
-          <option value="">선택해주세요</option>
-          <option value="MALE">남성</option>
-          <option value="FEMALE">여성</option>
-        </select>
+        <div class="modern-select-wrapper">
+          <select
+            id="gender"
+            v-model="formData.gender"
+            required
+            class="modern-select"
+          >
+            <option value="" disabled>성별을 선택하세요</option>
+            <option value="Male">남성</option>
+            <option value="Female">여성</option>
+          </select>
+          <i class="pi pi-chevron-down select-arrow"></i>
+        </div>
       </div>
       
       <div class="form-group">
@@ -86,11 +94,10 @@
           <i class="pi pi-calendar"></i>
           생년월일
         </label>
-        <input 
-          type="date" 
-          id="birthDate" 
-          v-model="formData.birthDate" 
-          required 
+        <ModernDatePicker
+          v-model="formData.birthDate"
+          placeholder="생년월일을 선택하세요"
+          required
         />
       </div>
 
@@ -113,11 +120,10 @@
           <i class="pi pi-calendar-times"></i>
           여권 만료일
         </label>
-        <input 
-          type="date" 
-          id="passportExpireDate" 
-          v-model="formData.passportExpireDate" 
-          required 
+        <ModernDatePicker
+          v-model="formData.passportExpireDate"
+          placeholder="여권 만료일을 선택하세요"
+          required
         />
       </div>
 
@@ -142,9 +148,13 @@
 
 <script>
 import { apiService } from '../services/api';
+import ModernDatePicker from './ModernDatePicker.vue';
 
 export default {
   name: 'SensitiveInfoForm',
+  components: {
+    ModernDatePicker
+  },
   data() {
     return {
       formData: {
@@ -196,11 +206,31 @@ export default {
       }
 
       try {
-        // 통합된 API 호출
-        await apiService.user.saveSensitiveInfo(this.formData);
+        // 날짜 변환 없이 그대로 사용 (YYYY-MM-DD)
+        const payload = {
+          ...this.formData,
+          gender: this.formData.gender,
+          birthDate: this.formData.birthDate,
+          passportExpireDate: this.formData.passportExpireDate,
+        };
+
+        console.log('전송할 데이터:', JSON.stringify(payload, null, 2));
+        Object.keys(payload).forEach(key => {
+          console.log(`${key}: ${typeof payload[key]} = "${payload[key]}"`);
+        });
+
+        const response = await apiService.user.saveSensitiveInfo(payload);
+        console.log('API 응답:', response);
         this.$router.push('/main');
       } catch (error) {
         console.error('민감 정보 저장 실패:', error);
+        console.error('에러 상세:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          headers: error.response?.headers
+        });
+        
         if (error.response && error.response.data && error.response.data.message) {
           this.errorMessage = error.response.data.message;
         } else {
@@ -225,6 +255,7 @@ export default {
   padding: var(--spacing-4xl) var(--spacing-2xl);
   font-family: var(--font-family-primary);
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .header-section {
@@ -425,6 +456,40 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
+.modern-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.modern-select {
+  width: 100%;
+  padding: var(--spacing-xl);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-xl);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-family: var(--font-family-primary);
+  appearance: none;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.modern-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.select-arrow {
+  position: absolute;
+  right: 18px;
+  pointer-events: none;
+  color: var(--color-primary);
+  font-size: 1.2em;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .sensitive-info-container {
@@ -480,3 +545,23 @@ export default {
   }
 }
 </style>
+  
+  .title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: var(--spacing-lg);
+    font-size: var(--font-size-base);
+  }
+  
+  .country-code {
+    padding: var(--spacing-lg);
+    font-size: var(--font-size-base);
+  }
+  
+  .submit-btn {
+    padding: var(--spacing-xl);
+    font-size: var(--font-size-base);
+  }

@@ -196,6 +196,159 @@
   color: var(--color-text-primary);
 }
 
+/* 전역 스크롤바 스타일 - 더 강력한 적용 */
+*, *::before, *::after {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+  background: transparent !important;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent !important;
+  border-radius: var(--radius-sm);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-sm);
+  border: none;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-active);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* HTML과 body 요소에 명시적으로 적용 */
+html::-webkit-scrollbar {
+  width: 8px;
+  background: transparent !important;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+body::-webkit-scrollbar {
+  width: 8px;
+  background: transparent !important;
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* 모달과 드롭다운 스크롤바 강제 스타일링 */
+.modal-content,
+.modal-body,
+.datepicker-dropdown,
+.sensitive-info-container,
+.workspace-container,
+.main-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.modal-content::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar,
+.datepicker-dropdown::-webkit-scrollbar,
+.sensitive-info-container::-webkit-scrollbar,
+.workspace-container::-webkit-scrollbar,
+.main-container::-webkit_scrollbar {
+  width: 6px;
+  height: 6px;
+  background: transparent !important;
+}
+
+.modal-content::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track,
+.datepicker-dropdown::-webkit-scrollbar-track,
+.sensitive-info-container::-webkit-scrollbar-track,
+.workspace-container::-webkit-scrollbar-track,
+.main-container::-webkit_scrollbar-track {
+  background: transparent !important;
+}
+
+.modal-content::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb,
+.datepicker-dropdown::-webkit-scrollbar-thumb,
+.sensitive-info-container::-webkit-scrollbar-thumb,
+.workspace-container::-webkit-scrollbar-thumb,
+.main-container::-webkit_scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  border: none;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover,
+.modal-body::-webkit-scrollbar-thumb:hover,
+.datepicker-dropdown::-webkit-scrollbar-thumb:hover,
+.sensitive-info-container::-webkit-scrollbar-thumb:hover,
+.workspace-container::-webkit-scrollbar-thumb:hover,
+.main-container::-webkit_scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.modal-content::-webkit-scrollbar-corner,
+.modal-body::-webkit-scrollbar-corner,
+.datepicker-dropdown::-webkit-scrollbar-corner,
+.sensitive-info-container::-webkit-scrollbar-corner,
+.workspace-container::-webkit-scrollbar-corner,
+.main-container::-webkit_scrollbar-corner {
+  background: transparent !important;
+}
+
+/* 특정 컴포넌트에서 스크롤바 숨기기 */
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* 얇은 스크롤바 */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
 /* 유틸리티 클래스 */
 .flex {
   display: flex;

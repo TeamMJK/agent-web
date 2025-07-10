@@ -28,11 +28,10 @@
           <i class="pi pi-calendar"></i>
           여권 만료일
         </label>
-        <input 
-          type="date" 
-          id="passportExpireDate" 
-          v-model="formData.passportExpireDate" 
-          required 
+        <ModernDatePicker
+          v-model="formData.passportExpireDate"
+          placeholder="여권 만료일을 선택하세요"
+          required
         />
       </div>
 
@@ -57,9 +56,13 @@
 
 <script>
 import { apiService } from '../services/api';
+import ModernDatePicker from './ModernDatePicker.vue';
 
 export default {
   name: 'PassportInfoForm',
+  components: {
+    ModernDatePicker
+  },
   data() {
     return {
       formData: {

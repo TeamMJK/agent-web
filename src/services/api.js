@@ -146,34 +146,13 @@ export const apiService = {
     updateProfile: (userData) => apiClient.patch('/members/me', userData),
 
     /**
-     * 민감 정보(주민번호 등) 등록/수정
+     * 민감 정보 저장
      * POST /members/sensitive-member-info
-     * @param {Object} sensitiveData
-     * @returns {Promise}
-     */
-    updateSensitiveInfo: (sensitiveData) => apiClient.post('/members/sensitive-member-info', sensitiveData),
-
-    /**
-     * 여권 정보 등록/수정
-     * POST /members/sensitive-passport-info
-     * @param {Object} passportData
-     * @returns {Promise}
-     */
-    updatePassportInfo: (passportData) => apiClient.post('/members/sensitive-passport-info', passportData),
-
-    /**
-     * 민감 정보 및 여권 정보 저장
      * @param {Object} allSensitiveData
      * @returns {Promise}
      */
-    saveSensitiveInfo: async (allSensitiveData) => {
-      const { name, firstName, lastName, phoneNumber, gender, birthDate, passportNumber, passportExpireDate } = allSensitiveData;
-      
-      const sensitiveData = { name, firstName, lastName, phoneNumber, gender, birthDate };
-      const passportData = { passportNumber, passportExpireDate };
-
-      await apiClient.post('/members/sensitive-member-info', sensitiveData);
-      return await apiClient.post('/members/sensitive-passport-info', passportData);
+    saveSensitiveInfo: (allSensitiveData) => {
+      return apiClient.post('/members/sensitive-member-info', allSensitiveData);
     }
   },    
 
@@ -189,10 +168,18 @@ export const apiService = {
 
     /**
      * 회사 목록 조회
-     * GET /companies/my-companies
-     * @returns {Promise} 회사 목록 반환
+     * GET /companies
+     * @returns {Promise} 회사 이름 반환 (string)
      */
-    getList: () => apiClient.get('/companies/my-companies'),
+    getList: () => apiClient.get('/companies'),
+
+    /**
+     * 회사 참가
+     * POST /companies/join
+     * @param {Object} joinData { invitationCode }
+     * @returns {Promise} 회사 이름 반환 (string)
+     */
+    join: (joinData) => apiClient.post('/companies/join', joinData),
   },
 };
 

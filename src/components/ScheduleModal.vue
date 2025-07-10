@@ -23,20 +23,18 @@
         <div class="form-row">
           <div class="form-group half">
             <label>시작 날짜</label>
-            <input
-                type="date"
-                v-model="newSchedule.startDate"
-                required
-                class="form-input"
+            <ModernDatePicker
+              v-model="newSchedule.startDate"
+              placeholder="시작 날짜를 선택하세요"
+              required
             />
           </div>
           <div class="form-group half">
             <label>종료 날짜</label>
-            <input
-                type="date"
-                v-model="newSchedule.endDate"
-                required
-                class="form-input"
+            <ModernDatePicker
+              v-model="newSchedule.endDate"
+              placeholder="종료 날짜를 선택하세요"
+              required
             />
           </div>
         </div>
@@ -71,8 +69,13 @@
 </template>
 
 <script>
+import ModernDatePicker from './ModernDatePicker.vue';
+
 export default {
   name: 'ScheduleModal',
+  components: {
+    ModernDatePicker
+  },
   props: {
     show: {
       type: Boolean,

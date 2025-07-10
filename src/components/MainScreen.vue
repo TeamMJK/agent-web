@@ -111,6 +111,7 @@ export default {
     overflow: hidden;
     box-sizing: border-box;
     padding: 0 20px;
+    padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2 + 20px);
     position: relative;
 }
 
@@ -258,6 +259,7 @@ export default {
 @media (max-width: 768px) {
     .main-container {
         padding: 0 16px;
+        padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2 + 16px);
     }
     
     .logo-text {
@@ -280,6 +282,10 @@ export default {
 }
 
 @media (max-width: 480px) {
+    .main-container {
+        padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2 + 16px);
+    }
+    
     .logo-text {
         font-size: 2rem;
     }
