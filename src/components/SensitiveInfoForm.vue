@@ -94,6 +94,33 @@
         />
       </div>
 
+      <div class="form-group">
+        <label for="passportNumber">
+          <i class="pi pi-book"></i>
+          여권번호
+        </label>
+        <input 
+          type="text" 
+          id="passportNumber" 
+          v-model="formData.passportNumber" 
+          placeholder="여권번호를 입력하세요" 
+          required 
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="passportExpireDate">
+          <i class="pi pi-calendar-times"></i>
+          여권 만료일
+        </label>
+        <input 
+          type="date" 
+          id="passportExpireDate" 
+          v-model="formData.passportExpireDate" 
+          required 
+        />
+      </div>
+
       <button type="submit" class="submit-btn" :disabled="isLoading">
         <span v-if="!isLoading">
           <i class="pi pi-check"></i>
@@ -127,6 +154,8 @@ export default {
         phoneNumber: '',
         gender: '',
         birthDate: '',
+        passportNumber: '',
+        passportExpireDate: '',
       },
       errorMessage: '',
       isLoading: false,
@@ -167,9 +196,9 @@ export default {
       }
 
       try {
-        const response = await apiService.user.updateSensitiveInfo(this.formData);
-        console.log('민감 정보 저장 성공:', response.data);
-        this.$router.push('/passport-info');
+        // 통합된 API 호출
+        await apiService.user.saveSensitiveInfo(this.formData);
+        this.$router.push('/main');
       } catch (error) {
         console.error('민감 정보 저장 실패:', error);
         if (error.response && error.response.data && error.response.data.message) {

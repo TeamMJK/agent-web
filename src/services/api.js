@@ -102,8 +102,26 @@ apiClient.interceptors.response.use(
 export const apiService = {
   // 인증 관련 API
   auth: {
+    /**
+     * 로그인
+     * POST /login
+     * @param {Object} credentials { email, password }
+     * @returns {Promise} accessToken, refreshToken 반환
+     */
     login: (credentials) => apiClient.post('/login', credentials),
+
+    /**
+     * 회원가입
+     * POST /members
+     * @param {Object} userData 회원가입 정보
+     * @returns {Promise}
+     */
     register: (userData) => apiClient.post('/members', userData),
+
+    /**
+     * 로그아웃 (로컬 토큰 삭제)
+     * 클라이언트에서 토큰만 삭제, 서버 통신 없음
+     */
     logout: () => {
       tokenManager.clearTokens();
       return Promise.resolve();
@@ -112,19 +130,70 @@ export const apiService = {
 
   // 사용자 정보 관련 API
   user: {
+    /**
+     * 내 프로필 조회
+     * GET /members/me
+     * @returns {Promise} 사용자 정보 반환
+     */
     getProfile: () => apiClient.get('/members/me'),
-    updateProfile: (userData) => apiClient.patch('/members/me', userData),
-    updateSensitiveInfo: (sensitiveData) => apiClient.post('/members/sensitive-member-info', sensitiveData),
-    updatePassportInfo: (passportData) => apiClient.post('/members/sensitive-passport-info', passportData)
-  },
 
-  // 일정 관련 API
-  schedule: {
-    getAll: () => apiClient.get('/schedules'),
-    create: (scheduleData) => apiClient.post('/schedules', scheduleData),
-    update: (id, scheduleData) => apiClient.put(`/schedules/${id}`, scheduleData),
-    delete: (id) => apiClient.delete(`/schedules/${id}`)
-  }
+    /**
+     * 내 프로필 수정
+     * PATCH /members/me
+     * @param {Object} userData 수정할 정보
+     * @returns {Promise}
+     */
+    updateProfile: (userData) => apiClient.patch('/members/me', userData),
+
+    /**
+     * 민감 정보(주민번호 등) 등록/수정
+     * POST /members/sensitive-member-info
+     * @param {Object} sensitiveData
+     * @returns {Promise}
+     */
+    updateSensitiveInfo: (sensitiveData) => apiClient.post('/members/sensitive-member-info', sensitiveData),
+
+    /**
+     * 여권 정보 등록/수정
+     * POST /members/sensitive-passport-info
+     * @param {Object} passportData
+     * @returns {Promise}
+     */
+    updatePassportInfo: (passportData) => apiClient.post('/members/sensitive-passport-info', passportData),
+
+    /**
+     * 민감 정보 및 여권 정보 저장
+     * @param {Object} allSensitiveData
+     * @returns {Promise}
+     */
+    saveSensitiveInfo: async (allSensitiveData) => {
+      const { name, firstName, lastName, phoneNumber, gender, birthDate, passportNumber, passportExpireDate } = allSensitiveData;
+      
+      const sensitiveData = { name, firstName, lastName, phoneNumber, gender, birthDate };
+      const passportData = { passportNumber, passportExpireDate };
+
+      await apiClient.post('/members/sensitive-member-info', sensitiveData);
+      return await apiClient.post('/members/sensitive-passport-info', passportData);
+    }
+  },    
+
+  // 회사 관련 API
+  company: {
+    /**
+     * 회사 생성
+     * POST /companies
+     * @param {Object} companyData { name }
+     * @returns {Promise} 생성된 회사 ID 반환
+     */
+    create: (companyData) => apiClient.post('/companies', companyData),
+
+    /**
+     * 회사 목록 조회
+     * GET /companies/my-companies
+     * @returns {Promise} 회사 목록 반환
+     */
+    getList: () => apiClient.get('/companies/my-companies'),
+  },
 };
 
 // 기본 export

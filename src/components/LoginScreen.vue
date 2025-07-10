@@ -104,30 +104,7 @@ export default {
 
                 if (response.data && response.data.accessToken && response.data.refreshToken) {
                     tokenManager.setTokens(response.data.accessToken, response.data.refreshToken);
-
-                    // 사용자 정보 확인
-                    try {
-                        const memberInfoResponse = await apiService.user.getProfile();
-                        const memberData = memberInfoResponse.data;
-
-                        // 민감 정보 확인
-                        if (!memberData || Object.keys(memberData).length === 0 || 
-                            !memberData.name || !memberData.firstName || !memberData.lastName || 
-                            !memberData.phoneNumber || !memberData.gender || !memberData.birthDate) {
-                            this.$router.push('/sensitive-info');
-                        }
-                        // 여권 정보 확인
-                        else if (!memberData.passportNumber || memberData.passportNumber === '' ||
-                                 !memberData.passportExpireDate || memberData.passportExpireDate === '') {
-                            this.$router.push('/passport-info');
-                        }
-                        else {
-                            this.$router.push('/main');
-                        }
-                    } catch (memberInfoError) {
-                        console.error('Failed to fetch member info:', memberInfoError);
-                        this.$router.push('/main');
-                    }
+                    this.$router.push('/main');
                 } else {
                     this.errorMessage = '로그인 응답 형식이 올바르지 않습니다.';
                 }

@@ -1,6 +1,11 @@
 <!-- filepath: /Users/jaeyoung/Desktop/trip-agent-web/src/components/MainScreen.vue -->
 <template>
     <div class="main-container">
+        <!-- 회사 메뉴 -->
+        <div class="top-right-menu">
+            <CompanyMenu />
+        </div>
+
         <!-- 로고 텍스트 -->
         <div class="logo-text">TripAgent<span class="pro-badge">beta</span></div>
 
@@ -40,8 +45,13 @@
 </template>
 
 <script>
+import CompanyMenu from './CompanyMenu.vue';
+
 export default {
     name: 'MainScreen',
+    components: {
+        CompanyMenu,
+    },
     data() {
         return {
             prompt: '', // 사용자 입력 프롬프트
@@ -101,6 +111,14 @@ export default {
     overflow: hidden;
     box-sizing: border-box;
     padding: 0 20px;
+    position: relative;
+}
+
+.top-right-menu {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
 }
 
 .logo-text {

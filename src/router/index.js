@@ -1,59 +1,86 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import LoginScreen from '../components/LoginScreen.vue'
-import MainScreen from '../components/MainScreen.vue'
-import WorkSpaceScreen from '../components/WorkSpaceScreen.vue'
-import SensitiveInfoForm from '../components/SensitiveInfoForm.vue'
-import PassportInfoForm from '../components/PassportInfoForm.vue' // New import
+import { createRouter, createWebHistory } from 'vue-router';
+import MainScreen from '../components/MainScreen.vue';
+import WorkSpaceScreen from '../components/WorkSpaceScreen.vue';
+import SensitiveInfoForm from '../components/SensitiveInfoForm.vue';
+import LoginScreen from '../components/LoginScreen.vue'; // 경로 및 이름 수정
+import { apiService, tokenManager } from '../services/api';
 
-// 라우트 정의
 const routes = [
   {
     path: '/',
+    redirect: '/main',
+  },
+  {
+    path: '/login',
     name: 'Login',
-    component: LoginScreen // 기본 경로를 로그인 화면으로 설정
+    component: LoginScreen, // 컴포넌트 이름 수정
+    meta: { requiresAuth: false, hideUI: true },
   },
   {
     path: '/main',
-    name: 'Main',
-    component: MainScreen
-    // 실제 앱에서는 네비게이션 가드 등을 사용하여 로그인 여부 확인 후 접근 제어
-    // meta: { requiresAuth: true } 
+    name: 'MainScreen',
+    component: MainScreen,
+    meta: { requiresAuth: true },
   },
   {
     path: '/workspace',
-    name: 'WorkSpace',
-    component: WorkSpaceScreen
-    // meta: { requiresAuth: true }
+    name: 'WorkSpaceScreen',
+    component: WorkSpaceScreen,
+    meta: { requiresAuth: true },
   },
   {
     path: '/sensitive-info',
-    name: 'SensitiveInfo',
-    component: SensitiveInfoForm
+    name: 'SensitiveInfoForm',
+    component: SensitiveInfoForm,
+    meta: { requiresAuth: true, hideUI: true },
   },
-  {
-    path: '/passport-info',
-    name: 'PassportInfo',
-    component: PassportInfoForm
-  }
-  // 추가적인 라우트가 필요하면 여기에 정의
-]
+];
 
-// 라우터 인스턴스 생성
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL), // HTML5 히스토리 모드 사용
-  routes
-})
-
-/*
-// 네비게이션 가드 예시 (실제 구현 시 참고)
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = false; // 실제 로그인 상태 확인 로직 필요
-  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next({ name: 'Login' }); // 로그인이 필요한 페이지에 비로그인 상태로 접근 시 로그인 페이지로 리디렉션
-  } else {
-    next(); // 그 외의 경우 정상적으로 네비게이션 진행
-  }
+  history: createWebHistory(),
+  routes,
 });
-*/
 
-export default router
+router.beforeEach(async (to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const hasToken = tokenManager.hasValidToken();
+
+  if (requiresAuth && !hasToken) {
+    // 인증이 필요한 페이지에 토큰 없이 접근 시 로그인 페이지로 리디렉션
+    return next('/login');
+  }
+
+  if (to.path === '/login' && hasToken) {
+    // 토큰이 있는데 로그인 페이지 접근 시 메인 페이지로 리디렉션
+    return next('/main');
+  }
+
+  if (requiresAuth && hasToken) {
+    // 인증이 필요한 페이지 접근 시 민감 정보 확인
+    try {
+      await apiService.user.getProfile();
+      // 민감 정보가 있으면, sensitive-info 페이지 접근 시 main으로 리디렉션
+      if (to.path === '/sensitive-info') {
+        return next('/main');
+      }
+    } catch (error) {
+      // 500 에러는 민감 정보가 없다는 의미
+      if (error.response && error.response.status === 500) {
+        // 민감 정보가 없으면 sensitive-info 페이지로 리디렉션
+        if (to.path !== '/sensitive-info') {
+          return next('/sensitive-info');
+        }
+      } else {
+        // 다른 종류의 에러 (네트워크 등)
+        console.error('An unexpected error occurred during navigation guard:', error);
+        // 여기서 로그아웃 처리나 에러 페이지로 보낼 수 있음
+        tokenManager.clearTokens();
+        return next('/login');
+      }
+    }
+  }
+
+  next();
+});
+
+export default router;

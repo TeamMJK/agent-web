@@ -3,13 +3,16 @@
     <!-- 헤더 영역 -->
     <div class="workspace-header">
       <div class="header-content">
-        <h1 class="workspace-title">워크스페이스</h1>
-        <p class="workspace-subtitle">일정을 관리하고 여행을 계획하세요</p>
+        <h1 class="workspace-title">워크 스페이스</h1>
+        <p class="workspace-subtitle">회사의 출장 일정을 확인하고 관리하세요</p>
       </div>
-      <button class="add-schedule-btn" @click="showAddScheduleModal = true">
-        <i class="pi pi-plus"></i>
-        <span>일정 추가</span>
-      </button>
+      <div class="header-actions">
+        <CompanyMenu />
+        <button class="add-schedule-btn" @click="showAddScheduleModal = true">
+          <i class="pi pi-plus"></i>
+          <span>일정 추가</span>
+        </button>
+      </div>
     </div>
 
     <div class="workspace-content">
@@ -40,6 +43,7 @@
 import CalendarGrid from './CalendarGrid.vue';
 import EventDetails from './EventDetails.vue';
 import ScheduleModal from './ScheduleModal.vue';
+import CompanyMenu from './CompanyMenu.vue';
 
 export default {
   name: 'WorkSpaceScreen',
@@ -47,6 +51,7 @@ export default {
     CalendarGrid,
     EventDetails,
     ScheduleModal,
+    CompanyMenu,
   },
   data() {
     return {
@@ -114,13 +119,19 @@ export default {
     padding: var(--spacing-4xl) var(--spacing-2xl) var(--spacing-2xl);
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     gap: var(--spacing-2xl);
     flex-shrink: 0;
 }
 
 .header-content {
     flex: 1;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
 }
 
 .workspace-title {

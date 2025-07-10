@@ -1,11 +1,11 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router' // 라우터 임포트
-
-
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
 import 'primeicons/primeicons.css';
+import './styles/variables.css'; // 전역 CSS 파일
 
-// Vue 앱 생성 및 라우터 사용 설정
-const app = createApp(App)
-app.use(router) // 라우터 플러그인 등록
-app.mount('#app')
+const app = createApp(App);
+
+app.use(router);
+
+app.mount('#app');
