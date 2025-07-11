@@ -246,7 +246,8 @@ export default {
     },
     
     startEditing(fieldKey) {
-      this.$set(this.editingFields, fieldKey, true);
+      // 편집 모드 시작
+      this.editingFields[fieldKey] = true;
       this.$nextTick(() => {
         const inputs = this.$refs.editInput;
         if (inputs && inputs.length) {
@@ -256,35 +257,27 @@ export default {
       });
     },
     
-    async stopEditing(fieldKey) {
+    stopEditing(fieldKey) {
+      // 개별 필드 편집 완료 (로컬에서만 저장, API 호출 없음)
       if (this.editingFields[fieldKey]) {
-        try {
-          // 개별 필드 저장
-          await this.saveFieldChange(fieldKey);
-          this.$set(this.editingFields, fieldKey, false);
-        } catch (error) {
-          console.error(`${fieldKey} 저장 실패:`, error);
-          // 에러 발생 시 원래 값으로 되돌리기
-          this.userInfo[fieldKey] = this.originalUserInfo[fieldKey];
-        }
+        this.editingFields[fieldKey] = false;
+        // 로컬 상태만 업데이트, API 호출하지 않음
+        console.log(`${fieldKey} 필드 편집 완료 (로컬 저장)`);
       }
     },
     
-    async saveFieldChange(fieldKey) {
-      const updateData = {
-        [fieldKey]: this.userInfo[fieldKey]
-      };
-      
-      await apiService.user.updateProfile(updateData);
-      // 성공 시 원본 데이터 업데이트
-      this.originalUserInfo[fieldKey] = this.userInfo[fieldKey];
-    },
-    
     async saveAllChanges() {
+      // 전체 저장 버튼을 눌렀을 때만 PATCH API 호출
       try {
+        console.log('전체 저장 API 호출:', this.userInfo);
+        
         await apiService.user.updateProfile(this.userInfo);
+        
+        // 성공 시 원본 데이터 업데이트
         this.originalUserInfo = { ...this.userInfo };
         this.editingFields = {};
+        
+        console.log('사용자 정보 수정 성공');
         // TODO: 성공 메시지 표시
       } catch (error) {
         console.error('사용자 정보 수정 실패:', error);
@@ -802,3 +795,9 @@ export default {
   }
 }
 </style>
+    font-size: var(--font-size-xs);
+  
+  
+  .section-title {
+    font-size: var(--font-size-base);
+  }
