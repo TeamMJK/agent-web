@@ -137,6 +137,7 @@ export default {
   font-weight: var(--font-weight-semibold);
   margin: 0 0 var(--spacing-lg);
   background: var(--gradient-text);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

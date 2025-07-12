@@ -3,7 +3,7 @@
     <div class="popup-container">
       <div class="popup-header">
         <h2 class="popup-title">회원가입</h2>
-        <button class="close-btn" @click="closePopup">
+        <button class="btn btn-close" @click="closePopup">
           <i class="pi pi-times"></i>
         </button>
       </div>
@@ -42,7 +42,7 @@
           </div>
         </div>
         
-        <button type="submit" class="signup-btn" :disabled="isLoading">
+        <button type="submit" class="btn btn-submit" :disabled="isLoading">
           <span v-if="!isLoading">회원가입</span>
           <span v-else>
             <i class="pi pi-spinner pi-spin"></i>
@@ -152,6 +152,7 @@ export default {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-semibold);
   background: var(--gradient-accent);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -242,68 +243,6 @@ export default {
 
 .password-hint i {
   font-size: var(--font-size-sm);
-}
-
-.signup-btn {
-  width: 100%;
-  padding: var(--spacing-lg);
-  background: var(--gradient-accent);
-  color: var(--color-text-primary);
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  font-family: var(--font-family-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  box-shadow: var(--shadow-md);
-}
-
-.signup-btn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
-}
-
-.signup-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.message {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin: 0 var(--spacing-3xl) var(--spacing-3xl);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.success-message {
-  background-color: rgba(76, 175, 80, 0.1);
-  color: var(--color-success);
-  border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-.error-message {
-  background-color: var(--color-error-light);
-  color: var(--color-error);
-  border: 1px solid var(--color-error-border);
-}
-
-.pi-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 /* 반응형 디자인 */

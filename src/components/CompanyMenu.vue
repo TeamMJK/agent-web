@@ -90,12 +90,16 @@
           </div>
         </div>
         
-        <div v-if="creationMessage" :class="['creation-message', `message-${creationMessageType}`]">
+        <BaseMessage 
+          v-if="creationMessage" 
+          :type="creationMessageType"
+          size="small"
+        >
           {{ creationMessage }}
-        </div>
-        <div class="modal-actions">
-          <button @click="closeCreateCompanyModal" class="btn-cancel">취소</button>
-          <button @click="handleCreateCompany" class="btn-confirm">생성</button>
+        </BaseMessage>
+        <div class="form-actions">
+          <BaseButton variant="cancel" @click="closeCreateCompanyModal">취소</BaseButton>
+          <BaseButton variant="confirm" @click="handleCreateCompany">생성</BaseButton>
         </div>
       </div>
     </div>
@@ -106,12 +110,16 @@
         <h2>회사 참여</h2>
         <p>초대 코드를 입력하여 기존 회사에 참여하세요.</p>
         <input type="text" v-model="invitationCode" placeholder="초대 코드를 입력하세요" class="company-name-input"/>
-        <div v-if="joinMessage" :class="['creation-message', `message-${joinMessageType}`]">
+        <BaseMessage 
+          v-if="joinMessage" 
+          :type="joinMessageType"
+          size="small"
+        >
           {{ joinMessage }}
-        </div>
-        <div class="modal-actions">
-          <button @click="closeJoinCompanyModal" class="btn-cancel">취소</button>
-          <button @click="handleJoinCompany" class="btn-confirm">참가</button>
+        </BaseMessage>
+        <div class="form-actions">
+          <BaseButton variant="cancel" @click="closeJoinCompanyModal">취소</BaseButton>
+          <BaseButton variant="confirm" @click="handleJoinCompany">참가</BaseButton>
         </div>
       </div>
     </div>
@@ -133,13 +141,17 @@
           <p class="invitation-note">이 코드를 팀원들과 공유하여 회사에 초대하세요.</p>
         </div>
         
-        <div v-if="invitationMessage" :class="['creation-message', `message-${invitationMessageType}`]">
+        <BaseMessage 
+          v-if="invitationMessage" 
+          :type="invitationMessageType"
+          size="small"
+        >
           {{ invitationMessage }}
-        </div>
+        </BaseMessage>
         
-        <div class="modal-actions">
-          <button @click="closeInvitationModal" class="btn-cancel">닫기</button>
-          <button v-if="!generatedInvitationCode" @click="handleGenerateInvitationCode" class="btn-confirm">코드 생성</button>
+        <div class="form-actions">
+          <BaseButton variant="cancel" @click="closeInvitationModal">닫기</BaseButton>
+          <BaseButton v-if="!generatedInvitationCode" variant="confirm" @click="handleGenerateInvitationCode">코드 생성</BaseButton>
         </div>
       </div>
     </div>
@@ -148,9 +160,15 @@
 
 <script>
 import apiService from '@/services/api.js';
+import BaseButton from './BaseButton.vue';
+import BaseMessage from './BaseMessage.vue';
 
 export default {
   name: 'CompanyMenu',
+  components: {
+    BaseButton,
+    BaseMessage
+  },
   data() {
     return {
       showMenu: false,
@@ -361,12 +379,12 @@ export default {
 }
 
 .company-icon {
-  background: none;
+  background: rgba(135, 81, 197, 0.372);
   border: none;
-  color: #888888;
+  color: white;
   cursor: pointer;
   padding: 12px;
-  border-radius: 50%;
+  border-radius: 40%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -441,33 +459,40 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-bg-modal);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1500;
+  backdrop-filter: blur(12px);
 }
 
 .modal-content {
-  background-color: #232323;
+  background-color: var(--color-bg-secondary);
   padding: 24px;
   border-radius: 12px;
   width: 90%;
   max-width: 400px;
-  border: 1px solid #333;
-  color: #fff;
+  border: 1px solid var(--color-border-secondary);
+  color: var(--color-text-primary);
   text-align: center;
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(20px);
+  position: relative;
+  margin: auto;
+  overflow: visible;
 }
 
 .modal-content h2 {
   margin-top: 0;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
 }
 
 .modal-content p {
-  color: #aaa;
+  color: var(--color-text-secondary);
   font-size: 14px;
   margin-bottom: 20px;
 }
@@ -476,206 +501,26 @@ export default {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid #444;
-  background-color: #1a1a1a;
-  color: #fff;
+  border: 1px solid var(--color-border-secondary);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
   font-size: 1rem;
   margin-bottom: 8px;
   box-sizing: border-box;
 }
 
-.creation-message {
-  font-size: 14px;
-  padding: 8px 0;
-  margin-bottom: 12px;
-  text-align: center;
+.company-name-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+  outline: none;
 }
 
-.message-error {
-  color: #ff8a8a;
-}
 
-.message-success {
-  color: #8aff8a;
-}
-
-.modal-actions {
+.form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-}
-
-.btn-cancel, .btn-confirm {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.btn-cancel {
-  background-color: #444;
-  color: #fff;
-}
-
-.btn-confirm {
-  background-color: var(--color-primary, #357ABD);
-  color: #fff;
-}
-
-.workspace-select-container {
-  margin-bottom: 16px;
-}
-
-.workspace-label {
-  display: block;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  font-weight: var(--font-weight-medium);
-  margin-bottom: 8px;
-}
-
-/* 커스텀 드롭다운 스타일 */
-.custom-dropdown {
-  position: relative;
-  width: 100%;
-}
-
-.dropdown-trigger {
-  width: 100%;
-  padding: 12px 16px;
-  /* background: var(--gradient-primary); */
-  border: 1px solid var(--color-border-secondary);
-  border-radius: 12px;
-  color: var(--color-text-primary);
-  font-size: 1rem;
-  font-family: var(--font-family-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
-  outline: none;
-  backdrop-filter: blur(10px);
-}
-
-.dropdown-trigger:hover {
-  border-color: var(--color-border-hover);
-  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, #3a3a3a 100%);
-}
-
-.dropdown-open .dropdown-trigger {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
-  background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, #3a3a3a 100%);
-}
-
-.selected-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.placeholder-text {
-  color: var(--color-text-placeholder);
-}
-
-.option-text {
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
-}
-
-.dropdown-arrow {
-  color: var(--color-text-muted);
-  font-size: 14px;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  border: 1px solid var(--color-border-secondary);
-  border-radius: 12px;
-  backdrop-filter: blur(30px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  z-index: 1000;
-  overflow: hidden;
-}
-
-.dropdown-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border-secondary);
-}
-
-.dropdown-option:last-child {
-  border-bottom: none;
-}
-
-.dropdown-option:hover {
-  background: var(--color-bg-card-hover);
-  color: var(--color-text-primary);
-}
-
-.workspace-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.workspace-image {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  border-radius: 3px;
-}
-
-.workspace-emoji {
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 초대 코드 모달 스타일 */
-.invitation-code-display {
-  margin: 20px 0;
-  text-align: left;
-}
-
-.invitation-label {
-  display: block;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  font-weight: var(--font-weight-medium);
-  margin-bottom: 8px;
-}
-
-.invitation-code-box {
-  display: flex;
-  align-items: center;
-  background: var(--color-bg-tertiary);
-  border: 1px solid var(--color-border-secondary);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 12px;
-}
-
-.invitation-code {
-  flex: 1;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 16px;
-  color: var(--color-text-primary);
-  letter-spacing: 1px;
-  font-weight: var(--font-weight-medium);
+  margin-top: 16px;
 }
 
 .btn-copy {
@@ -703,5 +548,154 @@ export default {
   font-size: 13px;
   margin: 0;
   line-height: 1.4;
+}
+
+/* 워크스페이스 선택 드롭다운 스타일 */
+.workspace-select-container {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.workspace-label {
+  display: block;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-trigger {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 8px;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.dropdown-trigger:hover {
+  border-color: var(--color-border-hover);
+}
+
+.dropdown-open .dropdown-trigger {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.selected-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.placeholder-text {
+  color: var(--color-text-muted);
+}
+
+.dropdown-arrow {
+  transition: transform 0.2s ease;
+  color: var(--color-text-muted);
+}
+
+.arrow-up {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  z-index: 2000;
+  max-height: none;
+  overflow-y: visible;
+  margin-top: 4px;
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.dropdown-option:last-child {
+  border-bottom: none;
+}
+
+.dropdown-option:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.workspace-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.workspace-image {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.workspace-emoji {
+  font-size: 16px;
+}
+
+.option-text {
+  flex: 1;
+}
+
+.invitation-code-display {
+  margin: 16px 0;
+  text-align: left;
+}
+
+.invitation-label {
+  display: block;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.invitation-code-box {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.invitation-code {
+  flex: 1;
+  font-family: monospace;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  letter-spacing: 1px;
 }
 </style>

@@ -39,7 +39,7 @@
               <p class="header-subtitle">개인정보를 확인하고 수정할 수 있습니다</p>
             </div>
           </div>
-          <button class="close-btn" @click="closeModal">
+          <button class="btn btn-close" @click="closeModal">
             <i class="pi pi-times"></i>
           </button>
         </div>
@@ -52,7 +52,7 @@
             </div>
             
             <div class="form-grid">
-              <div class="form-group" v-for="field in basicFields" :key="field.key">
+              <div class="form-group" v-for="field in nonDateBasicFields" :key="field.key">
                 <label>{{ field.label }}</label>
                 <div class="field-container">
                   <div class="input-wrapper">
@@ -82,6 +82,31 @@
                   </button>
                 </div>
               </div>
+
+              <!-- 생년월일 필드 - ModernDatePicker 사용 -->
+              <div class="form-group">
+                <label>생년월일</label>
+                <div class="field-container date-field">
+                  <div class="input-wrapper">
+                    <div v-if="!editingFields.birthDate" class="readonly-field date-readonly">
+                      {{ formatDateDisplay(userInfo.birthDate) || '-' }}
+                    </div>
+                    <ModernDatePicker 
+                      v-else
+                      v-model="userInfo.birthDate"
+                      placeholder="생년월일을 선택하세요"
+                      @blur="stopEditing('birthDate')"
+                    />
+                  </div>
+                  <button 
+                    class="edit-btn" 
+                    @click="toggleEdit('birthDate')"
+                    :title="editingFields.birthDate ? '저장' : '수정'"
+                  >
+                    <i :class="editingFields.birthDate ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                  </button>
+                </div>
+              </div>
               
               <div class="form-group">
                 <label>성별</label>
@@ -94,8 +119,8 @@
                       class="editable-field"
                     >
                       <option value="">선택하세요</option>
-                      <option value="MALE">남성</option>
-                      <option value="FEMALE">여성</option>
+                      <option value="Male">남성</option>
+                      <option value="Female">여성</option>
                     </select>
                     <input 
                       v-else
@@ -123,7 +148,7 @@
             </div>
             
             <div class="form-grid">
-              <div class="form-group" v-for="field in passportFields" :key="field.key">
+              <div class="form-group" v-for="field in nonDatePassportFields" :key="field.key">
                 <label>{{ field.label }}</label>
                 <div class="field-container">
                   <div class="input-wrapper">
@@ -153,15 +178,40 @@
                   </button>
                 </div>
               </div>
+
+              <!-- 여권 만료일 필드 - ModernDatePicker 사용 -->
+              <div class="form-group">
+                <label>여권 만료일</label>
+                <div class="field-container date-field">
+                  <div class="input-wrapper">
+                    <div v-if="!editingFields.passportExpireDate" class="readonly-field date-readonly">
+                      {{ formatDateDisplay(userInfo.passportExpireDate) || '-' }}
+                    </div>
+                    <ModernDatePicker 
+                      v-else
+                      v-model="userInfo.passportExpireDate"
+                      placeholder="여권 만료일을 선택하세요"
+                      @blur="stopEditing('passportExpireDate')"
+                    />
+                  </div>
+                  <button 
+                    class="edit-btn" 
+                    @click="toggleEdit('passportExpireDate')"
+                    :title="editingFields.passportExpireDate ? '저장' : '수정'"
+                  >
+                    <i :class="editingFields.passportExpireDate ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           
           <div class="form-actions">
-            <button type="button" @click="closeModal" class="cancel-btn">
+            <button type="button" @click="closeModal" class="btn btn-cancel">
               <i class="pi pi-times"></i>
               닫기
             </button>
-            <button @click="saveAllChanges" class="save-btn" :disabled="!hasUnsavedChanges">
+            <button @click="saveAllChanges" class="btn btn-submit" :disabled="!hasUnsavedChanges">
               <i class="pi pi-save"></i>
               전체 저장
             </button>
@@ -174,9 +224,13 @@
 
 <script>
 import { apiService } from '../services/api';
+import ModernDatePicker from './ModernDatePicker.vue';
 
 export default {
   name: "AppSidebar",
+  components: {
+    ModernDatePicker
+  },
   data() {
     return {
       showUserModal: false,
@@ -210,6 +264,12 @@ export default {
   computed: {
     hasUnsavedChanges() {
       return JSON.stringify(this.userInfo) !== JSON.stringify(this.originalUserInfo);
+    },
+    nonDateBasicFields() {
+      return this.basicFields.filter(field => field.key !== 'birthDate');
+    },
+    nonDatePassportFields() {
+      return this.passportFields.filter(field => field.key !== 'passportExpireDate');
     }
   },
   methods: {
@@ -291,6 +351,17 @@ export default {
         case 'FEMALE': return '여성';
         default: return '-';
       }
+    },
+    
+    formatDateDisplay(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
     },
     
     closeModal() {
@@ -650,6 +721,7 @@ export default {
   color: var(--color-text-primary);
 }
 
+/* 모달 내 커스텀 버튼 스타일 */
 .edit-btn {
   background: var(--color-bg-card);
   border: none;
@@ -676,60 +748,49 @@ export default {
   font-size: var(--font-size-sm);
 }
 
-.form-actions {
-  display: flex;
-  gap: var(--spacing-lg);
-  justify-content: flex-end;
-  padding: var(--spacing-3xl);
-  background: var(--color-bg-tertiary);
-  border-top: 1px solid var(--color-border-secondary);
+/* 날짜 필드 스타일 */
+.date-field {
+  align-items: stretch;
 }
 
-.cancel-btn,
-.save-btn {
+.date-field .input-wrapper {
+  display: flex;
+  align-items: stretch;
+}
+
+.date-readonly {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-xl);
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
+  min-height: 48px;
+  padding: var(--spacing-md);
+}
+
+/* ModernDatePicker 스타일 조정 */
+.date-field .modern-datepicker-wrapper {
+  width: 100%;
+}
+
+.date-field .datepicker-container .date-display {
   border: none;
-  font-family: var(--font-family-primary);
-}
-
-.cancel-btn {
+  border-radius: var(--radius-md);
   background: var(--color-bg-card);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border-primary);
+  margin: 0;
+  min-height: 48px;
 }
 
-.cancel-btn:hover {
-  background: var(--color-bg-card-hover);
-  color: var(--color-text-primary);
-  transform: translateY(-1px);
+.date-field .datepicker-container.focused .date-display {
+  border-color: var(--color-primary-hover);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
-.save-btn {
-  background: var(--gradient-accent);
-  color: var(--color-text-primary);
-  box-shadow: var(--shadow-md);
-}
-
-.save-btn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.save-btn:disabled {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-disabled);
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-  box-shadow: none;
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-2xl);
+  margin-top: var(--spacing-xl);
+  border-top: 1px solid var(--color-border-light);
+  background: var(--color-bg-secondary);
 }
 
 /* 반응형 디자인 */
@@ -795,9 +856,3 @@ export default {
   }
 }
 </style>
-    font-size: var(--font-size-xs);
-  
-  
-  .section-title {
-    font-size: var(--font-size-base);
-  }
