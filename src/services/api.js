@@ -161,7 +161,7 @@ export const apiService = {
     /**
      * 회사 생성
      * POST /companies
-     * @param {Object} companyData { name }
+     * @param {Object} companyData { name, workspace }
      * @returns {Promise} 생성된 회사 ID 반환
      */
     create: (companyData) => apiClient.post('/companies', companyData),
@@ -180,6 +180,13 @@ export const apiService = {
      * @returns {Promise} 회사 이름 반환 (string)
      */
     join: (joinData) => apiClient.post('/companies/join', joinData),
+
+    /**
+     * 초대 코드 생성
+     * GET /companies/invitation
+     * @returns {Promise} 초대 코드 반환 (string)
+     */
+    generateInvitationCode: () => apiClient.get('/companies/invitation'),
   },
 };
 
