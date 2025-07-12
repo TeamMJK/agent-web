@@ -160,8 +160,8 @@
 
 <script>
 import apiService from '@/services/api.js';
-import BaseButton from './BaseButton.vue';
-import BaseMessage from './BaseMessage.vue';
+import BaseButton from '../common/BaseButton.vue';
+import BaseMessage from '../common/BaseMessage.vue';
 
 export default {
   name: 'CompanyMenu',

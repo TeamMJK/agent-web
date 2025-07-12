@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import CompanyMenu from './CompanyMenu.vue';
+import CompanyMenu from '../workspace/CompanyMenu.vue';
 
 export default {
     name: 'MainScreen',

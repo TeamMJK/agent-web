@@ -55,8 +55,8 @@
 </template>
 
 <script>
-import { apiService } from '../services/api';
-import ModernDatePicker from './ModernDatePicker.vue';
+import { apiService } from '../../services/api';
+import ModernDatePicker from '../common/ModernDatePicker.vue';
 
 export default {
   name: 'PassportInfoForm',

@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import MainScreen from '../components/MainScreen.vue';
-import WorkSpaceScreen from '../components/WorkSpaceScreen.vue';
-import SensitiveInfoForm from '../components/SensitiveInfoForm.vue';
-import LoginScreen from '../components/LoginScreen.vue'; // 경로 및 이름 수정
+import MainScreen from '../components/layout/MainScreen.vue';
+import WorkSpaceScreen from '../components/workspace/WorkSpaceScreen.vue';
+import SensitiveInfoForm from '../components/forms/SensitiveInfoForm.vue';
+import LoginScreen from '../components/auth/LoginScreen.vue';
 import { apiService, tokenManager } from '../services/api';
 
 const routes = [

@@ -49,7 +49,7 @@
 
 <script>
 import SignUpPopup from './SignUpPopup.vue';
-import { apiService, tokenManager } from '../services/api';
+import { apiService, tokenManager } from '../../services/api';
 
 export default {
     name: 'LoginScreen',

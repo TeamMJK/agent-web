@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { apiService } from '../services/api';
+import { apiService } from '../../services/api';
 
 export default {
   name: 'SignUpPopup',

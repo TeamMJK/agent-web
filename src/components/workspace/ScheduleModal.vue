@@ -69,7 +69,7 @@
 </template>
 
 <script>
-import ModernDatePicker from './ModernDatePicker.vue';
+import ModernDatePicker from '../common/ModernDatePicker.vue';
 
 export default {
   name: 'ScheduleModal',
