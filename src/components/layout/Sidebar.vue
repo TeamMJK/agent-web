@@ -2,8 +2,9 @@
   <nav class="sidebar">
     <div class="sidebar-header">
       <button class="sidebar-logo-button" @click="goToHome">
-        <i class="pi pi-prime"></i>
+        <img src="@/assets/icon.png" alt="logo" class="sidebar-logo-img" />
       </button>
+
     </div>
     <ul class="menu-items">
       <li data-label="메인" :class="{ active: $route.name === 'Main' }">
@@ -415,6 +416,16 @@ export default {
 
 .sidebar-logo-button:hover {
   background-color: var(--color-bg-card-hover);
+}
+
+.sidebar-logo-img {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 40%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  background: var(--color-bg-card);
+  display: block;
 }
 
 .menu-items {
