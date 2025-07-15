@@ -1,0 +1,40 @@
+name: Deploy to S3 & CloudFront
+
+on:
+  push:
+    branches:
+      - main    # CI 대상 브랜치
+
+permissions:
+  id-token: write    # AWS OIDC를 위해 필수
+  contents: read     # 소스 체크아웃용
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-2
+          role-session-name: github-actions
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build
+
+      - name: Sync to S3
+        run: aws s3 sync dist/ s3://$BUCKET_NAME/ --delete
+        env:
+          BUCKET_NAME: ${{ env.S3_BUCKET }}
+
+      - name: Invalidate CloudFront
+        run: aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+        env:
+          DISTRIBUTION_ID: ${{ env.CLOUDFRONT_ID }}
