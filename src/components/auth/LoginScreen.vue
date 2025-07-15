@@ -1,7 +1,7 @@
 <template>
     <div class="login-outer">
         <div class="login-container">
-            <h1 class="login-title">테스트</h1>
+            <h1 class="login-title">테스트2</h1>
             <div v-if="!showPasswordInput" class="login-form">
                 <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" />
                 <button class="continue-btn" @click="handleEmailContinue">계속</button>
