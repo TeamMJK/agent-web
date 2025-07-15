@@ -1,7 +1,7 @@
 <template>
     <div class="login-outer">
         <div class="login-container">
-            <h1 class="login-title">로그인</h1>
+            <h1 class="login-title">테스트</h1>
             <div v-if="!showPasswordInput" class="login-form">
                 <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" />
                 <button class="continue-btn" @click="handleEmailContinue">계속</button>
@@ -65,14 +65,46 @@ export default {
             errorMessage: '', // Added errorMessage
         };
     },
+    mounted() {
+        // OAuth 성공 후 처리
+        this.checkOAuthCallback();
+    },
     methods: {
-        handleGoogleLogin() {
-            console.log('Google 로그인 시도');
-            this.errorMessage = 'Google 로그인은 현재 지원되지 않습니다.';
+        checkOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            const token = urlParams.get('token');
+            const refreshToken = urlParams.get('refreshToken');
+            const error = urlParams.get('error');
+
+            if (success === 'true' && token) {
+                // OAuth 성공 시 기존 tokenManager 사용
+                tokenManager.setTokens(token, refreshToken || token);
+                
+                // URL 파라미터 제거
+                window.history.replaceState({}, document.title, '/login');
+                
+                // 메인 페이지로 이동
+                this.$router.push('/main');
+            } else if (error) {
+                this.errorMessage = `Google 로그인 실패: ${error}`;
+                
+                // URL 파라미터 제거
+                window.history.replaceState({}, document.title, '/login');
+            }
         },
-        handleNaverLogin() {
-            console.log('Naver 로그인 시도');
-            this.errorMessage = 'Naver 로그인은 현재 지원되지 않습니다.';
+        async handleGoogleLogin() {
+            try {
+                console.log('Google 로그인 시도');
+                
+                // Google OAuth는 직접 페이지 리다이렉트로 처리
+                // XMLHttpRequest로 Google OAuth URL을 가져올 수 없으므로 직접 이동....
+                window.location.href = 'https://www.mjk.o-r.kr/oauth2/authorization/google';
+                
+            } catch (error) {
+                console.error('Google 로그인 실패:', error);
+                this.errorMessage = 'Google 로그인 중 오류가 발생했습니다. 다시 시도해주세요.';
+            }
         },
         handleEmailContinue() {
             this.errorMessage = ''; // Clear previous error message

@@ -1,5 +1,5 @@
 // API 관련 상수
-export const API_BASE_URL = 'http://15.164.89.233:8080';
+export const API_BASE_URL = 'https://www.mjk.o-r.kr';
 
 // 토큰 관련 상수
 export const TOKEN_KEYS = {
@@ -41,7 +41,7 @@ export const GENDER_OPTIONS = [
 // 색상 팔레트
 export const CALENDAR_COLORS = [
   '#8b5cf6',
-  '#7ED321', 
+  '#7ED321',
   '#F5A623',
   '#D0021B',
   '#9013FE',

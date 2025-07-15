@@ -6,15 +6,15 @@ import { API_BASE_URL, TOKEN_KEYS, TOKEN_EXPIRY, HTTP_STATUS } from '../utils/co
 export const tokenManager = {
   // 토큰 저장
   setTokens(accessToken, refreshToken) {
-    Cookies.set(TOKEN_KEYS.ACCESS_TOKEN, accessToken, { 
-      expires: TOKEN_EXPIRY.ACCESS_TOKEN, 
-      secure: true, 
-      sameSite: 'strict' 
+    Cookies.set(TOKEN_KEYS.ACCESS_TOKEN, accessToken, {
+      expires: TOKEN_EXPIRY.ACCESS_TOKEN,
+      secure: true,
+      sameSite: 'strict'
     });
-    Cookies.set(TOKEN_KEYS.REFRESH_TOKEN, refreshToken, { 
-      expires: TOKEN_EXPIRY.REFRESH_TOKEN, 
-      secure: true, 
-      sameSite: 'strict' 
+    Cookies.set(TOKEN_KEYS.REFRESH_TOKEN, refreshToken, {
+      expires: TOKEN_EXPIRY.REFRESH_TOKEN,
+      secure: true,
+      sameSite: 'strict'
     });
   },
 
@@ -66,11 +66,11 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // 401 에러이고 아직 재시도하지 않은 경우
     if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         const refreshToken = tokenManager.getRefreshToken();
         if (refreshToken) {
@@ -78,10 +78,10 @@ apiClient.interceptors.response.use(
           const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
             refreshToken
           });
-          
+
           const { accessToken, refreshToken: newRefreshToken } = response.data;
           tokenManager.setTokens(accessToken, newRefreshToken);
-          
+
           // 원래 요청에 새 토큰 적용 후 재시도
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return apiClient(originalRequest);
@@ -93,7 +93,7 @@ apiClient.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -109,6 +109,13 @@ export const apiService = {
      * @returns {Promise} accessToken, refreshToken 반환
      */
     login: (credentials) => apiClient.post('/login', credentials),
+
+    /**
+     * 구글 로그인
+     * GET /login
+     * @returns {Promise} 구글 로그인 URL 반환
+     */
+    googleLogin: () => apiClient.get('/login'),
 
     /**
      * 회원가입
@@ -154,7 +161,7 @@ export const apiService = {
     saveSensitiveInfo: (allSensitiveData) => {
       return apiClient.post('/members/sensitive-member-info', allSensitiveData);
     }
-  },    
+  },
 
   // 회사 관련 API
   company: {
