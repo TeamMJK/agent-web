@@ -36,6 +36,19 @@
         @close="showAddScheduleModal = false"
         @add-schedule="handleAddSchedule"
     />
+    
+    <!-- 삭제 확인 대화상자 -->
+    <BaseConfirm
+      :show="showDeleteConfirm"
+      title="일정 삭제"
+      message="이 일정을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다."
+      confirm-text="삭제"
+      cancel-text="취소"
+      confirm-variant="confirm"
+      icon-type="warning"
+      @confirm="confirmDeleteEvent"
+      @cancel="cancelDeleteEvent"
+    />
   </div>
 </template>
 
@@ -44,6 +57,7 @@ import CalendarGrid from './CalendarGrid.vue';
 import EventDetails from './EventDetails.vue';
 import ScheduleModal from './ScheduleModal.vue';
 import CompanyMenu from './CompanyMenu.vue';
+import BaseConfirm from '../common/BaseConfirm.vue';
 
 export default {
   name: 'WorkSpaceScreen',
@@ -52,12 +66,15 @@ export default {
     EventDetails,
     ScheduleModal,
     CompanyMenu,
+    BaseConfirm,
   },
   data() {
     return {
       selectedDate: new Date(),
       showAddScheduleModal: false,
       events: [], // This will be fetched from the backend
+      showDeleteConfirm: false,
+      eventToDelete: null
     };
   },
   methods: {
@@ -77,11 +94,25 @@ export default {
       console.log('Schedule added:', newEvent);
     },
     handleDeleteEvent(eventId) {
-      if (confirm('이 일정을 삭제하시겠습니까?')) {
-        this.events = this.events.filter(event => event.id !== eventId);
-        // TODO: API call to delete the event from the backend
-        console.log('Schedule deleted:', eventId);
+      const event = this.events.find(e => e.id === eventId);
+      if (event) {
+        this.eventToDelete = event;
+        this.showDeleteConfirm = true;
       }
+    },
+    
+    confirmDeleteEvent() {
+      if (this.eventToDelete) {
+        this.events = this.events.filter(event => event.id !== this.eventToDelete.id);
+        console.log('Schedule deleted:', this.eventToDelete.id);
+        // TODO: API call to delete the event from the backend
+      }
+      this.cancelDeleteEvent();
+    },
+    
+    cancelDeleteEvent() {
+      this.showDeleteConfirm = false;
+      this.eventToDelete = null;
     },
     async fetchSchedules() {
       // TODO: Implement API call to fetch events
@@ -147,6 +178,7 @@ export default {
     font-size: 2.5rem;
     font-weight: 600;
     background: var(--gradient-text);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin: 0 0 8px 0;

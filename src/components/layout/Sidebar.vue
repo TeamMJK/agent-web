@@ -17,6 +17,11 @@
           <i class="pi pi-briefcase"></i>
         </router-link>
       </li>
+      <li data-label="영수증 관리" :class="{ active: $route.name === 'ReceiptScreen' }">
+        <router-link to="/receipt">
+          <i class="pi pi-receipt"></i>
+        </router-link>
+      </li>
     </ul>
     <div class="sidebar-footer">
       <button data-label="내 정보" class="footer-button" @click="showUserInfo">
@@ -75,6 +80,7 @@
                     />
                   </div>
                   <button 
+                    v-if="field.key !== 'email'"
                     class="edit-btn" 
                     @click="toggleEdit(field.key)"
                     :title="editingFields[field.key] ? '저장' : '수정'"
@@ -207,6 +213,13 @@
             </div>
           </div>
           
+          <!-- 성공/에러 메시지 -->
+          <div v-if="message.show" style="margin: var(--spacing-xl) var(--spacing-3xl) 0;">
+            <BaseMessage :type="message.type" @close="message.show = false">
+              {{ message.text }}
+            </BaseMessage>
+          </div>
+          
           <div class="form-actions">
             <button type="button" @click="closeModal" class="btn btn-cancel">
               <i class="pi pi-times"></i>
@@ -223,14 +236,17 @@
   </nav>
 </template>
 
-<script>
+<script lang="js">
 import { apiService } from '../../services/api';
 import ModernDatePicker from '../common/ModernDatePicker.vue';
+import BaseMessage from '../common/BaseMessage.vue';
+import { showConfirm } from '../../utils/dialog.js';
 
 export default {
   name: "AppSidebar",
   components: {
-    ModernDatePicker
+    ModernDatePicker,
+    BaseMessage
   },
   data() {
     return {
@@ -248,6 +264,11 @@ export default {
       },
       editingFields: {},
       originalUserInfo: {},
+      message: {
+        show: false,
+        type: 'success',
+        text: ''
+      },
       basicFields: [
         { key: 'name', label: '이름', type: 'text' },
         { key: 'email', label: '이메일', type: 'email' },
@@ -277,10 +298,26 @@ export default {
     goToHome() {
       this.$router.push('/main');
     },
-    logout() {
-      apiService.auth.logout().then(() => {
-        this.$router.push('/login');
+    async logout() {
+      const confirmed = await showConfirm({
+        title: '로그아웃',
+        message: '정말로 로그아웃하시겠습니까?',
+        confirmText: '예',
+        cancelText: '아니오',
+        confirmVariant: 'primary',
+        iconType: 'question'
       });
+
+      if (confirmed) {
+        try {
+          await apiService.auth.logout();
+          this.$router.push('/login');
+        } catch (error) {
+          console.error('로그아웃 실패:', error);
+          // 에러가 발생해도 로그인 페이지로 이동
+          this.$router.push('/login');
+        }
+      }
     },
     async showUserInfo() {
       this.showUserModal = true;
@@ -338,11 +375,13 @@ export default {
         this.originalUserInfo = { ...this.userInfo };
         this.editingFields = {};
         
+        // 성공 메시지 표시
+        this.showMessage('success', '사용자 정보가 성공적으로 저장되었습니다.');
         console.log('사용자 정보 수정 성공');
-        // TODO: 성공 메시지 표시
       } catch (error) {
         console.error('사용자 정보 수정 실패:', error);
-        // TODO: 에러 메시지 표시
+        // 에러 메시지 표시
+        this.showMessage('error', '사용자 정보 저장 중 오류가 발생했습니다.');
       }
     },
     
@@ -370,6 +409,13 @@ export default {
       this.editingFields = {};
       // 저장되지 않은 변경사항 되돌리기
       this.userInfo = { ...this.originalUserInfo };
+    },
+    
+    showMessage(type, text) {
+      this.message = { show: true, type, text };
+      setTimeout(() => {
+        this.message.show = false;
+      }, 3000);
     }
   },
 };

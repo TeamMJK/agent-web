@@ -51,14 +51,11 @@
         </button>
       </form>
       
-      <div v-if="successMessage" class="message success-message">
-        <i class="pi pi-check-circle"></i>
-        <span>{{ successMessage }}</span>
-      </div>
-      
-      <div v-if="errorMessage" class="message error-message">
-        <i class="pi pi-exclamation-triangle"></i>
-        <span>{{ errorMessage }}</span>
+      <!-- 성공/에러 메시지 -->
+      <div class="message-container">
+        <BaseMessage v-if="message.show" :type="message.type" @close="message.show = false">
+          {{ message.text }}
+        </BaseMessage>
       </div>
     </div>
   </div>
@@ -66,15 +63,22 @@
 
 <script>
 import { apiService } from '../../services/api';
+import BaseMessage from '../common/BaseMessage.vue';
 
 export default {
   name: 'SignUpPopup',
+  components: {
+    BaseMessage
+  },
   data() {
     return {
       email: '',
       password: '',
-      successMessage: '',
-      errorMessage: '',
+      message: {
+        show: false,
+        type: 'success',
+        text: ''
+      },
       isLoading: false,
     };
   },
@@ -83,8 +87,7 @@ export default {
       this.$emit('close');
     },
     async handleSignUp() {
-      this.successMessage = '';
-      this.errorMessage = '';
+      this.message.show = false;
       this.isLoading = true;
 
       try {
@@ -93,21 +96,25 @@ export default {
           password: this.password,
         });
         console.log('회원가입 성공:', response.data);
-        this.successMessage = '회원가입이 성공적으로 완료되었습니다!';
+        this.showMessage('success', '회원가입이 성공적으로 완료되었습니다!');
         setTimeout(() => {
           this.closePopup();
         }, 2000);
       } catch (error) {
         console.error('회원가입 실패:', error);
         if (error.response && error.response.data && error.response.data.message) {
-          this.errorMessage = error.response.data.message;
+          this.showMessage('error', error.response.data.message);
         } else {
-          this.errorMessage = '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.';
+          this.showMessage('error', '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
         }
       } finally {
         this.isLoading = false;
       }
     },
+    
+    showMessage(type, text) {
+      this.message = { show: true, type, text };
+    }
   },
 };
 </script>
@@ -243,6 +250,10 @@ export default {
 
 .password-hint i {
   font-size: var(--font-size-sm);
+}
+
+.message-container {
+  padding: 0 var(--spacing-3xl) var(--spacing-2xl);
 }
 
 /* 반응형 디자인 */

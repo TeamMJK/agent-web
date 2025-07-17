@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import MainScreen from '../components/layout/MainScreen.vue';
 import WorkSpaceScreen from '../components/workspace/WorkSpaceScreen.vue';
+import ReceiptScreen from '../components/receipt/ReceiptScreen.vue';
 import SensitiveInfoForm from '../components/forms/SensitiveInfoForm.vue';
 import LoginScreen from '../components/auth/LoginScreen.vue';
 import { apiService, tokenManager } from '../services/api';
@@ -26,6 +27,12 @@ const routes = [
     path: '/workspace',
     name: 'WorkSpaceScreen',
     component: WorkSpaceScreen,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/receipt',
+    name: 'ReceiptScreen',
+    component: ReceiptScreen,
     meta: { requiresAuth: true },
   },
   {

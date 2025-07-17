@@ -3,12 +3,24 @@
         <div class="login-container">
             <h1 class="login-title">테스트22</h1>
             <div v-if="!showPasswordInput" class="login-form">
-                <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" />
+                <input 
+                    type="email" 
+                    v-model="email" 
+                    placeholder="이메일 주소" 
+                    class="email-input"
+                    @keyup.enter="handleEmailContinue"
+                />
                 <button class="continue-btn" @click="handleEmailContinue">계속</button>
             </div>
-            <div v-else class="login-form">
+            <div v-else class="login-form" :class="{ 'fade-in': showPasswordInput }">
                 <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" disabled />
-                <input type="password" v-model="password" placeholder="비밀번호" class="email-input password-input" />
+                <input 
+                    type="password" 
+                    v-model="password" 
+                    placeholder="비밀번호" 
+                    class="email-input password-input"
+                    @keyup.enter="handleLogin"
+                />
                 <button class="continue-btn" @click="handleLogin">로그인</button>
             </div>
 
@@ -321,5 +333,21 @@ export default {
 
 .password-input {
     margin-bottom: 16px;
+}
+
+/* 페이드 인 애니메이션 */
+.fade-in {
+    animation: fadeInPassword 0.3s ease-out;
+}
+
+@keyframes fadeInPassword {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>

@@ -195,6 +195,46 @@ export const apiService = {
      */
     generateInvitationCode: () => apiClient.get('/companies/invitation'),
   },
+
+  // 영수증 관련 API
+  receipt: {
+    /**
+     * 영수증 저장
+     * POST /receipts
+     * @param {Object} receiptData 영수증 정보
+     * @returns {Promise} 생성된 영수증 ID 반환
+     */
+    create: (receiptData) => apiClient.post('/receipts', receiptData),
+
+    /**
+     * 영수증 전체 조회
+     * GET /receipts/{receipt-id}
+     * @param {number} receiptId 영수증 ID
+     * @returns {Promise} 영수증 정보 반환
+     */
+    getById: (receiptId) => apiClient.get(`/receipts/${receiptId}`),
+
+    /**
+     * 영수증 전체 조회
+     * GET /receipts
+     * @returns {Promise} 영수증 목록 반환
+     */
+    getList: () => apiClient.get('/receipts'),
+
+    /**
+     * 영수증 이미지 업로드
+     * POST /receipts/upload
+     * @param {FormData} formData 이미지 파일이 포함된 FormData
+     * @returns {Promise} 업로드된 영수증 정보 반환
+     */
+    uploadImage: (formData) => {
+      return apiClient.post('/receipts/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+    },
+  },
 };
 
 // 기본 export

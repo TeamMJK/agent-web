@@ -1,30 +1,33 @@
 <template>
   <div class="company-menu-container" @mouseenter="showMenu = true" @mouseleave="hideMenuWithDelay">
-    <button class="icon-btn company-icon">
-      <i class="pi pi-building"></i>
-    </button>
-    <div v-if="showMenu" class="company-menu-modal" @mouseenter="cancelHideMenu" @mouseleave="hideMenuWithDelay">
-      <div v-if="userCompany" class="company-info">
-        <div class="company-item">
-          {{ userCompany }}
+    <!-- 메뉴를 숨기지 않는 경우에만 아이콘과 드롭다운 표시 -->
+    <template v-if="!hideMenu">
+      <button class="icon-btn company-icon">
+        <i class="pi pi-building"></i>
+      </button>
+      <div v-if="showMenu" class="company-menu-modal" @mouseenter="cancelHideMenu" @mouseleave="hideMenuWithDelay">
+        <div v-if="userCompany" class="company-info">
+          <div class="company-item">
+            {{ userCompany }}
+          </div>
         </div>
+        <div v-else class="no-company-info">
+          회사 정보 없음
+        </div>
+        <div class="menu-divider"></div>
+        
+        <!-- 회사가 있는 경우: 초대 코드 생성만 표시 -->
+        <template v-if="userCompany">
+          <button class="menu-item" @click="openInvitationModal">회사 초대 코드 생성</button>
+        </template>
+        
+        <!-- 회사가 없는 경우: 생성과 참여 둘 다 표시 -->
+        <template v-else>
+          <button class="menu-item" @click="openCreateCompanyModal">회사 생성</button>
+          <button class="menu-item" @click="openJoinCompanyModal">회사 초대 코드로 참여</button>
+        </template>
       </div>
-      <div v-else class="no-company-info">
-        회사 정보 없음
-      </div>
-      <div class="menu-divider"></div>
-      
-      <!-- 회사가 있는 경우: 초대 코드 생성만 표시 -->
-      <template v-if="userCompany">
-        <button class="menu-item" @click="openInvitationModal">회사 초대 코드 생성</button>
-      </template>
-      
-      <!-- 회사가 없는 경우: 생성과 참여 둘 다 표시 -->
-      <template v-else>
-        <button class="menu-item" @click="openCreateCompanyModal">회사 생성</button>
-        <button class="menu-item" @click="openJoinCompanyModal">회사 초대 코드로 참여</button>
-      </template>
-    </div>
+    </template>
 
     <!-- Company Creation Modal -->
     <div v-if="showCreateCompanyModal" class="modal-overlay" @click.self="closeCreateCompanyModal">
@@ -169,6 +172,22 @@ export default {
     BaseButton,
     BaseMessage
   },
+  props: {
+    // 외부에서 모달을 제어할 수 있도록 props 추가
+    externalShowCreateModal: {
+      type: Boolean,
+      default: false
+    },
+    externalShowJoinModal: {
+      type: Boolean,
+      default: false
+    },
+    // 회사 없는 화면에서 사용할 때는 메뉴를 숨김
+    hideMenu: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       showMenu: false,
@@ -195,6 +214,19 @@ export default {
         { value: 'NONE', label: '없음' }
       ]
     };
+  },
+  watch: {
+    // 외부에서 전달받은 모달 상태를 감시
+    externalShowCreateModal(newVal) {
+      if (newVal) {
+        this.openCreateCompanyModal();
+      }
+    },
+    externalShowJoinModal(newVal) {
+      if (newVal) {
+        this.openJoinCompanyModal();
+      }
+    }
   },
   methods: {
     showMenuOnHover() {
@@ -224,6 +256,8 @@ export default {
       this.isDropdownOpen = false;
       this.creationMessage = '';
       this.creationMessageType = '';
+      // 외부 컴포넌트에 모달 닫힘을 알림
+      this.$emit('modal-closed', 'create');
     },
     openJoinCompanyModal() {
       this.showMenu = false;
@@ -236,6 +270,8 @@ export default {
       this.invitationCode = '';
       this.joinMessage = '';
       this.joinMessageType = '';
+      // 외부 컴포넌트에 모달 닫힘을 알림
+      this.$emit('modal-closed', 'join');
     },
     openInvitationModal() {
       this.showMenu = false;
@@ -264,6 +300,7 @@ export default {
           this.joinMessage = `'${companyName}' 회사에 성공적으로 참가했습니다.`;
           this.joinMessageType = 'success';
           await this.fetchUserCompany();
+          this.$emit('company-updated', companyName);
           setTimeout(() => {
             this.closeJoinCompanyModal();
           }, 1500);
@@ -296,6 +333,7 @@ export default {
             this.creationMessage = '회사가 성공적으로 생성되었습니다.';
             this.creationMessageType = 'success';
             await this.fetchUserCompany();
+            this.$emit('company-updated', this.companyName);
             setTimeout(() => {
               this.closeCreateCompanyModal();
             }, 1500);
