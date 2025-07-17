@@ -222,6 +222,14 @@ export const apiService = {
     getList: () => apiClient.get('/receipts'),
 
     /**
+     * 영수증 삭제
+     * DELETE /receipts/{receiptId}
+     * @param {number} receiptId 영수증 ID
+     * @returns {Promise} 삭제 성공 시 상태 코드 204 반환
+     */
+    delete: (receiptId) => apiClient.delete(`/receipts/${receiptId}`),
+
+    /**
      * 영수증 이미지 업로드
      * POST /receipts/upload
      * @param {FormData} formData 이미지 파일이 포함된 FormData

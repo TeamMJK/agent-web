@@ -20,7 +20,7 @@ export default {
     variant: {
       type: String,
       default: 'primary',
-      validator: (value) => ['primary', 'secondary', 'ghost', 'cancel', 'confirm'].includes(value)
+      validator: (value) => ['primary', 'secondary', 'ghost', 'cancel', 'confirm', 'danger'].includes(value)
     },
     size: {
       type: String,
@@ -161,6 +161,16 @@ export default {
 
 .btn-confirm:hover:not(.btn-disabled):not(.btn-loading) {
   background-color: var(--color-primary-hover);
+}
+
+.btn-danger {
+  background-color: var(--color-error);
+  color: white;
+  border: 1px solid transparent;
+}
+
+.btn-danger:hover:not(.btn-disabled):not(.btn-loading) {
+  background-color: var(--color-error-hover, #dc2626);
 }
 
 /* 상태 스타일 */

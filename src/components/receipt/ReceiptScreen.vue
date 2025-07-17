@@ -229,7 +229,7 @@
             >
               <div class="card-content">
                 <div class="card-header">
-                  <h4 class="card-title">영수증 #{{ receipt.receiptId }}</h4>
+                  <h4 class="card-title">영수증 #{{ receipt.receiptId || receipt.id }}</h4>
                   <span class="card-amount">{{ formatCurrency(receipt.totalAmount) }}</span>
                 </div>
                 <div class="card-details">
@@ -496,6 +496,7 @@ export default {
       
       try {
         const { data } = await apiService.receipt.getList();
+        console.log('영수증 목록 API 응답 데이터:', data);
         this.receipts = data || [];
         
       } catch (error) {
@@ -537,7 +538,7 @@ export default {
     async deleteReceipt(receipt) {
       const confirmed = await showConfirm({
         title: '영수증 삭제',
-        message: `영수증 #${receipt.receiptId}을(를) 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`,
+        message: `영수증 #${receipt.receiptId || receipt.id}을(를) 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`,
         confirmText: '삭제',
         cancelText: '취소',
         confirmVariant: 'danger',
@@ -546,16 +547,30 @@ export default {
 
       if (confirmed) {
         try {
-          // TODO: 실제 삭제 API 연동 (DELETE /receipts/{receipt-id})
-          console.log('삭제:', receipt);
+          // 실제 삭제 API 연동 (DELETE /receipts/{receipt-id})
+          const receiptId = receipt.receiptId || receipt.id;
+          console.log('삭제할 영수증 ID:', receiptId, '전체 데이터:', receipt);
           
-          // 임시로 로컬에서 제거
-          this.receipts = this.receipts.filter(r => r.receiptId !== receipt.receiptId);
+          if (!receiptId) {
+            this.showMessage('error', '영수증 ID를 찾을 수 없습니다.');
+            return;
+          }
+          
+          await apiService.receipt.delete(receiptId);
+          
+          // 성공 시 로컬에서 제거하고 메시지 표시
+          this.receipts = this.receipts.filter(r => (r.receiptId || r.id) !== receiptId);
           this.showMessage('success', '영수증이 삭제되었습니다.');
           
         } catch (error) {
           console.error('영수증 삭제 실패:', error);
-          this.showMessage('error', '영수증 삭제 중 오류가 발생했습니다.');
+          
+          // 404 에러 처리
+          if (error.response?.status === 404) {
+            this.showMessage('error', '영수증 또는 회원을 찾을 수 없습니다.');
+          } else {
+            this.showMessage('error', '영수증 삭제 중 오류가 발생했습니다.');
+          }
         }
       }
     },
