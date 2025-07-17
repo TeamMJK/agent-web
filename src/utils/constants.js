@@ -1,7 +1,7 @@
 // API 관련 상수
-// export const API_BASE_URL = 'https://www.mjk.o-r.kr';
+export const API_BASE_URL = 'https://www.mjk.o-r.kr';
 
-export const API_BASE_URL = 'http://15.164.89.233:8080';
+// export const API_BASE_URL = 'http://15.164.89.233:8080';
 
 
 // 토큰 관련 상수
