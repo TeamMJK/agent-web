@@ -81,7 +81,7 @@ export const USER_FIELDS = [
   { key: 'firstName', label: '성', type: 'text' },
   { key: 'lastName', label: '이름', type: 'text' },
   { key: 'phoneNumber', label: '전화번호', type: 'tel' },
-  { key: 'birthDate', label: '생년월일', type: 'date' },
+  { key: 'birthDate', label: '생년월일', type: 'string' },
   { key: 'passportNumber', label: '여권번호', type: 'text' },
-  { key: 'passportExpireDate', label: '여권 만료일', type: 'date' }
+  { key: 'passportExpireDate', label: '여권 만료일', type: 'string' }
 ];

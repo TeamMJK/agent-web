@@ -62,20 +62,33 @@ export const validatePhoneNumber = (phoneNumber) => {
   return null;
 };
 
-// 날짜 유효성 검사
-export const validateDate = (date, fieldName = '날짜') => {
-  if (!date) {
+// 날짜 유효성 검사 (string 타입)
+export const validateDate = (dateString, fieldName = '날짜') => {
+  if (!dateString) {
     return `${fieldName}을(를) 선택해주세요.`;
   }
+
+  // YYYY-MM-DD 형식 검증
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(dateString)) {
+    return `올바른 ${fieldName} 형식을 입력해주세요.`;
+  }
+
+  // 유효한 날짜인지 검증
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return `유효한 ${fieldName}을(를) 입력해주세요.`;
+  }
+
   return null;
 };
 
-// 날짜 범위 유효성 검사
-export const validateDateRange = (startDate, endDate) => {
-  if (!startDate || !endDate) {
+// 날짜 범위 유효성 검사 (string 타입)
+export const validateDateRange = (startDateString, endDateString) => {
+  if (!startDateString || !endDateString) {
     return '시작일과 종료일을 모두 선택해주세요.';
   }
-  if (startDate > endDate) {
+  if (startDateString > endDateString) {
     return '종료일은 시작일보다 늦어야 합니다.';
   }
   return null;

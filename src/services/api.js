@@ -160,6 +160,16 @@ export const apiService = {
      */
     saveSensitiveInfo: (allSensitiveData) => {
       return apiClient.post('/members/sensitive-member-info', allSensitiveData);
+    },
+
+    /**
+     * 여권 정보 업데이트
+     * PATCH /members/me
+     * @param {Object} passportData { passportNumber, passportExpireDate }
+     * @returns {Promise}
+     */
+    updatePassportInfo: (passportData) => {
+      return apiClient.patch('/members/me', passportData);
     }
   },
 
