@@ -155,8 +155,16 @@ export const apiService = {
     /**
      * 민감 정보 저장
      * POST /members/sensitive-member-info
-     * @param {Object} allSensitiveData
-     * @returns {Promise}
+     * @param {Object} allSensitiveData - 민감 정보 객체
+     * @param {string} allSensitiveData.name - 이름(한글)
+     * @param {string} allSensitiveData.firstName - 성(영문)
+     * @param {string} allSensitiveData.lastName - 이름(영문)
+     * @param {string} allSensitiveData.phoneNumber - 전화번호
+     * @param {string} allSensitiveData.gender - 성별
+     * @param {string} allSensitiveData.birthDate - 생년월일 (YYYY-MM-DD)
+     * @param {string} allSensitiveData.passportNumber - 여권번호
+     * @param {string} allSensitiveData.passportExpireDate - 여권 만료일 (YYYY-MM-DD)
+     * @returns {Promise<{memberId: number}>} 생성된 회원 ID
      */
     saveSensitiveInfo: (allSensitiveData) => {
       return apiClient.post('/members/sensitive-member-info', allSensitiveData);

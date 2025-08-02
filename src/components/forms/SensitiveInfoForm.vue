@@ -221,7 +221,14 @@ export default {
 
         const response = await apiService.user.saveSensitiveInfo(payload);
         console.log('API 응답:', response);
-        this.$router.push('/main');
+        
+        // 201 상태 코드 확인 및 memberId 처리
+        if (response.status === 201 && response.data.memberId) {
+          console.log('민감 정보 저장 성공, memberId:', response.data.memberId);
+          this.$router.push('/main');
+        } else {
+          throw new Error('예상되지 않은 응답 형식');
+        }
       } catch (error) {
         console.error('민감 정보 저장 실패:', error);
         console.error('에러 상세:', {
