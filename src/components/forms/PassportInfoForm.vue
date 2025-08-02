@@ -79,7 +79,7 @@ export default {
       this.isLoading = true;
 
       try {
-        const response = await apiService.user.updatePassportInfo(this.formData);
+        const response = await apiService.user.updateProfile(this.formData);
         console.log('여권 정보 저장 성공:', response.data);
         this.$router.push('/main');
       } catch (error) {
