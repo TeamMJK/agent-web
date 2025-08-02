@@ -270,16 +270,15 @@ export default {
         text: ''
       },
       basicFields: [
-        { key: 'name', label: '이름', type: 'text' },
-        { key: 'email', label: '이메일', type: 'email' },
+        { key: 'name', label: '이름(한글)', type: 'text' },
         { key: 'firstName', label: '성(영문)', type: 'text' },
         { key: 'lastName', label: '이름(영문)', type: 'text' },
         { key: 'phoneNumber', label: '전화번호', type: 'tel' },
-        { key: 'birthDate', label: '생년월일', type: 'date' }
+        { key: 'birthDate', label: '생년월일', type: 'string' }
       ],
       passportFields: [
         { key: 'passportNumber', label: '여권번호', type: 'text' },
-        { key: 'passportExpireDate', label: '여권 만료일', type: 'date' }
+        { key: 'passportExpireDate', label: '여권 만료일', type: 'string' }
       ]
     };
   },
@@ -288,10 +287,10 @@ export default {
       return JSON.stringify(this.userInfo) !== JSON.stringify(this.originalUserInfo);
     },
     nonDateBasicFields() {
-      return this.basicFields.filter(field => field.key !== 'birthDate');
+      return this.basicFields.filter(field => field.type !== 'string' || field.key !== 'birthDate');
     },
     nonDatePassportFields() {
-      return this.passportFields.filter(field => field.key !== 'passportExpireDate');
+      return this.passportFields.filter(field => field.type !== 'string' || field.key !== 'passportExpireDate');
     }
   },
   methods: {

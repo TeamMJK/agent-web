@@ -4,6 +4,7 @@ import WorkSpaceScreen from '../components/workspace/WorkSpaceScreen.vue';
 import ReceiptScreen from '../components/receipt/ReceiptScreen.vue';
 import SensitiveInfoForm from '../components/forms/SensitiveInfoForm.vue';
 import LoginScreen from '../components/auth/LoginScreen.vue';
+import TestScriptScreen from '../components/test/TestScriptScreen.vue';
 import { apiService, tokenManager } from '../services/api';
 
 const routes = [
@@ -40,6 +41,12 @@ const routes = [
     name: 'SensitiveInfoForm',
     component: SensitiveInfoForm,
     meta: { requiresAuth: true, hideUI: true },
+  },
+  {
+    path: '/test-script-screen',
+    name: 'TestScriptScreen',
+    component: TestScriptScreen,
+    meta: { requiresAuth: false, hideUI: true },
   },
 ];
 

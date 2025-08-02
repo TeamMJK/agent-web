@@ -206,7 +206,7 @@ export default {
       }
 
       try {
-        // 날짜 변환 없이 그대로 사용 (YYYY-MM-DD)
+        // YYYY-MM-DD 형식의 문자열로 전송
         const payload = {
           ...this.formData,
           gender: this.formData.gender,
