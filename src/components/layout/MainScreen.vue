@@ -57,11 +57,9 @@ export default {
             prompt: '', // 사용자 입력 프롬프트
             activeFilter: 'all', // 현재 활성화된 필터
             filters: [ // 필터 목록
-                { id: 'all', label: '전체' },
+                { id: 'all', label: '숙소+항공' },
                 { id: 'data', label: '숙소' },
-                { id: 'accuracy', label: '항공' }, // '정확도 ROI'로 되어있으나 이미지상 ROU로 보여 ROU로 수정
-                { id: 'academic', label: '렌트카' },
-                { id: 'explore', label: '맛집' }
+                { id: 'accuracy', label: '항공' },
             ],
             chatResponse: '', // 챗봇 응답 (임시)
             isFocusMode: false // 검색 초점 모드 상태

@@ -1,7 +1,5 @@
 // API 관련 상수
-export const API_BASE_URL = 'https://www.mjk.o-r.kr';
-
-// export const API_BASE_URL = 'http://15.164.89.233:8080';
+export const API_BASE_URL = 'https://mjk.ai.kr/api';
 
 
 // 토큰 관련 상수
@@ -28,6 +26,8 @@ export const ROUTE_NAMES = {
 // HTTP 상태 코드
 export const HTTP_STATUS = {
   OK: 200,
+  CREATED: 201,
+  NO_CONTENT: 204,
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,

@@ -1,7 +1,7 @@
 <template>
     <div class="login-outer">
         <div class="login-container">
-            <h1 class="login-title">테스트22</h1>
+            <h1 class="login-title">로그인</h1>
             <div v-if="!showPasswordInput" class="login-form">
                 <input 
                     type="email" 
@@ -111,7 +111,7 @@ export default {
                 
                 // Google OAuth는 직접 페이지 리다이렉트로 처리
                 // XMLHttpRequest로 Google OAuth URL을 가져올 수 없으므로 직접 이동....
-                window.location.href = 'https://www.mjk.o-r.kr/oauth2/authorization/google';
+                window.location.href = 'https://mjk.ai.kr/api/oauth2/authorization/google';
                 
             } catch (error) {
                 console.error('Google 로그인 실패:', error);
