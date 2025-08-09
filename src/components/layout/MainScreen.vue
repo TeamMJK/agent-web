@@ -7,7 +7,7 @@
         </div>
 
         <!-- 로고 텍스트 -->
-        <div class="logo-text">TripAgent<span class="pro-badge">beta</span></div>
+        <div class="logo-text">TripAgent<span class="pro-badge">test.v1</span></div>
 
         <!-- 프롬프트 입력 영역 -->
         <div class="prompt-section">
