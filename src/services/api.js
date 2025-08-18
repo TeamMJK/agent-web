@@ -251,6 +251,30 @@ export const apiService = {
       });
     },
   },
+
+  // 프롬프트 관련 API
+  prompts: {
+    /**
+     * 숙소+항공 통합 프롬프트
+     * POST /prompts/integration
+     * @param {{ prompt: string }} payload
+     */
+    integration: (payload) => apiClient.post('/prompts/integration', payload),
+
+    /**
+     * 숙소 전용 프롬프트
+     * POST /prompts/hotel
+     * @param {{ prompt: string }} payload
+     */
+    hotel: (payload) => apiClient.post('/prompts/hotel', payload),
+
+    /**
+     * 항공 전용 프롬프트
+     * POST /prompts/business-trip
+     * @param {{ prompt: string }} payload
+     */
+    businessTrip: (payload) => apiClient.post('/prompts/business-trip', payload),
+  },
 };
 
 // 기본 export

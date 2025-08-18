@@ -46,6 +46,7 @@
 
 <script>
 import CompanyMenu from '../workspace/CompanyMenu.vue';
+import { apiService } from '../../services/api';
 
 export default {
     name: 'MainScreen',
@@ -67,12 +68,45 @@ export default {
     },
     methods: {
         // 프롬프트 제출 로직
-        submitPrompt() {
-            if (!this.prompt.trim()) return; // 입력 내용이 없으면 무시
-            console.log(`프롬프트 제출: ${this.prompt}, 필터: ${this.activeFilter}`);
-            // TODO: 실제 챗봇 API 연동 로직 구현
-            // 예시: this.chatResponse = `"${this.prompt}"에 대한 응답입니다. (필터: ${this.activeFilter})`;
-            this.prompt = ''; // 입력창 비우기
+        async submitPrompt() {
+            const text = this.prompt.trim();
+            if (!text) return; // 입력 내용이 없으면 무시
+
+            try {
+                let requestFn;
+                // 활성 필터에 따른 엔드포인트 결정
+                if (this.activeFilter === 'all') {
+                    requestFn = apiService.prompts.integration;
+                } else if (this.activeFilter === 'data') {
+                    requestFn = apiService.prompts.hotel;
+                } else if (this.activeFilter === 'accuracy') {
+                    requestFn = apiService.prompts.businessTrip;
+                } else {
+                    // 정의되지 않은 필터인 경우 방어적으로 통합 엔드포인트 사용
+                    requestFn = apiService.prompts.integration;
+                }
+
+                const response = await requestFn({ prompt: text });
+
+                // 응답 본문을 그대로 표시 (스키마를 가정하지 않음)
+                this.chatResponse = typeof response.data === 'string'
+                    ? response.data
+                    : JSON.stringify(response.data);
+
+                // 성공 시 입력창 비우기
+                this.prompt = '';
+            } catch (error) {
+                // 서버에서 내려준 메시지를 우선 표시
+                const serverMsg = error?.response?.data?.message;
+                const status = error?.response?.status;
+                if (serverMsg) {
+                    this.chatResponse = `[오류 ${status ?? ''}] ${serverMsg}`.trim();
+                } else if (error?.message) {
+                    this.chatResponse = `요청 실패: ${error.message}`;
+                } else {
+                    this.chatResponse = '요청 처리 중 알 수 없는 오류가 발생했습니다.';
+                }
+            }
         },
         // 활성 필터 설정
         setActiveFilter(filterId) {
