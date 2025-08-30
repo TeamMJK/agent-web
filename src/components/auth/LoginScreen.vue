@@ -13,7 +13,14 @@
                 <button class="continue-btn" @click="handleEmailContinue">계속</button>
             </div>
             <div v-else class="login-form" :class="{ 'fade-in': showPasswordInput }">
-                <input type="email" v-model="email" placeholder="이메일 주소" class="email-input" disabled />
+                <input 
+                    type="email" 
+                    v-model="email" 
+                    placeholder="이메일 주소" 
+                    class="email-input"
+                    @focus="emailEditable = true"
+                    :readonly="!emailEditable"
+                />
                 <input 
                     type="password" 
                     v-model="password" 
@@ -25,6 +32,7 @@
             </div>
 
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+            <p v-if="successMessage" class="success-banner">{{ successMessage }}</p>
 
             <div class="signup-row">
                 <span>계정이 없으신가요?</span>
@@ -55,7 +63,7 @@
             </button>
             
         </div>
-        <SignUpPopup v-if="showSignUpPopup" @close="showSignUpPopup = false" />
+    <SignUpPopup v-if="showSignUpPopup" @close="showSignUpPopup = false" @signed-up="handleSignedUp" />
     </div>
 </template>
 
@@ -74,7 +82,9 @@ export default {
             password: '', // Added password data property
             showSignUpPopup: false,
             showPasswordInput: false, // Added showPasswordInput
-            errorMessage: '', // Added errorMessage
+            errorMessage: '',
+            successMessage: '',
+            emailEditable: false,
         };
     },
     mounted() {
@@ -118,7 +128,7 @@ export default {
                 this.errorMessage = 'Google 로그인 중 오류가 발생했습니다. 다시 시도해주세요.';
             }
         },
-        handleEmailContinue() {
+    handleEmailContinue() {
             this.errorMessage = ''; // Clear previous error message
 
             if (!this.email) {
@@ -130,7 +140,13 @@ export default {
                 this.errorMessage = '유효한 이메일 주소를 입력해주세요.';
                 return;
             }
-            this.showPasswordInput = true; // Show password input
+            this.showPasswordInput = true;
+            this.emailEditable = false; // 초기에는 readonly, 포커스하면 수정 가능
+        },
+        handleSignedUp(msg) {
+            // 회원가입 팝업에서 즉시 닫힘 후 성공 배너 표시
+            this.successMessage = msg || '회원가입이 완료되었습니다. 로그인해주세요.';
+            setTimeout(() => { this.successMessage = ''; }, 4000);
         },
         async handleLogin() {
             this.errorMessage = '';
@@ -329,6 +345,18 @@ export default {
     background-color: rgba(255, 77, 77, 0.1);
     border-radius: 8px;
     border: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+.success-banner {
+    color: #30c48d;
+    font-size: 0.9rem;
+    margin: 8px 0 16px;
+    text-align: center;
+    width: 100%;
+    padding: 10px 14px;
+    background-color: rgba(48,196,141,0.12);
+    border-radius: 8px;
+    border: 1px solid rgba(48,196,141,0.35);
 }
 
 .password-input {

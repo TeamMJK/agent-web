@@ -96,10 +96,10 @@ export default {
           password: this.password,
         });
         console.log('회원가입 성공:', response.data);
-        this.showMessage('success', '회원가입이 성공적으로 완료되었습니다!');
-        setTimeout(() => {
-          this.closePopup();
-        }, 2000);
+        // 부모에게 즉시 성공 알림
+        this.$emit('signed-up', '회원가입이 성공적으로 완료되었습니다!');
+        // 바로 닫기
+        this.closePopup();
       } catch (error) {
         console.error('회원가입 실패:', error);
         if (error.response && error.response.data && error.response.data.message) {
