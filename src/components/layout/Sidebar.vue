@@ -119,16 +119,10 @@
                 <label>성별</label>
                 <div class="field-container">
                   <div class="input-wrapper">
-                    <select 
-                      v-if="editingFields.gender"
-                      v-model="userInfo.gender"
-                      @blur="stopEditing('gender')"
-                      class="editable-field"
-                    >
-                      <option value="">선택하세요</option>
-                      <option value="Male">남성</option>
-                      <option value="Female">여성</option>
-                    </select>
+                    <div v-if="editingFields.gender" class="gender-segmented" role="radiogroup" aria-label="성별 선택">
+                      <button type="button" :aria-pressed="userInfo.gender==='Male'" :class="['gender-option', { active: userInfo.gender==='Male'}]" @click="userInfo.gender='Male'">남성</button>
+                      <button type="button" :aria-pressed="userInfo.gender==='Female'" :class="['gender-option', { active: userInfo.gender==='Female'}]" @click="userInfo.gender='Female'">여성</button>
+                    </div>
                     <input 
                       v-else
                       :value="getGenderDisplay(userInfo.gender)"
@@ -386,8 +380,12 @@ export default {
     
     getGenderDisplay(gender) {
       switch (gender) {
-        case 'MALE': return '남성';
-        case 'FEMALE': return '여성';
+        case 'MALE':
+        case 'Male':
+          return '남성';
+        case 'FEMALE':
+        case 'Female':
+          return '여성';
         default: return '-';
       }
     },
@@ -581,6 +579,39 @@ export default {
   z-index: 101;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border-primary);
+}
+
+/* Gender segmented control */
+.gender-segmented {
+  display: inline-flex;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  width: 100%;
+  height: 40px;
+}
+.gender-option {
+  flex: 1;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--spacing-sm);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.gender-option:not(:last-child) {
+  border-right: 1px solid var(--color-border-secondary);
+}
+.gender-option.active {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* 모달 스타일 */
@@ -841,12 +872,59 @@ export default {
 
 .form-actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: stretch; /* 두 버튼 모두 같은 높이 강제 */
   gap: var(--spacing-lg);
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-xl) var(--spacing-2xl);
   margin-top: var(--spacing-xl);
   border-top: 1px solid var(--color-border-light);
   background: var(--color-bg-secondary);
+}
+
+.form-actions .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: 50px; /* 고정 동일 높이 */
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: 0 var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+  min-width: 0;
+  line-height: 1;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border-secondary);
+  margin: 0; /* 예측치 못한 상하 마진 제거 */
+}
+
+.form-actions .btn i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 1.1em;
+}
+
+.form-actions .btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.form-actions .btn-cancel { flex: 1 1 0; }
+
+.form-actions .btn-submit { flex: 4 1 0; background: var(--gradient-accent); color: var(--color-text-primary); border: 1px solid var(--color-primary-border, transparent); height: 50px; }
+
+.form-actions .btn-cancel:hover:not(:disabled) {
+  background: var(--color-bg-card-hover);
+  color: var(--color-text-primary);
+}
+
+.form-actions .btn-submit:hover:not(:disabled) {
+  filter: brightness(0.95);
 }
 
 /* 반응형 디자인 */

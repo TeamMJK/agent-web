@@ -9,6 +9,7 @@
     </div>
 
     <form @submit.prevent="handleSubmit" class="sensitive-info-form">
+      <div class="form-grid">
       <div class="form-group">
         <label for="name">
           <i class="pi pi-user"></i>
@@ -23,7 +24,7 @@
         />
       </div>
       
-      <div class="form-row">
+  <div class="form-row">
         <div class="form-group half">
           <label for="firstName">
             <i class="pi pi-id-card"></i>
@@ -74,22 +75,13 @@
           <i class="pi pi-users"></i>
           성별
         </label>
-        <div class="modern-select-wrapper">
-          <select
-            id="gender"
-            v-model="formData.gender"
-            required
-            class="modern-select"
-          >
-            <option value="" disabled>성별을 선택하세요</option>
-            <option value="Male">남성</option>
-            <option value="Female">여성</option>
-          </select>
-          <i class="pi pi-chevron-down select-arrow"></i>
+        <div class="gender-segmented" role="radiogroup" aria-label="성별 선택">
+          <button type="button" :aria-pressed="formData.gender==='Male'" :class="['gender-option', { active: formData.gender==='Male'}]" @click="formData.gender='Male'">남성</button>
+          <button type="button" :aria-pressed="formData.gender==='Female'" :class="['gender-option', { active: formData.gender==='Female'}]" @click="formData.gender='Female'">여성</button>
         </div>
       </div>
       
-      <div class="form-group">
+  <div class="form-group">
         <label for="birthDate">
           <i class="pi pi-calendar"></i>
           생년월일
@@ -115,7 +107,7 @@
         />
       </div>
 
-      <div class="form-group">
+  <div class="form-group">
         <label for="passportExpireDate">
           <i class="pi pi-calendar-times"></i>
           여권 만료일
@@ -126,7 +118,7 @@
           required
         />
       </div>
-
+  </div> <!-- end form-grid -->
       <button type="submit" class="submit-btn" :disabled="isLoading">
         <span v-if="!isLoading">
           <i class="pi pi-check"></i>
@@ -258,8 +250,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: var(--spacing-4xl) var(--spacing-2xl);
+  /* 상단 여백 확대 */
+  padding:  var(--spacing-3xl);
   font-family: var(--font-family-primary);
   box-sizing: border-box;
   overflow-y: auto;
@@ -268,6 +260,8 @@ export default {
 .header-section {
   text-align: center;
   margin-bottom: var(--spacing-5xl);
+  /* 추가 안전 여백 (필요 시 조정 가능) */
+  margin-top: 50px;
 }
 
 .icon-wrapper {
@@ -306,10 +300,21 @@ export default {
 
 .sensitive-info-form {
   width: 100%;
-  max-width: 600px;
+  max-width: 780px;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-3xl);
+  background: var(--color-bg-secondary);
+  padding: var(--spacing-4xl) var(--spacing-4xl) var(--spacing-5xl);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-3xl) var(--spacing-2xl);
 }
 
 .form-group {
@@ -335,16 +340,16 @@ export default {
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
   background-color: var(--color-bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--color-border-secondary);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   color: var(--color-text-primary);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
   font-family: var(--font-family-primary);
   box-sizing: border-box;
   outline: none;
+  line-height: 1.3;
 }
 
 .form-group input:focus,
@@ -375,10 +380,10 @@ export default {
   display: flex;
   align-items: center;
   background-color: var(--color-bg-card);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--color-border-secondary);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  height: 48px;
 }
 
 .phone-input-wrapper:focus-within {
@@ -387,12 +392,14 @@ export default {
 }
 
 .country-code {
-  padding: var(--spacing-xl);
-  background-color: var(--color-bg-tertiary);
+  padding: 0 var(--spacing-lg);
+  background-color: transparent; /* 배경색 제거 */
   color: var(--color-text-secondary);
   font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   border-right: 1px solid var(--color-border-secondary);
+  display: flex;
+  align-items: center;
 }
 
 .phone-input-wrapper input {
@@ -409,12 +416,12 @@ export default {
 
 .submit-btn {
   width: 100%;
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-xl) var(--spacing-2xl);
   background: var(--gradient-accent);
   color: var(--color-text-primary);
   border: none;
-  border-radius: var(--radius-xl);
-  font-size: var(--font-size-lg);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   font-family: var(--font-family-primary);
   cursor: pointer;
@@ -423,7 +430,42 @@ export default {
   justify-content: center;
   gap: var(--spacing-sm);
   box-shadow: var(--shadow-md);
-  margin-top: var(--spacing-xl);
+  margin-top: var(--spacing-lg);
+}
+.gender-segmented {
+  display: inline-flex;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  width: 100%;
+  height: 48px;
+}
+.gender-option {
+  flex: 1;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gender-option:not(:last-child) {
+  border-right: 1px solid var(--color-border-secondary);
+}
+.gender-option.active {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ModernDatePicker height alignment */
+.form-group :deep(.modern-datepicker-wrapper .date-display) {
+  min-height: 48px;
+  font-size: var(--font-size-sm);
 }
 
 .submit-btn:hover:not(:disabled) {
@@ -503,6 +545,9 @@ export default {
   .sensitive-info-container {
     padding: var(--spacing-2xl) var(--spacing-lg);
   }
+  .sensitive-info-form {
+    padding: var(--spacing-3xl) var(--spacing-3xl) var(--spacing-4xl);
+  }
   
   .form-row {
     flex-direction: column;
@@ -531,6 +576,9 @@ export default {
   .sensitive-info-container {
     padding: var(--spacing-xl) var(--spacing-md);
   }
+  .sensitive-info-form {
+    padding: var(--spacing-2xl) var(--spacing-2xl) var(--spacing-3xl);
+  }
   
   .title {
     font-size: var(--font-size-2xl);
@@ -553,23 +601,3 @@ export default {
   }
 }
 </style>
-  
-  .title {
-    font-size: var(--font-size-2xl);
-  }
-  
-  .form-group input,
-  .form-group select {
-    padding: var(--spacing-lg);
-    font-size: var(--font-size-base);
-  }
-  
-  .country-code {
-    padding: var(--spacing-lg);
-    font-size: var(--font-size-base);
-  }
-  
-  .submit-btn {
-    padding: var(--spacing-xl);
-    font-size: var(--font-size-base);
-  }

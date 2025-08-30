@@ -1,81 +1,91 @@
 <template>
   <div class="modern-datepicker-wrapper">
     <div class="datepicker-container" :class="{ focused: isFocused }">
-      <div class="date-display" @click="togglePicker">
+      <div class="date-display" @click="togglePicker" ref="trigger">
         <i class="pi pi-calendar calendar-icon"></i>
         <span v-if="formattedDate" class="date-text">{{ formattedDate }}</span>
         <span v-else class="placeholder-text">{{ placeholder }}</span>
         <i class="pi pi-chevron-down chevron-icon"></i>
       </div>
-      
-      <div v-if="showPicker" class="datepicker-dropdown" :class="dropdownPositionClass" @click.stop ref="dropdown">
-        <!-- 년도 선택 모드 -->
-        <div v-if="showYearPicker" class="year-picker">
-          <div class="year-picker-header">
-            <button type="button" @click="previousYearRange" class="nav-button">
-              <i class="pi pi-chevron-left"></i>
-            </button>
-            <span class="year-range">{{ yearRangeDisplay }}</span>
-            <button type="button" @click="nextYearRange" class="nav-button">
-              <i class="pi pi-chevron-right"></i>
-            </button>
-          </div>
-          <div class="year-grid">
-            <button
-              v-for="year in yearOptions"
-              :key="year"
-              type="button"
-              :class="['year-cell', { 'selected': year === currentYear, 'current': year === new Date().getFullYear() }]"
-              @click="selectYear(year)"
-            >
-              {{ year }}
-            </button>
-          </div>
-        </div>
+    </div>
 
-        <!-- 일반 달력 모드 -->
-        <div v-else>
-          <div class="datepicker-header">
-            <button type="button" @click="previousMonth" class="nav-button">
-              <i class="pi pi-chevron-left"></i>
-            </button>
-            <button type="button" @click="showYearPicker = true" class="month-year clickable">
-              {{ monthYearDisplay }}
-            </button>
-            <button type="button" @click="nextMonth" class="nav-button">
-              <i class="pi pi-chevron-right"></i>
-            </button>
+    <!-- Teleport: 모달 내부 스크롤/클리핑을 피하기 위해 body로 이동 -->
+    <teleport to="body">
+      <div v-if="showPicker">
+        <div class="picker-overlay" @click="closePicker"></div>
+        <div
+          class="datepicker-dropdown floating"
+          :class="dropdownPositionClass"
+          :style="dropdownInlineStyle"
+          @click.stop
+          ref="dropdown"
+        >
+          <!-- 년도 선택 모드 -->
+          <div v-if="showYearPicker" class="year-picker">
+            <div class="year-picker-header">
+              <button type="button" @click="previousYearRange" class="nav-button">
+                <i class="pi pi-chevron-left"></i>
+              </button>
+              <span class="year-range">{{ yearRangeDisplay }}</span>
+              <button type="button" @click="nextYearRange" class="nav-button">
+                <i class="pi pi-chevron-right"></i>
+              </button>
+            </div>
+            <div class="year-grid">
+              <button
+                v-for="year in yearOptions"
+                :key="year"
+                type="button"
+                :class="['year-cell', { 'selected': year === currentYear, 'current': year === new Date().getFullYear() }]"
+                @click="selectYear(year)"
+              >
+                {{ year }}
+              </button>
+            </div>
           </div>
-          
-          <div class="calendar-grid">
-            <div class="weekday-header">
-              <span v-for="day in weekdays" :key="day" class="weekday">{{ day }}</span>
+
+          <!-- 일반 달력 모드 -->
+          <div v-else>
+            <div class="datepicker-header">
+              <button type="button" @click="previousMonth" class="nav-button">
+                <i class="pi pi-chevron-left"></i>
+              </button>
+              <button type="button" @click="showYearPicker = true" class="month-year clickable">
+                {{ monthYearDisplay }}
+              </button>
+              <button type="button" @click="nextMonth" class="nav-button">
+                <i class="pi pi-chevron-right"></i>
+              </button>
             </div>
             
-            <div class="dates-grid">
-              <button
-                v-for="date in calendarDates"
-                :key="date.key"
-                type="button"
-                :class="[
-                  'date-cell',
-                  {
-                    'other-month': !date.isCurrentMonth,
-                    'selected': date.isSelected,
-                    'today': date.isToday
-                  }
-                ]"
-                @click="selectDate(date)"
-              >
-                {{ date.day }}
-              </button>
+            <div class="calendar-grid">
+              <div class="weekday-header">
+                <span v-for="day in weekdays" :key="day" class="weekday">{{ day }}</span>
+              </div>
+              
+              <div class="dates-grid">
+                <button
+                  v-for="date in calendarDates"
+                  :key="date.key"
+                  type="button"
+                  :class="[
+                    'date-cell',
+                    {
+                      'other-month': !date.isCurrentMonth,
+                      'selected': date.isSelected,
+                      'today': date.isToday
+                    }
+                  ]"
+                  @click="selectDate(date)"
+                >
+                  {{ date.day }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <div v-if="showPicker" class="picker-overlay" @click="closePicker"></div>
+    </teleport>
   </div>
 </template>
 
@@ -106,6 +116,7 @@ export default {
       currentYear: new Date().getFullYear(),
       yearRangeStart: Math.floor(new Date().getFullYear() / 12) * 12,
       dropdownPositionClass: '',
+  dropdownInlineStyle: {},
       weekdays: ['일', '월', '화', '수', '목', '금', '토'],
       today: new Date()
     };
@@ -203,24 +214,42 @@ export default {
       this.$emit('blur');
     },
     adjustDropdownPosition() {
-      if (!this.$refs.dropdown) return;
-      
-      const dropdown = this.$refs.dropdown;
-      const rect = dropdown.getBoundingClientRect();
+      const triggerEl = this.$refs.trigger;
+      if (!triggerEl) return;
+      const triggerRect = triggerEl.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
-      
-      // 세로 위치 조정
-      if (rect.bottom > viewportHeight - 20) {
-        this.dropdownPositionClass = 'dropdown-up';
-      } else {
-        this.dropdownPositionClass = '';
+
+      // 기본 위치 (아래쪽)
+      let top = triggerRect.bottom + window.scrollY + 4; // 약간 간격
+      let left = triggerRect.left + window.scrollX;
+      const MIN_WIDTH = 320; // 캘린더 내용 최소 너비(패딩 포함 여유)
+      const desiredMinWidth = Math.max(triggerRect.width, MIN_WIDTH);
+
+      // 가로 넘침 처리
+      if (left + desiredMinWidth > viewportWidth - 8) {
+        left = Math.max(8, viewportWidth - desiredMinWidth - 8);
       }
-      
-      // 가로 위치 조정
-      if (rect.right > viewportWidth - 20) {
-        this.dropdownPositionClass += ' dropdown-right';
-      }
+
+      // width 대신 min-width를 사용해 내용 자연 확장, 강제 스크롤 방지
+      this.dropdownInlineStyle = { position: 'fixed', top: top + 'px', left: left + 'px', minWidth: desiredMinWidth + 'px' };
+
+      this.$nextTick(() => {
+        const dropdownEl = this.$refs.dropdown;
+        if (!dropdownEl) return;
+        const ddRect = dropdownEl.getBoundingClientRect();
+
+        // 세로 공간 부족 시 위로 배치
+        if (ddRect.bottom > viewportHeight - 8) {
+          const newTop = triggerRect.top - ddRect.height - 4;
+          if (newTop > 8) {
+            this.dropdownPositionClass = 'dropdown-up';
+            this.dropdownInlineStyle.top = newTop + 'px';
+          }
+        } else {
+          this.dropdownPositionClass = '';
+        }
+      });
     },
     selectDate(dateObj) {
       // 시간대 문제 해결을 위해 로컬 날짜로 변환
@@ -260,12 +289,12 @@ export default {
     }
   },
   mounted() {
-    window.addEventListener('scroll', this.adjustDropdownPosition);
-    window.addEventListener('resize', this.adjustDropdownPosition);
+  window.addEventListener('resize', this.adjustDropdownPosition);
+  window.addEventListener('scroll', this.adjustDropdownPosition, true); // 캡쳐 스크롤
   },
   beforeUnmount() {
-    window.removeEventListener('scroll', this.adjustDropdownPosition);
-    window.removeEventListener('resize', this.adjustDropdownPosition);
+  window.removeEventListener('resize', this.adjustDropdownPosition);
+  window.removeEventListener('scroll', this.adjustDropdownPosition, true);
   }
 };
 </script>
@@ -326,30 +355,33 @@ export default {
   flex-shrink: 0;
 }
 
+/* 드롭다운 (body로 텔레포트, fixed 위치) */
 .datepicker-dropdown {
-  position: absolute;
-  top: calc(100% + var(--spacing-xs));
-  left: 0;
-  right: 0;
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   backdrop-filter: blur(20px);
-  z-index: 1000;
+  z-index: 5001;
   padding: var(--spacing-lg);
   max-height: 400px;
   overflow-y: auto;
+  overflow-x: hidden; /* 가로 스크롤 제거 */
 }
 
-.datepicker-dropdown.dropdown-up {
-  top: auto;
-  bottom: calc(100% + var(--spacing-xs));
+.datepicker-dropdown.floating {
+  position: fixed;
 }
 
-.datepicker-dropdown.dropdown-right {
-  left: auto;
+/* 위로 열릴 때 JS에서 top 재계산 (클래스 표식만 사용) */
+
+.picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   right: 0;
+  bottom: 0;
+  z-index: 5000;
 }
 
 .datepicker-header {
@@ -452,14 +484,7 @@ export default {
   font-weight: var(--font-weight-semibold);
 }
 
-.picker-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 999;
-}
+/* 기존 overlay z-index 조정 (5000) */
 
 .calendar-grid {
   width: 100%;
