@@ -313,6 +313,7 @@ import ModernDatePicker from '../common/ModernDatePicker.vue';
 import CompanyMenu from '../workspace/CompanyMenu.vue';
 import { showConfirm } from '../../utils/dialog.js';
 import apiService from '../../services/api.js';
+import { pushMessage } from '@/utils/notify.js';
 
 export default {
   name: 'ReceiptScreen',
@@ -462,7 +463,7 @@ export default {
           totalAmount: Number(this.receiptForm.totalAmount)
         });
         
-        this.showMessage('success', '영수증이 성공적으로 저장되었습니다.');
+  pushMessage({ type: 'success', text: '영수증이 저장되었습니다.' });
         this.resetForm();
         this.loadReceipts(); // 목록 새로고침
         
@@ -560,7 +561,7 @@ export default {
           
           // 성공 시 로컬에서 제거하고 메시지 표시
           this.receipts = this.receipts.filter(r => (r.receiptId || r.id) !== receiptId);
-          this.showMessage('success', '영수증이 삭제되었습니다.');
+          pushMessage({ type: 'success', text: '영수증이 삭제되었습니다.' });
           
         } catch (error) {
           console.error('영수증 삭제 실패:', error);
@@ -657,7 +658,7 @@ export default {
         
         await apiService.receipt.uploadImage(formData);
         
-        this.showMessage('success', '이미지가 성공적으로 업로드되었습니다.');
+  pushMessage({ type: 'success', text: '이미지가 업로드되었습니다.' });
         this.removeFile();
         this.loadReceipts(); // 목록 새로고침
         

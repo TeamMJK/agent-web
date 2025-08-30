@@ -176,10 +176,33 @@ export const apiService = {
     /**
      * 회사 생성
      * POST /companies
-     * @param {Object} companyData { name, workspace }
+     * @param {Object} companyData { name, workspaces | workspace }
+     * - workspaces: 문자열 배열 (Swagger 요구사항)
+     * - workspace: 단일 문자열 (호환성 위해 허용, 배열로 변환)
      * @returns {Promise} 생성된 회사 ID 반환
      */
-    create: (companyData) => apiClient.post('/companies', companyData),
+    create: (companyData) => {
+      const payload = { name: companyData.name };
+      if (Array.isArray(companyData.workspaces)) {
+        payload.workspaces = companyData.workspaces;
+      } else if (companyData.workspace) {
+        payload.workspaces = [companyData.workspace];
+      }
+      return apiClient.post('/companies', payload);
+    },
+
+    /**
+     * 회사 수정
+     * PATCH /companies
+     * @param {Object} companyData { name, workspaces }
+     */
+    update: (companyData) => {
+      const payload = { name: companyData.name };
+      if (Array.isArray(companyData.workspaces)) {
+        payload.workspaces = companyData.workspaces;
+      }
+      return apiClient.patch('/companies', payload);
+    },
 
     /**
      * 회사 목록 조회
@@ -202,6 +225,11 @@ export const apiService = {
      * @returns {Promise} 초대 코드 반환 (string)
      */
     generateInvitationCode: () => apiClient.get('/companies/invitation'),
+    /**
+     * 회사 삭제
+     * DELETE /companies
+     */
+    delete: () => apiClient.delete('/companies')
   },
 
   // 영수증 관련 API

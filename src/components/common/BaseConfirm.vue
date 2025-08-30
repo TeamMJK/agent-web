@@ -3,7 +3,7 @@
     :show="show" 
     :title="title" 
     :subtitle="subtitle"
-    :close-on-overlay-click="false"
+    :close-on-overlay-click="true"
     :show-close-button="false"
     @close="handleCancel"
   >
@@ -113,7 +113,8 @@ export default {
 
 <style scoped>
 .confirm-content {
-  padding: var(--spacing-lg) 0;
+  /* 하단 여백 추가 축소로 버튼과 더 밀착 */
+  padding: var(--spacing-sm) 0 var(--spacing-sm);
 }
 
 .confirm-message {

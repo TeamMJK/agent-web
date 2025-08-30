@@ -64,6 +64,7 @@
 <script>
 import { apiService } from '../../services/api';
 import BaseMessage from '../common/BaseMessage.vue';
+import { pushMessage } from '@/utils/notify.js';
 
 export default {
   name: 'SignUpPopup',
@@ -95,11 +96,10 @@ export default {
           email: this.email,
           password: this.password,
         });
-        console.log('회원가입 성공:', response.data);
-        // 부모에게 즉시 성공 알림
-        this.$emit('signed-up', '회원가입이 성공적으로 완료되었습니다!');
-        // 바로 닫기
-        this.closePopup();
+  console.log('회원가입 성공:', response.data);
+  // 글로벌 성공 메시지
+  pushMessage({ type: 'success', text: '회원가입이 완료되었습니다. 로그인해주세요.' });
+  this.closePopup();
       } catch (error) {
         console.error('회원가입 실패:', error);
         if (error.response && error.response.data && error.response.data.message) {
@@ -149,8 +149,8 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-3xl) var(--spacing-3xl) var(--spacing-2xl);
-  border-bottom: 1px solid var(--color-border-secondary);
+  padding: var(--spacing-3xl) var(--spacing-3xl) var(--spacing-xl);
+  /* 구분선 제거: border-bottom 삭제하고 여백으로 구분 */
 }
 
 .popup-title {
@@ -185,7 +185,8 @@ export default {
 }
 
 .signup-form {
-  padding: var(--spacing-3xl);
+  /* 하단 패딩 축소로 버튼/메시지와 간격 좁힘 */
+  padding: var(--spacing-xl) var(--spacing-3xl) var(--spacing-xl);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2xl);
@@ -265,7 +266,7 @@ export default {
   
   .popup-header,
   .signup-form {
-    padding: var(--spacing-2xl);
+    padding: var(--spacing-lg) var(--spacing-2xl) var(--spacing-2xl);
   }
   
   .popup-title {

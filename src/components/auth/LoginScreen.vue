@@ -26,6 +26,7 @@
                     v-model="password" 
                     placeholder="비밀번호" 
                     class="email-input password-input"
+                    ref="passwordInput"
                     @keyup.enter="handleLogin"
                 />
                 <button class="continue-btn" @click="handleLogin">로그인</button>
@@ -142,6 +143,11 @@ export default {
             }
             this.showPasswordInput = true;
             this.emailEditable = false; // 초기에는 readonly, 포커스하면 수정 가능
+            this.$nextTick(() => {
+                if (this.$refs.passwordInput) {
+                    this.$refs.passwordInput.focus();
+                }
+            });
         },
         handleSignedUp(msg) {
             // 회원가입 팝업에서 즉시 닫힘 후 성공 배너 표시

@@ -1,5 +1,6 @@
 <template>
   <div id="app" class="app-container">
+    <GlobalMessages />
     <!-- 사이드바 등 공통 UI -->
     <Sidebar v-if="!$route.meta.hideUI" />
     
@@ -11,12 +12,11 @@
 
 <script>
 import Sidebar from './components/layout/Sidebar.vue';
+import GlobalMessages from '@/components/common/GlobalMessages.vue';
 
 export default {
   name: 'App',
-  components: {
-    Sidebar,
-  },
+  components: { Sidebar, GlobalMessages },
 };
 </script>
 

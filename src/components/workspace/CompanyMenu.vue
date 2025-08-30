@@ -6,25 +6,30 @@
         <i class="pi pi-building"></i>
       </button>
       <div v-if="showMenu" class="company-menu-modal" @mouseenter="cancelHideMenu" @mouseleave="hideMenuWithDelay">
-        <div v-if="userCompany" class="company-info">
-          <div class="company-item">
-            {{ userCompany }}
+        <div v-if="userCompany" class="company-info rich">
+          <div class="company-header-line">
+            <i class="pi pi-building company-header-icon"></i>
+            <span class="company-name-text">{{ userCompany.name }}</span>
+          </div>
+          <div v-if="userCompany.workspaces && userCompany.workspaces.length" class="workspace-chip-list">
+            <span v-for="ws in userCompany.workspaces" :key="ws" class="workspace-chip">
+              <span class="chip-badge" :data-type="ws">{{ workspaceShort(ws) }}</span>
+              {{ getWorkspaceDisplayName(ws) }}
+            </span>
           </div>
         </div>
         <div v-else class="no-company-info">
           회사 정보 없음
         </div>
-        <div class="menu-divider"></div>
-        
-        <!-- 회사가 있는 경우: 초대 코드 생성만 표시 -->
+  <!-- divider removed -->
         <template v-if="userCompany">
-          <button class="menu-item" @click="openInvitationModal">회사 초대 코드 생성</button>
+          <button class="menu-item" @click="openEditCompanyModal">회사 정보 수정</button>
+          <button class="menu-item" @click="openInvitationModal">초대 코드 생성</button>
+          <button class="menu-item danger" @click="confirmDeleteCompany">회사 삭제</button>
         </template>
-        
-        <!-- 회사가 없는 경우: 생성과 참여 둘 다 표시 -->
         <template v-else>
           <button class="menu-item" @click="openCreateCompanyModal">회사 생성</button>
-          <button class="menu-item" @click="openJoinCompanyModal">회사 초대 코드로 참여</button>
+          <button class="menu-item" @click="openJoinCompanyModal">초대 코드로 참여</button>
         </template>
       </div>
     </template>
@@ -36,60 +41,25 @@
         <p>새로운 회사를 생성하여 팀원들과 출장 계획을 함께 관리하세요.</p>
         
         <input type="text" v-model="companyName" placeholder="회사 이름을 입력하세요" class="company-name-input"/>
-        
-        <div class="workspace-select-container">
-          <label class="workspace-label">워크스페이스 유형</label>
-          
-          <!-- 커스텀 드롭다운 -->
-          <div class="custom-dropdown" :class="{ 'dropdown-open': isDropdownOpen }">
-            <div class="dropdown-trigger" @click="toggleDropdown">
-              <div v-if="selectedWorkspace" class="selected-option">
-                <div class="workspace-icon">
-                  <img v-if="selectedWorkspace === 'NOTION'" 
-                       src="@/assets/notion-icon.png" 
-                       alt="Notion" 
-                       class="workspace-image" />
-                  <img v-else-if="selectedWorkspace === 'SLACK'" 
-                       src="@/assets/slack-icon.png" 
-                       alt="Slack" 
-                       class="workspace-image" />
-                  <img v-else-if="selectedWorkspace === 'GOOGLE_WORKSPACE'" 
-                       src="@/assets/google-workspace-icon.png" 
-                       alt="Google Workspace" 
-                       class="workspace-image" />
-                  <span v-else-if="selectedWorkspace === 'NONE'" class="workspace-emoji">❌</span>
-                </div>
-                <span class="option-text">{{ getWorkspaceDisplayName(selectedWorkspace) }}</span>
+        <div class="workspace-multi-select">
+          <label class="workspace-label">워크스페이스 선택 (복수 선택)</label>
+          <div class="workspace-options-grid">
+            <div v-for="option in workspaceOptions" :key="option.value" class="workspace-option" :class="{selected: selectedWorkspaces.includes(option.value)}" @click="toggleWorkspace(option.value)">
+              <div class="icon-wrap">
+                <img v-if="option.value === 'NOTION'" src="@/assets/notion-icon.png" alt="Notion" class="workspace-image" />
+                <img v-else-if="option.value === 'SLACK'" src="@/assets/slack-icon.png" alt="Slack" class="workspace-image" />
+                <img v-else-if="option.value === 'GOOGLE_WORKSPACE'" src="@/assets/google-workspace-icon.png" alt="Google Workspace" class="workspace-image" />
+                <span v-else-if="option.value === 'NONE'" class="workspace-emoji">❌</span>
               </div>
-              <span v-else class="placeholder-text">워크스페이스를 선택하세요</span>
-              <i class="pi pi-chevron-down dropdown-arrow" :class="{ 'arrow-up': isDropdownOpen }"></i>
+              <span class="label">{{ option.label }}</span>
+              <i v-if="selectedWorkspaces.includes(option.value)" class="pi pi-check checkmark"></i>
             </div>
-            
-            <div v-if="isDropdownOpen" class="dropdown-menu">
-              <div 
-                v-for="option in workspaceOptions" 
-                :key="option.value"
-                class="dropdown-option"
-                @click="selectWorkspace(option.value)"
-              >
-                <div class="workspace-icon">
-                  <img v-if="option.value === 'NOTION'" 
-                       src="@/assets/notion-icon.png" 
-                       alt="Notion" 
-                       class="workspace-image" />
-                  <img v-else-if="option.value === 'SLACK'" 
-                       src="@/assets/slack-icon.png" 
-                       alt="Slack" 
-                       class="workspace-image" />
-                  <img v-else-if="option.value === 'GOOGLE_WORKSPACE'" 
-                       src="@/assets/google-workspace-icon.png" 
-                       alt="Google Workspace" 
-                       class="workspace-image" />
-                  <span v-else-if="option.value === 'NONE'" class="workspace-emoji">❌</span>
-                </div>
-                <span class="option-text">{{ option.label }}</span>
-              </div>
-            </div>
+          </div>
+          <div v-if="selectedWorkspaces.length" class="selected-chips">
+            <span v-for="ws in selectedWorkspaces" :key="ws" class="workspace-chip small">
+              {{ getWorkspaceDisplayName(ws) }}
+              <button type="button" class="remove-chip" @click.stop="removeWorkspace(ws)">×</button>
+            </span>
           </div>
         </div>
         
@@ -123,6 +93,38 @@
         <div class="form-actions">
           <BaseButton variant="cancel" @click="closeJoinCompanyModal">취소</BaseButton>
           <BaseButton variant="confirm" @click="handleJoinCompany">참가</BaseButton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company Edit Modal -->
+    <div v-if="showEditCompanyModal" class="modal-overlay" @click.self="closeEditCompanyModal">
+      <div class="modal-content">
+        <h2>회사 정보 수정</h2>
+        <p>회사명과 워크스페이스를 수정할 수 있습니다.</p>
+        <input type="text" v-model="editCompanyName" placeholder="새 회사 이름" class="company-name-input"/>
+        <div class="workspace-multi-select">
+          <label class="workspace-label">워크스페이스 (복수 선택)</label>
+          <div class="workspace-options-grid">
+            <div v-for="option in workspaceOptions" :key="option.value" class="workspace-option" :class="{selected: editSelectedWorkspaces.includes(option.value)}" @click="toggleEditWorkspace(option.value)">
+              <div class="icon-wrap">
+                <img v-if="option.value === 'NOTION'" src="@/assets/notion-icon.png" alt="Notion" class="workspace-image" />
+                <img v-else-if="option.value === 'SLACK'" src="@/assets/slack-icon.png" alt="Slack" class="workspace-image" />
+                <img v-else-if="option.value === 'GOOGLE_WORKSPACE'" src="@/assets/google-workspace-icon.png" alt="Google Workspace" class="workspace-image" />
+                <span v-else-if="option.value === 'NONE'" class="workspace-emoji">❌</span>
+              </div>
+              <span class="label">{{ option.label }}</span>
+              <i v-if="editSelectedWorkspaces.includes(option.value)" class="pi pi-check checkmark"></i>
+            </div>
+          </div>
+        </div>
+        <BaseMessage v-if="editMessage" :type="editMessageType" size="small">{{ editMessage }}</BaseMessage>
+        <div class="form-actions">
+          <BaseButton variant="cancel" @click="closeEditCompanyModal">닫기</BaseButton>
+          <BaseButton variant="confirm" @click="handleUpdateCompany">저장</BaseButton>
+        </div>
+        <div class="danger-zone">
+          <button class="danger-delete-btn" @click="confirmDeleteCompany">회사 삭제</button>
         </div>
       </div>
     </div>
@@ -165,6 +167,7 @@
 import apiService from '@/services/api.js';
 import BaseButton from '../common/BaseButton.vue';
 import BaseMessage from '../common/BaseMessage.vue';
+import { pushMessage } from '@/utils/notify.js';
 
 export default {
   name: 'CompanyMenu',
@@ -194,19 +197,24 @@ export default {
       showCreateCompanyModal: false,
       showJoinCompanyModal: false,
       showInvitationModal: false,
-      companyName: '',
-      selectedWorkspace: '',
+  showEditCompanyModal: false,
+  companyName: '',
+  selectedWorkspaces: [],
       isDropdownOpen: false,
       invitationCode: '',
       generatedInvitationCode: '',
       hideMenuTimeout: null,
-      userCompany: null,
+  userCompany: null, // { name, workspaces: [] }
       creationMessage: '',
       creationMessageType: '',
       joinMessage: '',
       joinMessageType: '',
       invitationMessage: '',
       invitationMessageType: '',
+  editCompanyName: '',
+  editSelectedWorkspaces: [],
+  editMessage: '',
+  editMessageType: '',
       workspaceOptions: [
         { value: 'NOTION', label: 'Notion' },
         { value: 'SLACK', label: 'Slack' },
@@ -246,13 +254,13 @@ export default {
       this.showCreateCompanyModal = true;
       this.creationMessage = '';
       this.creationMessageType = '';
-      this.selectedWorkspace = '';
+  this.selectedWorkspaces = [];
       this.isDropdownOpen = false;
     },
     closeCreateCompanyModal() {
       this.showCreateCompanyModal = false;
       this.companyName = '';
-      this.selectedWorkspace = '';
+  this.selectedWorkspaces = [];
       this.isDropdownOpen = false;
       this.creationMessage = '';
       this.creationMessageType = '';
@@ -318,25 +326,22 @@ export default {
         this.creationMessageType = 'error';
         return;
       }
-      if (!this.selectedWorkspace) {
-        this.creationMessage = '워크스페이스 유형을 선택해주세요.';
+      if (!this.selectedWorkspaces.length) {
+        this.creationMessage = '최소 한 개의 워크스페이스를 선택해주세요.';
         this.creationMessageType = 'error';
         return;
       }
-      
       try {
-        const response = await apiService.company.create({ 
+        const response = await apiService.company.create({
           name: this.companyName,
-          workspace: this.selectedWorkspace
+          workspaces: this.selectedWorkspaces
         });
         if (response.status === 201) {
-            this.creationMessage = '회사가 성공적으로 생성되었습니다.';
-            this.creationMessageType = 'success';
-            await this.fetchUserCompany();
-            this.$emit('company-updated', this.companyName);
-            setTimeout(() => {
-              this.closeCreateCompanyModal();
-            }, 1500);
+          await this.fetchUserCompany();
+          this.$emit('company-updated', this.companyName);
+          const createdName = this.companyName; // close 전에 참조
+          this.closeCreateCompanyModal();
+          pushMessage({ type: 'success', text: `'${createdName}' 회사가 생성되었습니다.` });
         }
       } catch (error) {
         console.error('Failed to create company:', error);
@@ -376,9 +381,79 @@ export default {
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen;
     },
-    selectWorkspace(value) {
-      this.selectedWorkspace = value;
-      this.isDropdownOpen = false;
+    toggleWorkspace(value) {
+      const idx = this.selectedWorkspaces.indexOf(value);
+      if (idx === -1) this.selectedWorkspaces.push(value); else this.selectedWorkspaces.splice(idx, 1);
+    },
+    removeWorkspace(value) {
+      this.selectedWorkspaces = this.selectedWorkspaces.filter(v => v !== value);
+    },
+    openEditCompanyModal() {
+      if (!this.userCompany) return;
+      this.showMenu = false;
+      this.showEditCompanyModal = true;
+      this.editCompanyName = this.userCompany.name;
+      this.editSelectedWorkspaces = [...(this.userCompany.workspaces || [])];
+      this.editMessage = '';
+      this.editMessageType = '';
+    },
+    closeEditCompanyModal() {
+      this.showEditCompanyModal = false;
+      this.editCompanyName = '';
+      this.editSelectedWorkspaces = [];
+      this.editMessage = '';
+      this.editMessageType = '';
+    },
+    async handleUpdateCompany() {
+      this.editMessage = '';
+      if (!this.editCompanyName.trim()) {
+        this.editMessage = '회사 이름을 입력해주세요.';
+        this.editMessageType = 'error';
+        return;
+      }
+      try {
+        const response = await apiService.company.update({
+          name: this.editCompanyName.trim(),
+          workspaces: this.editSelectedWorkspaces
+        });
+        if (response.status === 200) {
+          this.editMessage = '회사 정보가 수정되었습니다.';
+          this.editMessageType = 'success';
+          await this.fetchUserCompany();
+          setTimeout(() => this.closeEditCompanyModal(), 1200);
+        }
+      } catch (e) {
+        console.error('Failed to update company', e);
+        this.editMessage = '회사 수정에 실패했습니다.';
+        this.editMessageType = 'error';
+      }
+    },
+    async confirmDeleteCompany() {
+      try {
+        const { showConfirm } = await import('@/utils/dialog.js');
+        const confirmed = await showConfirm({
+          title: '회사 삭제',
+          message: '회사를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
+          confirmText: '삭제',
+          cancelText: '취소',
+          confirmVariant: 'danger',
+          iconType: 'danger'
+        });
+        if (!confirmed) return;
+        const res = await apiService.company.delete();
+        if (res.status === 204 || res.status === 200) {
+          this.userCompany = null;
+          this.closeEditCompanyModal();
+          this.showMenu = false;
+          pushMessage({ type: 'success', text: '회사가 삭제되었습니다.' });
+        }
+      } catch (e) {
+        console.error('Delete company failed', e);
+        if (this.editMessage !== undefined) {
+          this.editMessage = '회사 삭제 실패.';
+          this.editMessageType = 'error';
+        }
+      }
     },
     getWorkspaceDisplayName(workspace) {
       switch (workspace) {
@@ -392,12 +467,38 @@ export default {
     async fetchUserCompany() {
       try {
         const response = await apiService.company.getList();
-        this.userCompany = response.data; // API 응답이 string이므로 직접 할당
+        let data = response.data;
+        if (typeof data === 'string') {
+          try { data = JSON.parse(data); } catch (_) { /* ignore */ }
+        }
+        if (data && typeof data === 'object') {
+          this.userCompany = {
+            name: data.name || data.companyName || '',
+            workspaces: Array.isArray(data.workspaces) ? data.workspaces : []
+          };
+        } else if (typeof data === 'string') {
+          this.userCompany = { name: data, workspaces: [] };
+        } else {
+          this.userCompany = null;
+        }
       } catch (error) {
         console.error('Failed to fetch user company:', error);
         this.userCompany = null;
       }
     },
+    workspaceShort(ws) {
+      switch (ws) {
+        case 'NOTION': return 'N';
+        case 'SLACK': return 'S';
+        case 'GOOGLE_WORKSPACE': return 'G';
+        case 'NONE': return 'X';
+        default: return '•';
+      }
+    },
+    toggleEditWorkspace(value) {
+      const idx = this.editSelectedWorkspaces.indexOf(value);
+      if (idx === -1) this.editSelectedWorkspaces.push(value); else this.editSelectedWorkspaces.splice(idx, 1);
+    }
   },
   mounted() {
     this.fetchUserCompany();
@@ -452,6 +553,53 @@ export default {
   padding: 4px;
 }
 
+.company-info.rich {
+  padding: 8px 8px 4px;
+}
+
+.company-header-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+}
+
+.company-header-icon { font-size: 16px; color: var(--color-primary, #9f7aea); }
+.company-name-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.workspace-chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.workspace-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.08);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #e0e0e0;
+  line-height: 1;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.workspace-chip.small { padding: 4px 10px; font-size: 12px; }
+.chip-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--color-primary, #7e5bef);
+  color: #fff;
+  text-transform: uppercase;
+}
+.chip-badge[data-type='SLACK'] { background:#611f69; }
+.chip-badge[data-type='NOTION'] { background:#2f3437; }
+.chip-badge[data-type='GOOGLE_WORKSPACE'] { background:#1a73e8; }
+.chip-badge[data-type='NONE'] { background:#555; }
+
 .company-list {
   padding: 4px;
 }
@@ -471,11 +619,6 @@ export default {
   text-align: center;
 }
 
-.menu-divider {
-  height: 1px;
-  background-color: #444;
-  margin: 8px 0;
-}
 
 .menu-item {
   background: none;
@@ -492,6 +635,9 @@ export default {
 .menu-item:hover {
   background-color: #3a3a3a;
 }
+
+.menu-item.danger { color: #ff6b6b; }
+.menu-item.danger:hover { background:#402626; color:#ff8585; }
 
 .modal-overlay {
   position: fixed;
@@ -601,6 +747,40 @@ export default {
   font-size: 14px;
   font-weight: 500;
 }
+
+.workspace-multi-select { text-align:left; margin-bottom:16px; }
+.workspace-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(140px,1fr));
+  gap: 8px;
+}
+.workspace-option {
+  position: relative;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  background: var(--color-bg-primary);
+  border:1px solid var(--color-border-secondary);
+  border-radius:8px;
+  cursor:pointer;
+  font-size:13px;
+  transition:.15s;
+}
+.workspace-option.selected {
+  border-color: var(--color-primary);
+  box-shadow:0 0 0 3px var(--color-primary-light);
+}
+.workspace-option:hover { border-color: var(--color-border-hover); }
+.workspace-option .checkmark { margin-left:auto; color: var(--color-primary); font-size:14px; }
+.icon-wrap { width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
+.selected-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.remove-chip { background:none; border:none; color:#bbb; margin-left:6px; cursor:pointer; font-size:12px; }
+.remove-chip:hover { color:#fff; }
+
+.danger-zone { margin-top:24px; padding-top:12px; border-top:1px solid var(--color-border-secondary); text-align:right; }
+.danger-delete-btn { background:#ff4d4f; border:none; color:#fff; padding:10px 16px; border-radius:8px; cursor:pointer; font-size:13px; }
+.danger-delete-btn:hover { background:#ff686a; }
 
 .custom-dropdown {
   position: relative;

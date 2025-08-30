@@ -97,8 +97,8 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: var(--spacing-3xl);
-  border-bottom: 1px solid var(--color-border-secondary);
+  padding: var(--spacing-3xl) var(--spacing-3xl) var(--spacing-xl);
+  /* 구분선 제거: 시각적 공간으로만 구분 */
 }
 
 .header-info {
@@ -146,7 +146,8 @@ export default {
 }
 
 .modal-body {
-  padding: var(--spacing-3xl);
+  /* 상단은 그대로, 하단 패딩 축소로 actions와 간격 줄이기 */
+  padding: var(--spacing-xl) var(--spacing-3xl) var(--spacing-xl);
   max-height: calc(85vh - 120px);
   overflow-y: auto;
 }
@@ -155,8 +156,9 @@ export default {
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-md);
-  padding: var(--spacing-3xl);
-  border-top: 1px solid var(--color-border-secondary);
+  /* 상단 패딩을 더 줄여 본문과의 시각적 거리 최소화 */
+  padding: var(--spacing-sm) var(--spacing-3xl) var(--spacing-2xl);
+  /* 구분선 제거 상태 */
 }
 
 /* 반응형 디자인 */
@@ -172,7 +174,7 @@ export default {
   .modal-header,
   .modal-body,
   .modal-actions {
-    padding: var(--spacing-2xl);
+  padding: var(--spacing-xl) var(--spacing-2xl);
   }
   
   .modal-title {
@@ -184,7 +186,7 @@ export default {
   .modal-header,
   .modal-body,
   .modal-actions {
-    padding: var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
   }
   
   .modal-title {

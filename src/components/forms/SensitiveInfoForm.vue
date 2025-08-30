@@ -119,16 +119,22 @@
         />
       </div>
   </div> <!-- end form-grid -->
-      <button type="submit" class="submit-btn" :disabled="isLoading">
-        <span v-if="!isLoading">
-          <i class="pi pi-check"></i>
-          저장하고 계속하기
-        </span>
-        <span v-else>
-          <i class="pi pi-spinner pi-spin"></i>
-          저장 중...
-        </span>
-      </button>
+      <div class="form-action-row">
+        <button type="button" class="back-btn" @click="goBack" :disabled="isLoading">
+          <i class="pi pi-arrow-left"></i>
+          뒤로가기
+        </button>
+        <button type="submit" class="submit-btn" :disabled="isLoading">
+          <span v-if="!isLoading">
+            <i class="pi pi-check"></i>
+            저장하고 계속하기
+          </span>
+          <span v-else>
+            <i class="pi pi-spinner pi-spin"></i>
+            저장 중...
+          </span>
+        </button>
+      </div>
     </form>
 
     <div v-if="errorMessage" class="error-message">
@@ -139,7 +145,7 @@
 </template>
 
 <script>
-import { apiService } from '../../services/api';
+import { apiService, tokenManager } from '../../services/api';
 import ModernDatePicker from '../common/ModernDatePicker.vue';
 
 export default {
@@ -164,6 +170,12 @@ export default {
     };
   },
   methods: {
+    goBack() {
+      // 토큰이 있는 상태에서는 /login 진입이 가드에 의해 /main 으로 리다이렉트되고
+      // 다시 민감정보 페이지로 돌아오기 때문에 토큰을 먼저 제거한다.
+      tokenManager.clearTokens();
+      this.$router.push('/login');
+    },
     async handleSubmit() {
       this.errorMessage = '';
       this.isLoading = true;
@@ -432,6 +444,11 @@ export default {
   box-shadow: var(--shadow-md);
   margin-top: var(--spacing-lg);
 }
+.form-action-row { display:flex; gap: var(--spacing-lg); margin-top: var(--spacing-lg); }
+.form-action-row .submit-btn { flex:3; margin-top:0; }
+.back-btn { flex:1; display:flex; align-items:center; justify-content:center; gap: var(--spacing-sm); padding: var(--spacing-xl) var(--spacing-lg); background: var(--color-bg-card); border:1px solid var(--color-border-secondary); border-radius: var(--radius-lg); color: var(--color-text-secondary); font-size: var(--font-size-base); font-weight: var(--font-weight-medium); cursor:pointer; }
+.back-btn:hover:not(:disabled) { background: var(--color-bg-card-hover); color: var(--color-text-primary); }
+.back-btn:disabled { opacity:.6; cursor:not-allowed; }
 .gender-segmented {
   display: inline-flex;
   background: var(--color-bg-card);

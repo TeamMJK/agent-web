@@ -235,6 +235,7 @@ import { apiService } from '../../services/api';
 import ModernDatePicker from '../common/ModernDatePicker.vue';
 import BaseMessage from '../common/BaseMessage.vue';
 import { showConfirm } from '../../utils/dialog.js';
+import { pushMessage } from '@/utils/notify.js';
 
 export default {
   name: "AppSidebar",
@@ -368,9 +369,9 @@ export default {
         this.originalUserInfo = { ...this.userInfo };
         this.editingFields = {};
         
-        // 성공 메시지 표시
-        this.showMessage('success', '사용자 정보가 성공적으로 저장되었습니다.');
-        console.log('사용자 정보 수정 성공');
+  // 모달 닫고 글로벌 성공 알림
+  this.closeModal();
+  pushMessage({ type: 'success', text: '사용자 정보가 저장되었습니다.' });
       } catch (error) {
         console.error('사용자 정보 수정 실패:', error);
         // 에러 메시지 표시
