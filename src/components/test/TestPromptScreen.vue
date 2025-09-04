@@ -86,23 +86,15 @@
         </div>
       </div>
 
-      <!-- 선택된 이미지 뷰어 (오른쪽 3/4) -->
-      <div class="image-viewer">
+      <!-- VNC 뷰어 (오른쪽 3/4) -->
+      <div class="vnc-viewer">
         <div class="viewer-container">
-          <transition name="fade" mode="out-in">
-            <img 
-              v-if="selectedImage"
-              :key="selectedImageIndex"
-              :src="selectedImage.src" 
-              :alt="selectedImage.alt"
-              class="main-image"
-            />
-          </transition>
-          
-          <div v-if="selectedImage" class="image-info">
-            <h3 class="image-title">{{ selectedImage.title }}</h3>
-            <p class="image-description">{{ selectedImage.description }}</p>
-          </div>
+          <iframe 
+            src="http://1.228.118.45:6081/vnc.html?autoconnect=true&resize=scale"
+            class="vnc-iframe"
+            frameborder="0"
+            allowfullscreen
+          ></iframe>
         </div>
       </div>
     </div>
@@ -111,7 +103,7 @@
 
 <script>
 export default {
-  name: 'TestScriptScreen',
+  name: 'TestPromptScreen',
   data() {
     return {
       sidebarOpen: false,
@@ -385,8 +377,8 @@ export default {
   font-weight: var(--font-weight-medium);
 }
 
-/* 이미지 뷰어 (오른쪽 3/4) */
-.image-viewer {
+/* VNC 뷰어 (오른쪽 3/4) */
+.vnc-viewer {
   flex: 1;
   display: flex;
   align-items: center;
@@ -397,33 +389,20 @@ export default {
 
 .viewer-container {
   width: 100%;
+  height: 100%;
   max-width: 1800px;
-  text-align: center;
-}
-
-.main-image {
-  width: 100%;
-  height: auto;
-  max-height: 85vh;
-  object-fit: contain;
+  max-height: 95vh;
   border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
 }
 
-.image-info {
-  margin-top: var(--spacing-2xl);
-  
-  .image-title {
-    font-size: 1.5rem;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin: 0 0 var(--spacing-sm) 0;
-  }
-  
-  .image-description {
-    color: var(--color-text-secondary);
-    font-size: 1rem;
-    margin: 0;
-  }
+.vnc-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  border: none;
+  border-radius: var(--radius-xl);
 }
 
 /* Fade 애니메이션 */
@@ -503,8 +482,8 @@ export default {
     padding: var(--spacing-lg);
   }
   
-  .main-image {
-    max-height: 50vh;
+  .vnc-iframe {
+    min-height: 400px;
   }
 }
 

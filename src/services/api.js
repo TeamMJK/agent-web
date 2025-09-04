@@ -267,12 +267,12 @@ export const apiService = {
 
     /**
      * 영수증 이미지 업로드
-     * POST /receipts/upload
+     * POST /receipts/i
      * @param {FormData} formData 이미지 파일이 포함된 FormData
      * @returns {Promise} 업로드된 영수증 정보 반환
      */
     uploadImage: (formData) => {
-      return apiClient.post('/receipts/upload', formData, {
+      return apiClient.post('/receipts/i', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
