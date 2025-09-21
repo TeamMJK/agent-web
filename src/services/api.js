@@ -176,17 +176,18 @@ export const apiService = {
     /**
      * 회사 생성
      * POST /companies
-     * @param {Object} companyData { name, workspaces | workspace }
-     * - workspaces: 문자열 배열 (Swagger 요구사항)
-     * - workspace: 단일 문자열 (호환성 위해 허용, 배열로 변환)
+     * @param {Object} companyData { name, workspaces, workspaceConfigs }
+     * - workspaces: 문자열 배열
+     * - workspaceConfigs: 워크스페이스별 설정 객체
      * @returns {Promise} 생성된 회사 ID 반환
      */
     create: (companyData) => {
-      const payload = { name: companyData.name };
-      if (Array.isArray(companyData.workspaces)) {
-        payload.workspaces = companyData.workspaces;
-      } else if (companyData.workspace) {
-        payload.workspaces = [companyData.workspace];
+      const payload = {
+        name: companyData.name,
+        workspaces: companyData.workspaces || []
+      };
+      if (companyData.workspaceConfigs) {
+        payload.workspaceConfigs = companyData.workspaceConfigs;
       }
       return apiClient.post('/companies', payload);
     },
@@ -194,12 +195,15 @@ export const apiService = {
     /**
      * 회사 수정
      * PATCH /companies
-     * @param {Object} companyData { name, workspaces }
+     * @param {Object} companyData { name, workspaces, workspaceConfigs }
      */
     update: (companyData) => {
-      const payload = { name: companyData.name };
-      if (Array.isArray(companyData.workspaces)) {
-        payload.workspaces = companyData.workspaces;
+      const payload = {
+        name: companyData.name,
+        workspaces: companyData.workspaces || []
+      };
+      if (companyData.workspaceConfigs) {
+        payload.workspaceConfigs = companyData.workspaceConfigs;
       }
       return apiClient.patch('/companies', payload);
     },
