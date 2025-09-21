@@ -34,7 +34,7 @@
             type="text" 
             id="firstName" 
             v-model="formData.firstName" 
-            placeholder="예: HONG" 
+            placeholder="예: GILDONG" 
             required 
           />
         </div>
@@ -47,7 +47,7 @@
             type="text" 
             id="lastName" 
             v-model="formData.lastName" 
-            placeholder="예: GILDONG" 
+            placeholder="예: HONG" 
             required 
           />
         </div>
