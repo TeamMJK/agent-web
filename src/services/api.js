@@ -313,6 +313,64 @@ export const apiService = {
      */
     businessTrip: (payload) => apiClient.post('/prompts/business-trip', payload),
   },
+
+  // 출장 관련 API
+  businessTrips: {
+    /**
+     * 출장 목록 조회
+     * GET /business-trips
+     * @returns {Promise} 출장 목록 반환
+     */
+    getList: () => apiClient.get('/business-trips'),
+
+    /**
+     * MJK 워크스페이스 출장 등록
+     * POST /business-trips
+     * @param {Object} tripData 출장 등록 정보
+     * @param {string} tripData.departDate - 출발 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.arriveDate - 도착 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.destination - 목적지
+     * @param {string[]} tripData.names - 출장자 이름 목록
+     * @param {string} tripData.serviceType - 서비스 타입 ("FLIGHT" | "HOTEL")
+     * @returns {Promise} 생성된 출장 ID 반환
+     */
+    create: (tripData) => apiClient.post('/business-trips', tripData),
+
+    /**
+     * 기업 워크스페이스 출장 MCP 등록
+     * POST /business-trips/mcp
+     * @param {Object} tripData 출장 등록 정보
+     * @param {string} tripData.departDate - 출발 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.arriveDate - 도착 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.destination - 목적지
+     * @param {string[]} tripData.names - 출장자 이름 목록
+     * @param {string} tripData.serviceType - 서비스 타입 ("FLIGHT" | "HOTEL")
+     * @returns {Promise} 생성된 출장 ID 반환
+     */
+    createMcp: (tripData) => apiClient.post('/business-trips/mcp', tripData),
+
+    /**
+     * 출장 수정
+     * PATCH /business-trips/{business-trip-id}
+     * @param {number} tripId 출장 ID
+     * @param {Object} tripData 출장 수정 정보
+     * @param {string} tripData.departDate - 출발 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.arriveDate - 도착 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.destination - 목적지
+     * @param {string[]} tripData.names - 출장자 이름 목록
+     * @param {string} tripData.serviceType - 서비스 타입 ("FLIGHT" | "HOTEL")
+     * @returns {Promise} 수정된 출장 ID 반환
+     */
+    update: (tripId, tripData) => apiClient.patch(`/business-trips/${tripId}`, tripData),
+
+    /**
+     * 출장 삭제
+     * DELETE /business-trips/{business-trip-id}
+     * @param {number} tripId 출장 ID
+     * @returns {Promise} 삭제 성공 시 상태 코드 204 반환
+     */
+    delete: (tripId) => apiClient.delete(`/business-trips/${tripId}`),
+  },
 };
 
 // 기본 export

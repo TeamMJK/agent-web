@@ -8,10 +8,16 @@
       </div>
       <div class="header-actions">
         <CompanyMenu />
-        <button class="add-schedule-btn" @click="showAddScheduleModal = true">
-          <i class="pi pi-plus"></i>
-          <span>일정 추가</span>
-        </button>
+        <div class="schedule-buttons">
+          <button class="add-schedule-btn mjk-btn" @click="openAddScheduleModal('mjk')">
+            <i class="pi pi-plus"></i>
+            <span>MJK 일정 추가</span>
+          </button>
+          <button class="add-schedule-btn company-btn" @click="openAddScheduleModal('company')">
+            <i class="pi pi-plus"></i>
+            <span>기업 일정 추가</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -28,12 +34,16 @@
           :selected-date="selectedDate"
           :events="events"
           @delete-event="handleDeleteEvent"
+          @edit-event="handleEditEvent"
       />
     </div>
 
     <ScheduleModal
         :show="showAddScheduleModal"
-        @close="showAddScheduleModal = false"
+        :trip-type="currentTripType"
+        :edit-mode="isEditMode"
+        :edit-data="editEventData"
+        @close="closeAddScheduleModal"
         @add-schedule="handleAddSchedule"
     />
     
@@ -49,6 +59,15 @@
       @confirm="confirmDeleteEvent"
       @cancel="cancelDeleteEvent"
     />
+
+    <!-- 메시지 표시 -->
+    <BaseMessage
+      v-if="message.show"
+      :type="message.type"
+      @close="message.show = false"
+    >
+      {{ message.text }}
+    </BaseMessage>
   </div>
 </template>
 
@@ -58,6 +77,8 @@ import EventDetails from './EventDetails.vue';
 import ScheduleModal from './ScheduleModal.vue';
 import CompanyMenu from './CompanyMenu.vue';
 import BaseConfirm from '../common/BaseConfirm.vue';
+import BaseMessage from '../common/BaseMessage.vue';
+import { apiService } from '../../services/api.js';
 
 export default {
   name: 'WorkSpaceScreen',
@@ -67,14 +88,23 @@ export default {
     ScheduleModal,
     CompanyMenu,
     BaseConfirm,
+    BaseMessage,
   },
   data() {
     return {
       selectedDate: new Date(),
       showAddScheduleModal: false,
+      currentTripType: 'mjk', // 'mjk' or 'company'
+      isEditMode: false,
+      editEventData: null,
       events: [], // This will be fetched from the backend
       showDeleteConfirm: false,
-      eventToDelete: null
+      eventToDelete: null,
+      message: {
+        show: false,
+        type: 'success',
+        text: ''
+      }
     };
   },
   methods: {
@@ -85,13 +115,54 @@ export default {
       // You might want to fetch events for the new month here
       console.log('Month changed to:', newMonthDate);
     },
-    handleAddSchedule(newEvent) {
-      // Add the new event to the local state
-      this.events.push(newEvent);
-      // Close the modal
+    openAddScheduleModal(tripType) {
+      this.currentTripType = tripType;
+      this.isEditMode = false;
+      this.editEventData = null;
+      this.showAddScheduleModal = true;
+    },
+    closeAddScheduleModal() {
       this.showAddScheduleModal = false;
-      // TODO: API call to save the event to the backend
-      console.log('Schedule added:', newEvent);
+      this.currentTripType = 'mjk';
+      this.isEditMode = false;
+      this.editEventData = null;
+    },
+    handleEditEvent(event) {
+      this.isEditMode = true;
+      this.editEventData = event;
+      this.currentTripType = 'mjk'; // 수정은 MJK 워크스페이스로 고정
+      this.showAddScheduleModal = true;
+    },
+    async handleAddSchedule(tripData) {
+      try {
+        let response;
+        
+        if (this.isEditMode && this.editEventData) {
+          // 수정 모드
+          response = await apiService.businessTrips.update(this.editEventData.id, tripData);
+          console.log('출장 수정 성공:', response.data);
+        } else {
+          // 등록 모드
+          if (this.currentTripType === 'mjk') {
+            response = await apiService.businessTrips.create(tripData);
+            console.log('MJK 워크스페이스 출장 등록 성공:', response.data);
+          } else if (this.currentTripType === 'company') {
+            response = await apiService.businessTrips.createMcp(tripData);
+            console.log('기업 워크스페이스 출장 MCP 등록 성공:', response.data);
+          }
+        }
+        
+        // 성공 시 목록 다시 조회
+        await this.fetchSchedules();
+        
+        // 모달 닫기
+        this.closeAddScheduleModal();
+        
+      } catch (error) {
+        console.error('출장 처리 실패:', error);
+        // TODO: 사용자에게 에러 메시지 표시 (BaseMessage 사용)
+        alert('출장 처리에 실패했습니다. 다시 시도해주세요.');
+      }
     },
     handleDeleteEvent(eventId) {
       const event = this.events.find(e => e.id === eventId);
@@ -103,9 +174,8 @@ export default {
     
     confirmDeleteEvent() {
       if (this.eventToDelete) {
-        this.events = this.events.filter(event => event.id !== this.eventToDelete.id);
-        console.log('Schedule deleted:', this.eventToDelete.id);
-        // TODO: API call to delete the event from the backend
+        // API 호출로 출장 삭제
+        this.deleteEvent(this.eventToDelete.id);
       }
       this.cancelDeleteEvent();
     },
@@ -114,11 +184,64 @@ export default {
       this.showDeleteConfirm = false;
       this.eventToDelete = null;
     },
+    async deleteEvent(eventId) {
+      try {
+        // 출장 삭제 API 호출
+        await apiService.businessTrips.delete(eventId);
+        
+        // 로컬 상태에서 이벤트 제거
+        this.events = this.events.filter(event => event.id !== eventId);
+        
+        // 성공 메시지 표시
+        this.showMessage('success', '출장이 성공적으로 삭제되었습니다.');
+        
+        console.log('출장 삭제 성공:', eventId);
+      } catch (error) {
+        console.error('출장 삭제 실패:', error);
+        
+        // 에러 메시지 표시
+        this.showMessage('error', '출장 삭제에 실패했습니다. 다시 시도해주세요.');
+      }
+    },
+    showMessage(type, text) {
+      this.message = {
+        show: true,
+        type,
+        text
+      };
+      
+      // 3초 후 자동 숨김
+      setTimeout(() => {
+        this.message.show = false;
+      }, 3000);
+    },
     async fetchSchedules() {
-      // TODO: Implement API call to fetch events
-      console.log('Fetching schedules from backend...');
-      // Example data:
-      // this.events = await api.getEvents();
+      try {
+        const response = await apiService.businessTrips.getList();
+        // API 응답에서 businessTripList 추출
+        const businessTrips = response.data.businessTripList || [];
+        
+        // 캘린더 이벤트 포맷으로 변환
+        this.events = businessTrips.map(trip => ({
+          id: trip.id,
+          title: `${trip.destination} (${trip.serviceType === 'FLIGHT' ? '항공' : '숙박'})`,
+          startDate: trip.departDate,
+          endDate: trip.arriveDate,
+          description: `출장자: ${trip.names.join(', ')}\n작성자: ${trip.writer}`,
+          color: trip.serviceType === 'FLIGHT' ? '#3B82F6' : '#10B981', // 항공: 파란색, 숙박: 초록색
+          serviceType: trip.serviceType,
+          destination: trip.destination,
+          names: trip.names,
+          writer: trip.writer,
+          companyId: trip.companyId
+        }));
+        
+        console.log('출장 목록 조회 성공:', this.events.length, '건');
+      } catch (error) {
+        console.error('출장 목록 조회 실패:', error);
+        // 에러 발생 시 빈 배열로 설정
+        this.events = [];
+      }
     }
   },
   mounted() {
@@ -174,6 +297,12 @@ export default {
     flex-shrink: 0;
 }
 
+.schedule-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
 .workspace-title {
     font-size: 2.5rem;
     font-weight: 600;
@@ -224,6 +353,10 @@ export default {
     transform: translateY(0);
 }
 
+.company-btn {
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+
 .workspace-content {
     flex: 1;
     padding: 24px;
@@ -262,6 +395,12 @@ export default {
         justify-content: center;
         padding: 18px 24px;
         width: 100%;
+    }
+
+    .schedule-buttons {
+        width: 100%;
+        flex-direction: column;
+        gap: var(--spacing-md);
     }
 
     .workspace-content {
