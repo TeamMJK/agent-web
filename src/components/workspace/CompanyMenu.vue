@@ -48,13 +48,52 @@
               <div class="icon-wrap">
                 <img v-if="option.value === 'NOTION'" src="@/assets/notion-icon.png" alt="Notion" class="workspace-image" />
                 <img v-else-if="option.value === 'SLACK'" src="@/assets/slack-icon.png" alt="Slack" class="workspace-image" />
-                <img v-else-if="option.value === 'GOOGLE_WORKSPACE'" src="@/assets/google-workspace-icon.png" alt="Google Workspace" class="workspace-image" />
                 <span v-else-if="option.value === 'NONE'" class="workspace-emoji">❌</span>
               </div>
               <span class="label">{{ option.label }}</span>
               <i v-if="selectedWorkspaces.includes(option.value)" class="pi pi-check checkmark"></i>
             </div>
           </div>
+          
+          <!-- 동적 워크스페이스 설정 입력 필드 -->
+          <div v-if="selectedWorkspaces.includes('NOTION')" class="workspace-config">
+            <label class="config-label">Notion 설정</label>
+            <input 
+              type="password" 
+              v-model="workspaceConfigs.NOTION.token" 
+              placeholder="Notion API Token을 입력하세요" 
+              class="config-input"
+            />
+            <input 
+              type="text" 
+              v-model="workspaceConfigs.NOTION.businessTripDatabaseId" 
+              placeholder="출장 Database ID를 입력하세요" 
+              class="config-input"
+            />
+            <input 
+              type="text" 
+              v-model="workspaceConfigs.NOTION.receiptDatabaseId" 
+              placeholder="영수증 Database ID를 입력하세요" 
+              class="config-input"
+            />
+          </div>
+          
+          <div v-if="selectedWorkspaces.includes('SLACK')" class="workspace-config">
+            <label class="config-label">Slack 설정</label>
+            <input 
+              type="password" 
+              v-model="workspaceConfigs.SLACK.token" 
+              placeholder="Slack API Token을 입력하세요" 
+              class="config-input"
+            />
+            <input 
+              type="text" 
+              v-model="workspaceConfigs.SLACK.channelId" 
+              placeholder="Slack Channel ID를 입력하세요" 
+              class="config-input"
+            />
+          </div>
+          
           <div v-if="selectedWorkspaces.length" class="selected-chips">
             <span v-for="ws in selectedWorkspaces" :key="ws" class="workspace-chip small">
               {{ getWorkspaceDisplayName(ws) }}
@@ -110,12 +149,50 @@
               <div class="icon-wrap">
                 <img v-if="option.value === 'NOTION'" src="@/assets/notion-icon.png" alt="Notion" class="workspace-image" />
                 <img v-else-if="option.value === 'SLACK'" src="@/assets/slack-icon.png" alt="Slack" class="workspace-image" />
-                <img v-else-if="option.value === 'GOOGLE_WORKSPACE'" src="@/assets/google-workspace-icon.png" alt="Google Workspace" class="workspace-image" />
                 <span v-else-if="option.value === 'NONE'" class="workspace-emoji">❌</span>
               </div>
               <span class="label">{{ option.label }}</span>
               <i v-if="editSelectedWorkspaces.includes(option.value)" class="pi pi-check checkmark"></i>
             </div>
+          </div>
+          
+          <!-- 수정 모드 동적 워크스페이스 설정 입력 필드 -->
+          <div v-if="editSelectedWorkspaces.includes('NOTION')" class="workspace-config">
+            <label class="config-label">Notion 설정</label>
+            <input 
+              type="text" 
+              v-model="editWorkspaceConfigs.NOTION.token" 
+              placeholder="Notion Token" 
+              class="config-input"
+            />
+            <input 
+              type="text" 
+              v-model="editWorkspaceConfigs.NOTION.businessTripDatabaseId" 
+              placeholder="출장 Database ID" 
+              class="config-input"
+            />
+            <input 
+              type="text" 
+              v-model="editWorkspaceConfigs.NOTION.receiptDatabaseId" 
+              placeholder="영수증 Database ID" 
+              class="config-input"
+            />
+          </div>
+          
+          <div v-if="editSelectedWorkspaces.includes('SLACK')" class="workspace-config">
+            <label class="config-label">Slack 설정</label>
+            <input 
+              type="password" 
+              v-model="editWorkspaceConfigs.SLACK.token" 
+              placeholder="Slack API Token" 
+              class="config-input"
+            />
+            <input 
+              type="text" 
+              v-model="editWorkspaceConfigs.SLACK.channelId" 
+              placeholder="Slack Channel ID" 
+              class="config-input"
+            />
           </div>
         </div>
         <BaseMessage v-if="editMessage" :type="editMessageType" size="small">{{ editMessage }}</BaseMessage>
@@ -213,14 +290,21 @@ export default {
       invitationMessageType: '',
   editCompanyName: '',
   editSelectedWorkspaces: [],
+  editWorkspaceConfigs: {
+    NOTION: { token: '', businessTripDatabaseId: '', receiptDatabaseId: '' },
+    SLACK: { token: '', channelId: '' }
+  },
   editMessage: '',
   editMessageType: '',
       workspaceOptions: [
         { value: 'NOTION', label: 'Notion' },
         { value: 'SLACK', label: 'Slack' },
-        { value: 'GOOGLE_WORKSPACE', label: 'Google Workspace' },
         { value: 'NONE', label: '없음' }
-      ]
+      ],
+      workspaceConfigs: {
+        NOTION: { token: '', businessTripDatabaseId: '', receiptDatabaseId: '' },
+        SLACK: { token: '', channelId: '' }
+      }
     };
   },
   watch: {
@@ -264,6 +348,10 @@ export default {
       this.isDropdownOpen = false;
       this.creationMessage = '';
       this.creationMessageType = '';
+      this.workspaceConfigs = {
+        NOTION: { token: '', businessTripDatabaseId: '', receiptDatabaseId: '' },
+        SLACK: { token: '', channelId: '' }
+      };
       // 외부 컴포넌트에 모달 닫힘을 알림
       this.$emit('modal-closed', 'create');
     },
@@ -331,12 +419,76 @@ export default {
         this.creationMessageType = 'error';
         return;
       }
+      
+      // 워크스페이스별 필수 정보 검증
+      for (const ws of this.selectedWorkspaces) {
+        if (ws === 'NOTION') {
+          if (!this.workspaceConfigs.NOTION.token.trim()) {
+            this.creationMessage = 'Notion API Token을 입력해주세요.';
+            this.creationMessageType = 'error';
+            return;
+          }
+          if (!this.workspaceConfigs.NOTION.businessTripDatabaseId.trim()) {
+            this.creationMessage = 'Notion 출장 Database ID를 입력해주세요.';
+            this.creationMessageType = 'error';
+            return;
+          }
+          if (!this.workspaceConfigs.NOTION.receiptDatabaseId.trim()) {
+            this.creationMessage = 'Notion 영수증 Database ID를 입력해주세요.';
+            this.creationMessageType = 'error';
+            return;
+          }
+        }
+        if (ws === 'SLACK') {
+          if (!this.workspaceConfigs.SLACK.token.trim()) {
+            this.creationMessage = 'Slack API Token을 입력해주세요.';
+            this.creationMessageType = 'error';
+            return;
+          }
+          if (!this.workspaceConfigs.SLACK.channelId.trim()) {
+            this.creationMessage = 'Slack Channel ID를 입력해주세요.';
+            this.creationMessageType = 'error';
+            return;
+          }
+        }
+      }
+      
       try {
-        const response = await apiService.company.create({
+        const payload = {
           name: this.companyName,
           workspaces: this.selectedWorkspaces
-        });
+        };
+        console.log('Company creation payload:', payload);
+        const response = await apiService.company.create(payload);
+        console.log('Company creation response:', response);
         if (response.status === 201) {
+          // 워크스페이스별 추가 API 호출
+          const workspacePromises = [];
+          
+          if (this.selectedWorkspaces.includes('NOTION')) {
+            workspacePromises.push(
+              apiService.workspace.createNotion({
+                token: this.workspaceConfigs.NOTION.token,
+                businessTripDatabaseId: this.workspaceConfigs.NOTION.businessTripDatabaseId,
+                receiptDatabaseId: this.workspaceConfigs.NOTION.receiptDatabaseId
+              })
+            );
+          }
+          
+          if (this.selectedWorkspaces.includes('SLACK')) {
+            workspacePromises.push(
+              apiService.workspace.createSlack({
+                token: this.workspaceConfigs.SLACK.token,
+                channelId: this.workspaceConfigs.SLACK.channelId
+              })
+            );
+          }
+          
+          // 모든 워크스페이스 설정 API 호출 완료 대기
+          if (workspacePromises.length > 0) {
+            await Promise.all(workspacePromises);
+          }
+          
           await this.fetchUserCompany();
           this.$emit('company-updated', this.companyName);
           const createdName = this.companyName; // close 전에 참조
@@ -394,6 +546,10 @@ export default {
       this.showEditCompanyModal = true;
       this.editCompanyName = this.userCompany.name;
       this.editSelectedWorkspaces = [...(this.userCompany.workspaces || [])];
+      this.editWorkspaceConfigs = {
+        NOTION: { token: '', businessTripDatabaseId: '', receiptDatabaseId: '' },
+        SLACK: { token: '', channelId: '' }
+      };
       this.editMessage = '';
       this.editMessageType = '';
     },
@@ -401,6 +557,10 @@ export default {
       this.showEditCompanyModal = false;
       this.editCompanyName = '';
       this.editSelectedWorkspaces = [];
+      this.editWorkspaceConfigs = {
+        NOTION: { token: '', businessTripDatabaseId: '', receiptDatabaseId: '' },
+        SLACK: { token: '', channelId: '' }
+      };
       this.editMessage = '';
       this.editMessageType = '';
     },
@@ -411,10 +571,45 @@ export default {
         this.editMessageType = 'error';
         return;
       }
+      
+      // 워크스페이스별 필수 정보 검증
+      for (const ws of this.editSelectedWorkspaces) {
+        if (ws === 'NOTION') {
+          if (!this.editWorkspaceConfigs.NOTION.token.trim()) {
+            this.editMessage = 'Notion Token을 입력해주세요.';
+            this.editMessageType = 'error';
+            return;
+          }
+          if (!this.editWorkspaceConfigs.NOTION.businessTripDatabaseId.trim()) {
+            this.editMessage = '출장 Database ID를 입력해주세요.';
+            this.editMessageType = 'error';
+            return;
+          }
+          if (!this.editWorkspaceConfigs.NOTION.receiptDatabaseId.trim()) {
+            this.editMessage = '영수증 Database ID를 입력해주세요.';
+            this.editMessageType = 'error';
+            return;
+          }
+        }
+        if (ws === 'SLACK') {
+          if (!this.editWorkspaceConfigs.SLACK.token.trim()) {
+            this.editMessage = 'Slack API Token을 입력해주세요.';
+            this.editMessageType = 'error';
+            return;
+          }
+          if (!this.editWorkspaceConfigs.SLACK.channelId.trim()) {
+            this.editMessage = 'Slack Channel ID를 입력해주세요.';
+            this.editMessageType = 'error';
+            return;
+          }
+        }
+      }
+      
       try {
         const response = await apiService.company.update({
           name: this.editCompanyName.trim(),
-          workspaces: this.editSelectedWorkspaces
+          workspaces: this.editSelectedWorkspaces,
+          workspaceConfigs: this.editWorkspaceConfigs
         });
         if (response.status === 200) {
           this.editMessage = '회사 정보가 수정되었습니다.';
@@ -459,7 +654,6 @@ export default {
       switch (workspace) {
         case 'NOTION': return 'Notion';
         case 'SLACK': return 'Slack';
-        case 'GOOGLE_WORKSPACE': return 'Google Workspace';
         case 'NONE': return '없음';
         default: return '';
       }
@@ -490,7 +684,6 @@ export default {
       switch (ws) {
         case 'NOTION': return 'N';
         case 'SLACK': return 'S';
-        case 'GOOGLE_WORKSPACE': return 'G';
         case 'NONE': return 'X';
         default: return '•';
       }
@@ -597,7 +790,6 @@ export default {
 }
 .chip-badge[data-type='SLACK'] { background:#611f69; }
 .chip-badge[data-type='NOTION'] { background:#2f3437; }
-.chip-badge[data-type='GOOGLE_WORKSPACE'] { background:#1a73e8; }
 .chip-badge[data-type='NONE'] { background:#555; }
 
 .company-list {
@@ -915,5 +1107,39 @@ export default {
   font-size: 14px;
   color: var(--color-text-primary);
   letter-spacing: 1px;
+}
+
+/* 워크스페이스 설정 입력 필드 스타일 */
+.workspace-config {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 8px;
+}
+
+.config-label {
+  display: block;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.config-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-secondary);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.config-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+  outline: none;
 }
 </style>

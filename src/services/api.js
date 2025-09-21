@@ -157,8 +157,8 @@ export const apiService = {
      * POST /members/sensitive-member-info
      * @param {Object} allSensitiveData - 민감 정보 객체
      * @param {string} allSensitiveData.name - 이름(한글)
-     * @param {string} allSensitiveData.firstName - 성(영문)
-     * @param {string} allSensitiveData.lastName - 이름(영문)
+     * @param {string} allSensitiveData.firstName - 이름(영문)
+     * @param {string} allSensitiveData.lastName - 성(영문)
      * @param {string} allSensitiveData.phoneNumber - 전화번호
      * @param {string} allSensitiveData.gender - 성별
      * @param {string} allSensitiveData.birthDate - 생년월일 (YYYY-MM-DD)
@@ -176,17 +176,18 @@ export const apiService = {
     /**
      * 회사 생성
      * POST /companies
-     * @param {Object} companyData { name, workspaces | workspace }
-     * - workspaces: 문자열 배열 (Swagger 요구사항)
-     * - workspace: 단일 문자열 (호환성 위해 허용, 배열로 변환)
+     * @param {Object} companyData { name, workspaces, workspaceConfigs }
+     * - workspaces: 문자열 배열
+     * - workspaceConfigs: 워크스페이스별 설정 객체
      * @returns {Promise} 생성된 회사 ID 반환
      */
     create: (companyData) => {
-      const payload = { name: companyData.name };
-      if (Array.isArray(companyData.workspaces)) {
-        payload.workspaces = companyData.workspaces;
-      } else if (companyData.workspace) {
-        payload.workspaces = [companyData.workspace];
+      const payload = {
+        name: companyData.name,
+        workspaces: companyData.workspaces || []
+      };
+      if (companyData.workspaceConfigs) {
+        payload.workspaceConfigs = companyData.workspaceConfigs;
       }
       return apiClient.post('/companies', payload);
     },
@@ -194,12 +195,15 @@ export const apiService = {
     /**
      * 회사 수정
      * PATCH /companies
-     * @param {Object} companyData { name, workspaces }
+     * @param {Object} companyData { name, workspaces, workspaceConfigs }
      */
     update: (companyData) => {
-      const payload = { name: companyData.name };
-      if (Array.isArray(companyData.workspaces)) {
-        payload.workspaces = companyData.workspaces;
+      const payload = {
+        name: companyData.name,
+        workspaces: companyData.workspaces || []
+      };
+      if (companyData.workspaceConfigs) {
+        payload.workspaceConfigs = companyData.workspaceConfigs;
       }
       return apiClient.patch('/companies', payload);
     },
@@ -235,12 +239,18 @@ export const apiService = {
   // 영수증 관련 API
   receipt: {
     /**
-     * 영수증 저장
+     * 영수증 저장 (텍스트 + 이미지)
      * POST /receipts
-     * @param {Object} receiptData 영수증 정보
+     * @param {FormData} formData 영수증 정보와 이미지가 포함된 FormData
      * @returns {Promise} 생성된 영수증 ID 반환
      */
-    create: (receiptData) => apiClient.post('/receipts', receiptData),
+    create: (formData) => {
+      return apiClient.post('/receipts', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+    },
 
     /**
      * 영수증 전체 조회
@@ -266,13 +276,13 @@ export const apiService = {
     delete: (receiptId) => apiClient.delete(`/receipts/${receiptId}`),
 
     /**
-     * 영수증 이미지 업로드
-     * POST /receipts/i
+     * 영수증 이미지 OCR 업로드
+     * POST /receipts/i/ocr
      * @param {FormData} formData 이미지 파일이 포함된 FormData
-     * @returns {Promise} 업로드된 영수증 정보 반환
+     * @returns {Promise} OCR 처리된 영수증 정보 반환
      */
-    uploadImage: (formData) => {
-      return apiClient.post('/receipts/i', formData, {
+    ocrUpload: (formData) => {
+      return apiClient.post('/receipts/i/ocr', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -302,6 +312,64 @@ export const apiService = {
      * @param {{ prompt: string }} payload
      */
     businessTrip: (payload) => apiClient.post('/prompts/business-trip', payload),
+  },
+
+  // 출장 관련 API
+  businessTrips: {
+    /**
+     * 출장 목록 조회
+     * GET /business-trips
+     * @returns {Promise} 출장 목록 반환
+     */
+    getList: () => apiClient.get('/business-trips'),
+
+    /**
+     * MJK 워크스페이스 출장 등록
+     * POST /business-trips
+     * @param {Object} tripData 출장 등록 정보
+     * @param {string} tripData.departDate - 출발 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.arriveDate - 도착 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.destination - 목적지
+     * @param {string[]} tripData.names - 출장자 이름 목록
+     * @param {string} tripData.serviceType - 서비스 타입 ("FLIGHT" | "HOTEL")
+     * @returns {Promise} 생성된 출장 ID 반환
+     */
+    create: (tripData) => apiClient.post('/business-trips', tripData),
+
+    /**
+     * 기업 워크스페이스 출장 MCP 등록
+     * POST /business-trips/mcp
+     * @param {Object} tripData 출장 등록 정보
+     * @param {string} tripData.departDate - 출발 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.arriveDate - 도착 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.destination - 목적지
+     * @param {string[]} tripData.names - 출장자 이름 목록
+     * @param {string} tripData.serviceType - 서비스 타입 ("FLIGHT" | "HOTEL")
+     * @returns {Promise} 생성된 출장 ID 반환
+     */
+    createMcp: (tripData) => apiClient.post('/business-trips/mcp', tripData),
+
+    /**
+     * 출장 수정
+     * PATCH /business-trips/{business-trip-id}
+     * @param {number} tripId 출장 ID
+     * @param {Object} tripData 출장 수정 정보
+     * @param {string} tripData.departDate - 출발 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.arriveDate - 도착 날짜 (YYYY-MM-DD)
+     * @param {string} tripData.destination - 목적지
+     * @param {string[]} tripData.names - 출장자 이름 목록
+     * @param {string} tripData.serviceType - 서비스 타입 ("FLIGHT" | "HOTEL")
+     * @returns {Promise} 수정된 출장 ID 반환
+     */
+    update: (tripId, tripData) => apiClient.patch(`/business-trips/${tripId}`, tripData),
+
+    /**
+     * 출장 삭제
+     * DELETE /business-trips/{business-trip-id}
+     * @param {number} tripId 출장 ID
+     * @returns {Promise} 삭제 성공 시 상태 코드 204 반환
+     */
+    delete: (tripId) => apiClient.delete(`/business-trips/${tripId}`),
   },
 };
 

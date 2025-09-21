@@ -78,8 +78,8 @@ export const FILTER_OPTIONS = [
 export const USER_FIELDS = [
   { key: 'name', label: '이름', type: 'text' },
   { key: 'email', label: '이메일', type: 'email' },
-  { key: 'firstName', label: '성', type: 'text' },
-  { key: 'lastName', label: '이름', type: 'text' },
+  { key: 'firstName', label: '이름', type: 'text' },
+  { key: 'lastName', label: '성', type: 'text' },
   { key: 'phoneNumber', label: '전화번호', type: 'tel' },
   { key: 'birthDate', label: '생년월일', type: 'string' },
   { key: 'passportNumber', label: '여권번호', type: 'text' },

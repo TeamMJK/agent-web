@@ -25,9 +25,14 @@
           <p class="event-time">{{ formatDateRange(event.startDate, event.endDate) }}</p>
           <p v-if="event.description" class="event-description">{{ event.description }}</p>
         </div>
-        <button class="delete-event-btn" @click="deleteEvent(event.id)">
-          <i class="pi pi-trash"></i>
-        </button>
+        <div class="event-actions">
+          <button class="edit-event-btn" @click="editEvent(event)">
+            <i class="pi pi-pencil"></i>
+          </button>
+          <button class="delete-event-btn" @click="deleteEvent(event.id)">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -67,6 +72,9 @@ export default {
   methods: {
     deleteEvent(eventId) {
       this.$emit('delete-event', eventId);
+    },
+    editEvent(event) {
+      this.$emit('edit-event', event);
     },
     formatDate(date) {
       return date.toISOString().split('T')[0];
@@ -227,6 +235,7 @@ export default {
     color: rgba(255, 255, 255, 0.6);
     margin: 0;
     line-height: 1.4;
+    white-space: pre-line;
 }
 
 .delete-event-btn {
@@ -248,6 +257,34 @@ export default {
 }
 
 .delete-event-btn i {
+    font-size: 0.9rem;
+}
+
+.event-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.edit-event-btn {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: rgba(59, 130, 246, 0.8);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    backdrop-filter: blur(4px);
+    flex-shrink: 0;
+}
+
+.edit-event-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: scale(1.05);
+}
+
+.edit-event-btn i {
     font-size: 0.9rem;
 }
 </style>
