@@ -24,7 +24,7 @@
   <!-- divider removed -->
         <template v-if="userCompany">
           <button class="menu-item" @click="openEditCompanyModal">회사 정보 수정</button>
-          <button class="menu-item" @click="openInvitationModal">초대 코드 생성</button>
+          <button class="menu-item" @click="openInvitationModal">초대 코드 발송</button>
           <button class="menu-item danger" @click="confirmDeleteCompany">회사 삭제</button>
         </template>
         <template v-else>
@@ -209,18 +209,18 @@
     <!-- Invitation Code Generation Modal -->
     <div v-if="showInvitationModal" class="modal-overlay" @click.self="closeInvitationModal">
       <div class="modal-content">
-        <h2>초대 코드 생성</h2>
-        <p>팀원들이 회사에 참여할 수 있는 초대 코드를 생성합니다.</p>
+        <h2>초대 코드 발송</h2>
+        <p>팀원들에게 회사 초대 코드를 이메일로 발송합니다.</p>
         
-        <div v-if="generatedInvitationCode" class="invitation-code-display">
-          <label class="invitation-label">생성된 초대 코드</label>
-          <div class="invitation-code-box">
-            <span class="invitation-code">{{ generatedInvitationCode }}</span>
-            <button @click="copyInvitationCode" class="btn-copy">
-              <i class="pi pi-copy"></i>
-            </button>
-          </div>
-          <p class="invitation-note">이 코드를 팀원들과 공유하여 회사에 초대하세요.</p>
+        <div class="email-input-section">
+          <label class="invitation-label">초대할 팀원의 이메일 주소</label>
+          <input
+            v-model="invitationEmail"
+            type="email"
+            class="company-name-input"
+            placeholder="example@company.com"
+            @keyup.enter="handleSendInvitationCode"
+          />
         </div>
         
         <BaseMessage 
@@ -233,7 +233,7 @@
         
         <div class="form-actions">
           <BaseButton variant="cancel" @click="closeInvitationModal">닫기</BaseButton>
-          <BaseButton v-if="!generatedInvitationCode" variant="confirm" @click="handleGenerateInvitationCode">코드 생성</BaseButton>
+          <BaseButton variant="confirm" @click="handleSendInvitationCode" :loading="isSendingInvitation">초대 코드 발송</BaseButton>
         </div>
       </div>
     </div>
@@ -279,7 +279,8 @@ export default {
   selectedWorkspaces: [],
       isDropdownOpen: false,
       invitationCode: '',
-      generatedInvitationCode: '',
+      invitationEmail: '',
+      isSendingInvitation: false,
       hideMenuTimeout: null,
   userCompany: null, // { name, workspaces: [] }
       creationMessage: '',
@@ -372,15 +373,17 @@ export default {
     openInvitationModal() {
       this.showMenu = false;
       this.showInvitationModal = true;
-      this.generatedInvitationCode = '';
+      this.invitationEmail = '';
       this.invitationMessage = '';
       this.invitationMessageType = '';
+      this.isSendingInvitation = false;
     },
     closeInvitationModal() {
       this.showInvitationModal = false;
-      this.generatedInvitationCode = '';
+      this.invitationEmail = '';
       this.invitationMessage = '';
       this.invitationMessageType = '';
+      this.isSendingInvitation = false;
     },
     async handleJoinCompany() {
       this.joinMessage = '';
@@ -475,33 +478,34 @@ export default {
         this.creationMessageType = 'error';
       }
     },
-    async handleGenerateInvitationCode() {
+    async handleSendInvitationCode() {
+      if (!this.invitationEmail.trim()) {
+        this.invitationMessage = '이메일 주소를 입력해주세요.';
+        this.invitationMessageType = 'error';
+        return;
+      }
+
       this.invitationMessage = '';
+      this.isSendingInvitation = true;
+
       try {
-        const response = await apiService.company.generateInvitationCode();
-        if (response.status === 201) {
-          this.generatedInvitationCode = response.data;
-          this.invitationMessage = '초대 코드가 성공적으로 생성되었습니다.';
-          this.invitationMessageType = 'success';
+        const response = await apiService.company.sendInvitationCode({
+          email: this.invitationEmail.trim()
+        });
+
+        console.log('Invitation send response:', response);
+
+        if (response.status === 201 || response.status === 200) {
+          const sentEmail = this.invitationEmail.trim(); // close 전에 참조
+          this.closeInvitationModal();
+          pushMessage({ type: 'success', text: `'${sentEmail}'으로 초대 코드가 발송되었습니다.` });
         }
       } catch (error) {
-        console.error('Failed to generate invitation code:', error);
-        this.invitationMessage = '초대 코드 생성에 실패했습니다. 다시 시도해주세요.';
+        console.error('Failed to send invitation code:', error);
+        this.invitationMessage = '초대 코드 발송에 실패했습니다. 다시 시도해주세요.';
         this.invitationMessageType = 'error';
-      }
-    },
-    async copyInvitationCode() {
-      try {
-        await navigator.clipboard.writeText(this.generatedInvitationCode);
-        this.invitationMessage = '초대 코드가 클립보드에 복사되었습니다.';
-        this.invitationMessageType = 'success';
-        setTimeout(() => {
-          this.invitationMessage = '';
-        }, 2000);
-      } catch (error) {
-        console.error('Failed to copy invitation code:', error);
-        this.invitationMessage = '코드 복사에 실패했습니다.';
-        this.invitationMessageType = 'error';
+      } finally {
+        this.isSendingInvitation = false;
       }
     },
     toggleDropdown() {
