@@ -493,10 +493,12 @@ export default {
           email: this.invitationEmail.trim()
         });
 
-        if (response.status === 201) {
-          this.invitationMessage = '초대 코드가 성공적으로 발송되었습니다.';
-          this.invitationMessageType = 'success';
-          this.invitationEmail = ''; // 입력 필드 초기화
+        console.log('Invitation send response:', response);
+
+        if (response.status === 201 || response.status === 200) {
+          const sentEmail = this.invitationEmail.trim(); // close 전에 참조
+          this.closeInvitationModal();
+          pushMessage({ type: 'success', text: `'${sentEmail}'으로 초대 코드가 발송되었습니다.` });
         }
       } catch (error) {
         console.error('Failed to send invitation code:', error);
