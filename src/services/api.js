@@ -239,11 +239,12 @@ export const apiService = {
     join: (joinData) => apiClient.post('/companies/join', joinData),
 
     /**
-     * 초대 코드 생성
-     * GET /companies/invitation
-     * @returns {Promise} 초대 코드 반환 (string)
+     * 초대 코드 생성 및 이메일 발송
+     * POST /companies/invitation/send
+     * @param {Object} sendData { email }
+     * @returns {Promise} 발송 성공 시 상태 코드 201 반환
      */
-    generateInvitationCode: () => apiClient.get('/companies/invitation'),
+    sendInvitationCode: (sendData) => apiClient.post('/companies/invitation/send', sendData),
     /**
      * 회사 삭제
      * DELETE /companies
