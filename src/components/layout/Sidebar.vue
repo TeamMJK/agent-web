@@ -266,8 +266,8 @@ export default {
       },
       basicFields: [
         { key: 'name', label: '이름(한글)', type: 'text' },
-        { key: 'firstName', label: '성(영문)', type: 'text' },
-        { key: 'lastName', label: '이름(영문)', type: 'text' },
+        { key: 'firstName', label: '이름(영문)', type: 'text' },
+        { key: 'lastName', label: '성(영문)', type: 'text' },
         { key: 'phoneNumber', label: '전화번호', type: 'tel' },
         { key: 'birthDate', label: '생년월일', type: 'string' }
       ],

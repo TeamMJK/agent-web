@@ -28,7 +28,7 @@
         <div class="form-group half">
           <label for="firstName">
             <i class="pi pi-id-card"></i>
-            성(영문)
+            이름(영문)
           </label>
           <input 
             type="text" 
@@ -41,7 +41,7 @@
         <div class="form-group half">
           <label for="lastName">
             <i class="pi pi-id-card"></i>
-            이름(영문)
+            성(영문)
           </label>
           <input 
             type="text" 
@@ -191,12 +191,12 @@ export default {
       // Validation for firstName and lastName (English uppercase letters only)
       const uppercaseEnglishRegex = /^[A-Z\s]+$/;
       if (!uppercaseEnglishRegex.test(this.formData.firstName)) {
-        this.errorMessage = '성은 영문 대문자만 입력해주세요.';
+        this.errorMessage = '이름은 영문 대문자만 입력해주세요.';
         this.isLoading = false;
         return;
       }
       if (!uppercaseEnglishRegex.test(this.formData.lastName)) {
-        this.errorMessage = '이름(영문)은 영문 대문자만 입력해주세요.';
+        this.errorMessage = '성은 영문 대문자만 입력해주세요.';
         this.isLoading = false;
         return;
       }
