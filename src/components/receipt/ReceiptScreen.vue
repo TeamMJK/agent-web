@@ -60,7 +60,7 @@
           <div class="section-header">
             <h2 class="section-title">
               <i class="pi pi-plus"></i>
-              영수증 수동 입력
+              영수증 수동 등록
             </h2>
             <p class="section-description">영수증 정보를 직접 입력하여 등록하세요</p>
           </div>
@@ -274,7 +274,7 @@
             <p>첫 번째 영수증을 업로드해보세요</p>
           </div>
 
-          <div v-else class="receipt-cards">
+          <div v-else class="receipt-grid">
             <div 
               v-for="receipt in (receipts || [])" 
               :key="receipt.receiptId"
@@ -283,26 +283,35 @@
             >
               <div class="card-content">
                 <div class="card-header">
-                  <h4 class="card-title">영수증 #{{ receipt.receiptId || receipt.id }}</h4>
-                  <span class="card-amount">{{ formatCurrency(receipt.totalAmount) }}</span>
+                  <div class="card-title-section">
+                    <h4 class="card-title">영수증 #{{ receipt.receiptId || receipt.id }}</h4>
+                    <span class="card-date-badge">{{ formatDate(receipt.paymentDate) }}</span>
+                  </div>
+                  <div class="card-amount-section">
+                    <span class="card-amount">{{ formatCurrency(receipt.totalAmount) }}</span>
+                  </div>
                 </div>
-                <div class="card-details">
-                  <p class="card-date">
-                    <i class="pi pi-calendar"></i>
-                    {{ formatDate(receipt.paymentDate) }}
-                  </p>
-                  <p class="card-store">
-                    <i class="pi pi-map-marker"></i>
-                    {{ receipt.storeAddress }}
-                  </p>
-                  <p class="card-approval">
-                    <i class="pi pi-check-circle"></i>
-                    승인번호: {{ receipt.approvalNumber }}
-                  </p>
+                
+                <div class="card-body">
+                  <div class="card-info-row">
+                    <div class="info-item">
+                      <i class="pi pi-map-marker info-icon"></i>
+                      <span class="info-text">{{ receipt.storeAddress }}</span>
+                    </div>
+                  </div>
+                  <div class="card-info-row">
+                    <div class="info-item">
+                      <i class="pi pi-check-circle info-icon"></i>
+                      <span class="info-text">{{ receipt.approvalNumber }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               
               <div class="card-actions">
+                <button class="action-btn edit" @click.stop="showEditNotAvailable" title="수정 (준비중)">
+                  <i class="pi pi-pencil"></i>
+                </button>
                 <button class="action-btn delete" @click.stop="deleteReceipt(receipt)" title="삭제">
                   <i class="pi pi-trash"></i>
                 </button>
@@ -322,25 +331,49 @@
       @close="showDetailModal = false"
     >
       <div v-if="selectedReceipt" class="receipt-detail">
-        <div class="detail-row">
-          <label>영수증 번호</label>
-          <span>{{ selectedReceipt.receiptId }}</span>
+        <!-- 주요 정보 섹션 -->
+        <div class="detail-header">
+          <div class="detail-id-section">
+            <span class="detail-id-label">영수증 번호</span>
+            <span class="detail-id-value">#{{ selectedReceipt.receiptId }}</span>
+          </div>
+          <div class="detail-amount-section">
+            <span class="detail-amount-label">총 금액</span>
+            <span class="detail-amount-value">{{ formatCurrency(selectedReceipt.totalAmount) }}</span>
+          </div>
         </div>
-        <div class="detail-row">
-          <label>결제 날짜</label>
-          <span>{{ formatDate(selectedReceipt.paymentDate) }}</span>
-        </div>
-        <div class="detail-row">
-          <label>승인 번호</label>
-          <span>{{ selectedReceipt.approvalNumber }}</span>
-        </div>
-        <div class="detail-row">
-          <label>매장 주소</label>
-          <span>{{ selectedReceipt.storeAddress }}</span>
-        </div>
-        <div class="detail-row">
-          <label>총 금액</label>
-          <span class="amount-text">{{ formatCurrency(selectedReceipt.totalAmount) }}</span>
+
+        <!-- 상세 정보 그리드 -->
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="pi pi-calendar"></i>
+            </div>
+            <div class="detail-content">
+              <label class="detail-label">결제 날짜</label>
+              <span class="detail-value">{{ formatDate(selectedReceipt.paymentDate) }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="pi pi-check-circle"></i>
+            </div>
+            <div class="detail-content">
+              <label class="detail-label">승인 번호</label>
+              <span class="detail-value">{{ selectedReceipt.approvalNumber }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item detail-item-full">
+            <div class="detail-icon">
+              <i class="pi pi-map-marker"></i>
+            </div>
+            <div class="detail-content">
+              <label class="detail-label">매장 주소</label>
+              <span class="detail-value">{{ selectedReceipt.storeAddress }}</span>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -648,6 +681,11 @@ export default {
           }
         }
       }
+    },
+    
+    // 영수증 수정 (현재 API 미지원)
+    showEditNotAvailable() {
+      this.showMessage('info', '영수증 수정 기능은 현재 개발 중입니다.');
     },
     
     // 파일 업로드 관련 메서드
@@ -1252,123 +1290,172 @@ export default {
 // 영수증 그리드
 .receipt-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--spacing-2xl);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-xl);
 }
 
 .receipt-card {
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-xl);
+  background: var(--color-bg-card);
   border: 1px solid var(--color-border-secondary);
-  overflow: hidden;
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
   cursor: pointer;
-  transition: var(--transition-normal);
+  transition: all 0.2s ease;
   position: relative;
+  overflow: hidden;
   
   &:hover {
-    border-color: var(--color-primary);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+    border-color: var(--color-border-hover);
+  }
+  
+  &:active {
+    transform: translateY(0);
   }
 }
 
-.card-image {
-  position: relative;
-  height: 200px;
-  overflow: hidden;
-}
-
-.receipt-thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.category-badge {
-  position: absolute;
-  top: var(--spacing-md);
-  right: var(--spacing-md);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: var(--font-weight-medium);
-  
-  &.accommodation { background: #4CAF50; color: white; }
-  &.transportation { background: #2196F3; color: white; }
-  &.meal { background: #FF9800; color: white; }
-  &.conference { background: #9C27B0; color: white; }
-  &.etc { background: #607D8B; color: white; }
-}
-
 .card-content {
-  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+}
+
+.card-title-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
 .card-title {
   font-size: 1.1rem;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.card-date-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-tertiary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  width: fit-content;
+  
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    margin-right: var(--spacing-xs);
+  }
+}
+
+.card-amount-section {
+  text-align: right;
 }
 
 .card-amount {
-  font-size: 1.2rem;
-  font-weight: var(--font-weight-semibold);
+  font-size: 1.3rem;
+  font-weight: var(--font-weight-bold);
   color: var(--color-primary);
-  margin: 0 0 var(--spacing-xs) 0;
+  line-height: 1.2;
 }
 
-.card-date {
-  color: var(--color-text-muted);
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.card-info-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  flex: 1;
+}
+
+.info-icon {
+  color: var(--color-primary);
   font-size: 0.9rem;
-  margin: 0 0 var(--spacing-sm) 0;
+  margin-top: 2px;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
 }
 
-.card-memo {
-  color: var(--color-text-secondary);
-  font-size: 0.85rem;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.info-text {
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-break: break-word;
+  flex: 1;
 }
 
 .card-actions {
   position: absolute;
-  bottom: var(--spacing-md);
-  right: var(--spacing-md);
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
   display: flex;
+  flex-direction: row;
   gap: var(--spacing-xs);
   opacity: 0;
-  transition: var(--transition-fast);
-}
-
-.receipt-card:hover .card-actions {
-  opacity: 1;
+  transition: opacity 0.2s ease;
+  
+  .receipt-card:hover & {
+    opacity: 1;
+  }
 }
 
 .action-btn {
-  background: rgba(0, 0, 0, 0.7);
+  background: none;
   border: none;
-  color: white;
-  width: 32px;
-  height: 32px;
+  padding: var(--spacing-sm);
   border-radius: var(--radius-md);
   cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-fast);
   
-  &:hover {
-    background: rgba(0, 0, 0, 0.9);
+  &.delete {
+    color: var(--color-error);
+    
+    &:hover {
+      background: var(--color-error);
+      color: white;
+    }
   }
   
-  &.delete:hover {
-    background: var(--color-error);
+  &.edit {
+    color: var(--color-primary);
+    
+    &:hover {
+      background: var(--color-primary);
+      color: white;
+    }
+  }
+  
+  i {
+    font-size: 1rem;
   }
 }
 
@@ -1615,34 +1702,99 @@ export default {
   gap: var(--spacing-xl);
 }
 
-.detail-row {
+.detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: var(--spacing-xl);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  border-radius: var(--radius-xl);
+  color: white;
+  margin: calc(-1 * var(--spacing-xl)) calc(-1 * var(--spacing-xl)) var(--spacing-xl);
+}
+
+.detail-id-section,
+.detail-amount-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  text-align: center;
+  flex: 1;
+}
+
+.detail-id-label,
+.detail-amount-label {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  font-weight: var(--font-weight-medium);
+}
+
+.detail-id-value,
+.detail-amount-value {
+  font-size: 1.4rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
   padding: var(--spacing-lg);
   background: var(--color-bg-tertiary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-secondary);
+  transition: all 0.2s ease;
   
-  label {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    font-weight: var(--font-weight-medium);
-    min-width: 100px;
+  &:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-sm);
   }
   
-  span {
-    color: var(--color-text-primary);
-    font-size: 1rem;
-    text-align: right;
-    flex: 1;
+  &.detail-item-full {
+    grid-column: 1 / -1;
   }
 }
 
-.amount-text {
-  font-size: 1.3rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary) !important;
+.detail-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: var(--color-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.detail-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.detail-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 /* 회사 없을 때 보여줄 화면 스타일 */
