@@ -239,12 +239,18 @@ export const apiService = {
   // 영수증 관련 API
   receipt: {
     /**
-     * 영수증 저장
+     * 영수증 저장 (텍스트 + 이미지)
      * POST /receipts
-     * @param {Object} receiptData 영수증 정보
+     * @param {FormData} formData 영수증 정보와 이미지가 포함된 FormData
      * @returns {Promise} 생성된 영수증 ID 반환
      */
-    create: (receiptData) => apiClient.post('/receipts', receiptData),
+    create: (formData) => {
+      return apiClient.post('/receipts', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+    },
 
     /**
      * 영수증 전체 조회
@@ -270,13 +276,13 @@ export const apiService = {
     delete: (receiptId) => apiClient.delete(`/receipts/${receiptId}`),
 
     /**
-     * 영수증 이미지 업로드
-     * POST /receipts/i
+     * 영수증 이미지 OCR 업로드
+     * POST /receipts/i/ocr
      * @param {FormData} formData 이미지 파일이 포함된 FormData
-     * @returns {Promise} 업로드된 영수증 정보 반환
+     * @returns {Promise} OCR 처리된 영수증 정보 반환
      */
-    uploadImage: (formData) => {
-      return apiClient.post('/receipts/i', formData, {
+    ocrUpload: (formData) => {
+      return apiClient.post('/receipts/i/ocr', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

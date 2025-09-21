@@ -104,6 +104,60 @@
               />
             </FormGroup>
 
+            <!-- 이미지 업로드 (선택사항) -->
+            <FormGroup label="영수증 이미지 (선택)">
+              <div 
+                class="file-upload-area manual-upload"
+                :class="{ 'has-file': manualSelectedFile, 'drag-over': manualIsDragOver }"
+                @click="triggerManualFileInput"
+                @dragover.prevent="onManualDragOver"
+                @dragleave.prevent="onManualDragLeave"
+                @drop.prevent="onManualDrop"
+              >
+                <input 
+                  ref="manualFileInput"
+                  type="file"
+                  accept="image/*"
+                  style="display: none"
+                  @change="onManualFileSelect"
+                />
+
+                <div v-if="!manualSelectedFile" class="upload-placeholder">
+                  <i class="pi pi-image upload-icon"></i>
+                  <p class="upload-text">영수증 이미지를 첨부하세요</p>
+                  <p class="upload-hint">클릭하거나 영수증 이미지를 드래그해주세요</p>
+                </div>
+
+                <div v-else class="file-preview">
+                  <div class="preview-image-container">
+                    <img 
+                      v-if="manualPreviewUrl && manualIsImageFile" 
+                      :src="manualPreviewUrl" 
+                      alt="영수증 미리보기" 
+                      class="preview-image"
+                    />
+                    <div v-else class="preview-placeholder">
+                      <i class="pi pi-file"></i>
+                      <p>{{ manualSelectedFile.name }}</p>
+                    </div>
+                  </div>
+
+                  <div class="file-info">
+                    <h4 class="file-name">{{ manualSelectedFile.name }}</h4>
+                    <p class="file-size">{{ formatFileSize(manualSelectedFile.size) }}</p>
+                    <button 
+                      type="button" 
+                      @click.stop="removeManualFile" 
+                      class="remove-file-btn"
+                    >
+                      <i class="pi pi-times"></i>
+                      제거
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </FormGroup>
+
             <div class="form-actions">
               <BaseButton variant="cancel" @click="resetForm">
                 초기화
@@ -146,7 +200,7 @@
               <i class="pi pi-cloud-upload upload-icon"></i>
               <h3 class="upload-text">영수증 이미지를 업로드하세요</h3>
               <p class="upload-hint">클릭하거나 파일을 드래그해주세요</p>
-              <p class="upload-hint">JPG, PNG, PDF 파일 지원</p>
+              <p class="upload-hint">png, jpg, jpeg 지원</p>
             </div>
 
             <div v-else class="file-preview">
@@ -364,11 +418,17 @@ export default {
         text: ''
       },
       
-      // 파일 업로드 관련
+      // 파일 업로드 관련 (오른쪽 섹션)
       selectedFile: null,
       previewUrl: '',
       isDragOver: false,
-      isImageFile: false
+      isImageFile: false,
+      
+      // 수동 입력 파일 업로드 관련 (왼쪽 섹션)
+      manualSelectedFile: null,
+      manualPreviewUrl: '',
+      manualIsImageFile: false,
+      manualIsDragOver: false
     }
   },
   computed: {
@@ -456,14 +516,25 @@ export default {
       this.isUploading = true;
       
       try {
-        await apiService.receipt.create({
+        const formData = new FormData();
+        
+        // 텍스트 데이터를 JSON 객체로 묶어서 'request' 키로 추가
+        const requestData = {
           paymentDate: this.receiptForm.paymentDate,
           approvalNumber: this.receiptForm.approvalNumber,
           storeAddress: this.receiptForm.storeAddress,
           totalAmount: Number(this.receiptForm.totalAmount)
-        });
+        };
+        formData.append('request', JSON.stringify(requestData));
         
-  pushMessage({ type: 'success', text: '영수증이 저장되었습니다.' });
+        // 선택적 이미지 파일 추가
+        if (this.manualSelectedFile) {
+          formData.append('image', this.manualSelectedFile);
+        }
+        
+        await apiService.receipt.create(formData);
+        
+        pushMessage({ type: 'success', text: '영수증이 저장되었습니다.' });
         this.resetForm();
         this.loadReceipts(); // 목록 새로고침
         
@@ -484,6 +555,9 @@ export default {
       };
       this.errors = {};
       this.setTodayDate();
+      
+      // 수동 입력 파일 초기화
+      this.removeManualFile();
     },
     
     setTodayDate() {
@@ -644,6 +718,75 @@ export default {
       }
     },
     
+    // 수동 입력 파일 업로드 메서드 (왼쪽 섹션)
+    triggerManualFileInput() {
+      this.$refs.manualFileInput.click();
+    },
+    
+    onManualFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.handleManualFileSelection(file);
+      }
+    },
+    
+    handleManualFileSelection(file) {
+      // 파일 타입 검증
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        this.showMessage('error', '지원하지 않는 파일 형식입니다. JPG, PNG, GIF 파일만 업로드 가능합니다.');
+        return;
+      }
+      
+      // 파일 크기 검증 (10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        this.showMessage('error', '파일 크기가 너무 큽니다. 10MB 이하의 파일만 업로드 가능합니다.');
+        return;
+      }
+      
+      this.manualSelectedFile = file;
+      this.manualIsImageFile = file.type.startsWith('image/');
+      
+      // 이미지 미리보기 생성
+      if (this.manualIsImageFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.manualPreviewUrl = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        this.manualPreviewUrl = '';
+      }
+    },
+    
+    removeManualFile() {
+      this.manualSelectedFile = null;
+      this.manualPreviewUrl = '';
+      this.manualIsImageFile = false;
+      this.manualIsDragOver = false;
+      if (this.$refs.manualFileInput) {
+        this.$refs.manualFileInput.value = '';
+      }
+    },
+    
+    // 수동 입력 파일 드래그 앤 드롭 메서드 (왼쪽 섹션)
+    onManualDragOver() {
+      this.manualIsDragOver = true;
+    },
+    
+    onManualDragLeave() {
+      this.manualIsDragOver = false;
+    },
+    
+    onManualDrop(event) {
+      this.manualIsDragOver = false;
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        this.handleManualFileSelection(files[0]);
+      }
+    },
+    
     async handleImageUpload() {
       if (!this.selectedFile) {
         this.showMessage('error', '업로드할 파일을 선택해주세요.');
@@ -654,11 +797,11 @@ export default {
       
       try {
         const formData = new FormData();
-        formData.append('file', this.selectedFile);
+        formData.append('image', this.selectedFile);
         
-        await apiService.receipt.uploadImage(formData);
+        await apiService.receipt.ocrUpload(formData);
         
-  pushMessage({ type: 'success', text: '이미지가 업로드되었습니다.' });
+        pushMessage({ type: 'success', text: '이미지가 업로드되었습니다.' });
         this.removeFile();
         this.loadReceipts(); // 목록 새로고침
         
@@ -860,6 +1003,58 @@ export default {
   &:hover:not(.has-file) {
     border-color: var(--color-primary);
     background: var(--color-bg-tertiary);
+  }
+  
+  // 수동 입력 섹션용 작은 업로드 영역
+  &.manual-upload {
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    
+    .upload-placeholder {
+      padding: var(--spacing-lg);
+      
+      .upload-icon {
+        font-size: 2rem;
+        margin-bottom: var(--spacing-md);
+      }
+      
+      .upload-text {
+        font-size: 1rem;
+        margin-bottom: var(--spacing-xs);
+      }
+      
+      .upload-hint {
+        font-size: 0.8rem;
+      }
+    }
+    
+    .file-preview {
+      gap: var(--spacing-lg);
+      
+      .preview-image-container {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .file-info {
+        flex: 1;
+        
+        .file-name {
+          font-size: 0.9rem;
+          margin-bottom: var(--spacing-xs);
+        }
+        
+        .file-size {
+          font-size: 0.8rem;
+          margin-bottom: var(--spacing-sm);
+        }
+        
+        .remove-file-btn {
+          padding: var(--spacing-xs) var(--spacing-sm);
+          font-size: 0.8rem;
+        }
+      }
+    }
   }
 }
 
