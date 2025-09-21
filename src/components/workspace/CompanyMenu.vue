@@ -456,39 +456,13 @@ export default {
       try {
         const payload = {
           name: this.companyName,
-          workspaces: this.selectedWorkspaces
+          workspaces: this.selectedWorkspaces,
+          workspaceConfigs: this.workspaceConfigs
         };
         console.log('Company creation payload:', payload);
         const response = await apiService.company.create(payload);
         console.log('Company creation response:', response);
         if (response.status === 201) {
-          // 워크스페이스별 추가 API 호출
-          const workspacePromises = [];
-          
-          if (this.selectedWorkspaces.includes('NOTION')) {
-            workspacePromises.push(
-              apiService.workspace.createNotion({
-                token: this.workspaceConfigs.NOTION.token,
-                businessTripDatabaseId: this.workspaceConfigs.NOTION.businessTripDatabaseId,
-                receiptDatabaseId: this.workspaceConfigs.NOTION.receiptDatabaseId
-              })
-            );
-          }
-          
-          if (this.selectedWorkspaces.includes('SLACK')) {
-            workspacePromises.push(
-              apiService.workspace.createSlack({
-                token: this.workspaceConfigs.SLACK.token,
-                channelId: this.workspaceConfigs.SLACK.channelId
-              })
-            );
-          }
-          
-          // 모든 워크스페이스 설정 API 호출 완료 대기
-          if (workspacePromises.length > 0) {
-            await Promise.all(workspacePromises);
-          }
-          
           await this.fetchUserCompany();
           this.$emit('company-updated', this.companyName);
           const createdName = this.companyName; // close 전에 참조
@@ -661,17 +635,13 @@ export default {
     async fetchUserCompany() {
       try {
         const response = await apiService.company.getList();
-        let data = response.data;
-        if (typeof data === 'string') {
-          try { data = JSON.parse(data); } catch (_) { /* ignore */ }
-        }
-        if (data && typeof data === 'object') {
+        const data = response.data;
+        
+        if (data && typeof data === 'object' && data.name) {
           this.userCompany = {
-            name: data.name || data.companyName || '',
+            name: data.name,
             workspaces: Array.isArray(data.workspaces) ? data.workspaces : []
           };
-        } else if (typeof data === 'string') {
-          this.userCompany = { name: data, workspaces: [] };
         } else {
           this.userCompany = null;
         }

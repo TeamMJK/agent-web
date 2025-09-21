@@ -309,7 +309,7 @@
               </div>
               
               <div class="card-actions">
-                <button class="action-btn edit" @click.stop="showEditNotAvailable" title="수정 (준비중)">
+                <button class="action-btn edit" @click.stop="openEditModal(receipt)" title="수정">
                   <i class="pi pi-pencil"></i>
                 </button>
                 <button class="action-btn delete" @click.stop="deleteReceipt(receipt)" title="삭제">
@@ -380,6 +380,61 @@
       <template #actions>
         <BaseButton variant="cancel" @click="showDetailModal = false">
           닫기
+        </BaseButton>
+      </template>
+    </BaseModal>
+
+    <!-- 영수증 수정 모달 -->
+    <BaseModal 
+      :show="showEditModal"
+      title="영수증 수정"
+      @close="closeEditModal"
+    >
+      <div v-if="editingReceipt" class="receipt-form">
+        <div class="form-row">
+          <FormGroup label="결제 날짜" :required="true">
+            <input 
+              type="date" 
+              v-model="editForm.paymentDate" 
+              class="form-input"
+            />
+          </FormGroup>
+          
+          <FormGroup label="총 금액" :required="true">
+            <input 
+              type="number" 
+              v-model.number="editForm.totalAmount" 
+              class="form-input"
+              placeholder="금액을 입력하세요"
+            />
+          </FormGroup>
+        </div>
+        
+        <FormGroup label="승인 번호">
+          <input 
+            type="text" 
+            v-model="editForm.approvalNumber" 
+            class="form-input"
+            placeholder="승인 번호를 입력하세요"
+          />
+        </FormGroup>
+        
+        <FormGroup label="매장 주소">
+          <input 
+            type="text" 
+            v-model="editForm.storeAddress" 
+            class="form-input"
+            placeholder="매장 주소를 입력하세요"
+          />
+        </FormGroup>
+      </div>
+      
+      <template #actions>
+        <BaseButton variant="cancel" @click="closeEditModal">
+          취소
+        </BaseButton>
+        <BaseButton variant="confirm" @click="handleUpdateReceipt" :loading="isLoading">
+          수정
         </BaseButton>
       </template>
     </BaseModal>
@@ -461,7 +516,17 @@ export default {
       manualSelectedFile: null,
       manualPreviewUrl: '',
       manualIsImageFile: false,
-      manualIsDragOver: false
+      manualIsDragOver: false,
+      
+      // 영수증 수정 관련
+      showEditModal: false,
+      editingReceipt: null,
+      editForm: {
+        paymentDate: '',
+        approvalNumber: '',
+        storeAddress: '',
+        totalAmount: 0
+      }
     }
   },
   computed: {
@@ -680,6 +745,66 @@ export default {
             this.showMessage('error', '영수증 삭제 중 오류가 발생했습니다.');
           }
         }
+      }
+    },
+    
+    // 영수증 수정 관련 메서드
+    openEditModal(receipt) {
+      this.editingReceipt = receipt;
+      this.editForm = {
+        paymentDate: receipt.paymentDate || '',
+        approvalNumber: receipt.approvalNumber || '',
+        storeAddress: receipt.storeAddress || '',
+        totalAmount: receipt.totalAmount || 0
+      };
+      this.showEditModal = true;
+    },
+    
+    closeEditModal() {
+      this.showEditModal = false;
+      this.editingReceipt = null;
+      this.editForm = {
+        paymentDate: '',
+        approvalNumber: '',
+        storeAddress: '',
+        totalAmount: 0
+      };
+    },
+    
+    async handleUpdateReceipt() {
+      if (!this.editingReceipt) return;
+      
+      // 폼 검증
+      if (!this.editForm.paymentDate) {
+        this.showMessage('error', '결제 날짜를 입력해주세요.');
+        return;
+      }
+      
+      if (!this.editForm.totalAmount || this.editForm.totalAmount <= 0) {
+        this.showMessage('error', '유효한 금액을 입력해주세요.');
+        return;
+      }
+      
+      try {
+        const receiptId = this.editingReceipt.receiptId;
+        const updateData = {
+          paymentDate: this.editForm.paymentDate,
+          approvalNumber: this.editForm.approvalNumber,
+          storeAddress: this.editForm.storeAddress,
+          totalAmount: this.editForm.totalAmount
+        };
+        
+        await apiService.receipt.update(receiptId, updateData);
+        
+        this.showMessage('success', '영수증이 수정되었습니다.');
+        this.closeEditModal();
+        
+        // 목록 새로고침
+        this.loadReceipts();
+        
+      } catch (error) {
+        console.error('영수증 수정 실패:', error);
+        this.showMessage('error', '영수증 수정 중 오류가 발생했습니다.');
       }
     },
     

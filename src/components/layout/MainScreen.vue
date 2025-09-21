@@ -58,9 +58,9 @@ export default {
             prompt: '', // 사용자 입력 프롬프트
             activeFilter: 'all', // 현재 활성화된 필터
             filters: [ // 필터 목록
-                { id: 'all', label: '숙소+항공' },
-                { id: 'data', label: '숙소' },
-                { id: 'accuracy', label: '항공' },
+                { id: 'all', label: '숙박+항공' },
+                { id: 'hotel', label: '숙박' },
+                { id: 'flight', label: '항공' },
             ],
             chatResponse: '', // 챗봇 응답 (임시)
             isFocusMode: false // 검색 초점 모드 상태
@@ -77,9 +77,9 @@ export default {
                 // 활성 필터에 따른 엔드포인트 결정
                 if (this.activeFilter === 'all') {
                     requestFn = apiService.prompts.integration;
-                } else if (this.activeFilter === 'data') {
+                } else if (this.activeFilter === 'hotel') {
                     requestFn = apiService.prompts.hotel;
-                } else if (this.activeFilter === 'accuracy') {
+                } else if (this.activeFilter === 'flight') {
                     requestFn = apiService.prompts.businessTrip;
                 } else {
                     // 정의되지 않은 필터인 경우 방어적으로 통합 엔드포인트 사용

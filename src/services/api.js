@@ -184,11 +184,17 @@ export const apiService = {
     create: (companyData) => {
       const payload = {
         name: companyData.name,
-        workspaces: companyData.workspaces || []
+        workspaces: companyData.workspaces || [],
+        workspaceConfigs: {}
       };
-      if (companyData.workspaceConfigs) {
-        payload.workspaceConfigs = companyData.workspaceConfigs;
-      }
+
+      // 선택된 워크스페이스만 포함
+      (companyData.workspaces || []).forEach(ws => {
+        if (companyData.workspaceConfigs && companyData.workspaceConfigs[ws]) {
+          payload.workspaceConfigs[ws] = companyData.workspaceConfigs[ws];
+        }
+      });
+
       return apiClient.post('/companies', payload);
     },
 
@@ -196,15 +202,24 @@ export const apiService = {
      * 회사 수정
      * PATCH /companies
      * @param {Object} companyData { name, workspaces, workspaceConfigs }
+     * @param {string} companyData.name - 회사 이름
+     * @param {string[]} companyData.workspaces - 워크스페이스 목록
+     * @param {Object} companyData.workspaceConfigs - 워크스페이스별 설정
      */
     update: (companyData) => {
       const payload = {
         name: companyData.name,
-        workspaces: companyData.workspaces || []
+        workspaces: companyData.workspaces || [],
+        workspaceConfigs: {}
       };
-      if (companyData.workspaceConfigs) {
-        payload.workspaceConfigs = companyData.workspaceConfigs;
-      }
+
+      // 선택된 워크스페이스만 포함
+      (companyData.workspaces || []).forEach(ws => {
+        if (companyData.workspaceConfigs && companyData.workspaceConfigs[ws]) {
+          payload.workspaceConfigs[ws] = companyData.workspaceConfigs[ws];
+        }
+      });
+
       return apiClient.patch('/companies', payload);
     },
 
@@ -268,6 +283,19 @@ export const apiService = {
     getList: () => apiClient.get('/receipts'),
 
     /**
+     * 영수증 수정
+     * PATCH /receipts/{receiptId}
+     * @param {number} receiptId 영수증 ID
+     * @param {Object} receiptData 수정할 영수증 데이터
+     * @param {string} receiptData.paymentDate - 결제 날짜 (YYYY-MM-DD)
+     * @param {string} receiptData.approvalNumber - 승인 번호
+     * @param {string} receiptData.storeAddress - 가게 주소
+     * @param {number} receiptData.totalAmount - 총 금액
+     * @returns {Promise} 수정된 영수증 정보 반환
+     */
+    update: (receiptId, receiptData) => apiClient.patch(`/receipts/${receiptId}`, receiptData),
+
+    /**
      * 영수증 삭제
      * DELETE /receipts/{receiptId}
      * @param {number} receiptId 영수증 ID
@@ -293,14 +321,14 @@ export const apiService = {
   // 프롬프트 관련 API
   prompts: {
     /**
-     * 숙소+항공 통합 프롬프트
+     * 숙박+항공 통합 프롬프트
      * POST /prompts/integration
      * @param {{ prompt: string }} payload
      */
     integration: (payload) => apiClient.post('/prompts/integration', payload),
 
     /**
-     * 숙소 전용 프롬프트
+     * 숙박 전용 프롬프트
      * POST /prompts/hotel
      * @param {{ prompt: string }} payload
      */
