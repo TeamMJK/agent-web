@@ -56,6 +56,13 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+  // OAuth 콜백 처리: /main?token=...&refreshToken=... 파라미터가 있으면 토큰 설정
+  if (to.path === '/main' && to.query.token) {
+    tokenManager.setTokens(to.query.token, to.query.refreshToken || to.query.token);
+    // 쿼리 파라미터 제거하고 메인 페이지로 이동
+    return next({ path: '/main', query: {} });
+  }
+
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const hasToken = tokenManager.hasValidToken();
 

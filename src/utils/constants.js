@@ -68,7 +68,7 @@ export const MESSAGES = {
 // 필터 옵션
 export const FILTER_OPTIONS = [
   { id: 'all', label: '전체' },
-  { id: 'accommodation', label: '숙소' },
+  { id: 'accommodation', label: '숙박' },
   { id: 'flight', label: '항공' },
   { id: 'rental', label: '렌트카' },
   { id: 'restaurant', label: '맛집' }
