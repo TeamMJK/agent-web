@@ -103,21 +103,40 @@ router.beforeEach(async (to, from, next) => {
       if (error.response && error.response.status === 500) {
         // Google OAuth 사용자인지 확인 (세션 스토리지에 OAuth 플래그가 있는지 확인)
         const isOAuthUser = sessionStorage.getItem('isOAuthUser') === 'true';
+        const privacyConsent = sessionStorage.getItem('privacyConsent');
+        let hasConsented = false;
+
+        if (privacyConsent) {
+          try {
+            const consentData = JSON.parse(privacyConsent);
+            hasConsented = consentData && consentData.personalInfo && consentData.passportInfo && consentData.thirdParty;
+          } catch (e) {
+            console.error('privacyConsent JSON 파싱 에러:', e);
+            hasConsented = false;
+          }
+        }
+
+        console.log('라우터 가드 디버그:', {
+          to: to.path,
+          isOAuthUser,
+          privacyConsent,
+          hasConsented
+        });
 
         if (isOAuthUser) {
           // Google OAuth 사용자: 개인정보 동의 상태 확인
-          const privacyConsent = sessionStorage.getItem('privacyConsent');
-          const hasConsented = privacyConsent && JSON.parse(privacyConsent);
-
           if (!hasConsented && to.path !== '/privacy-consent') {
             // 개인정보 동의하지 않았으면 동의 페이지로 리디렉션
+            console.log('Google OAuth 사용자, 개인정보 미동의 → /privacy-consent로 이동');
             return next('/privacy-consent');
           } else if (hasConsented && to.path !== '/sensitive-info') {
             // 개인정보 동의했지만 민감정보 없으면 sensitive-info 페이지로 리디렉션
+            console.log('Google OAuth 사용자, 개인정보 동의완료 → /sensitive-info로 이동');
             return next('/sensitive-info');
           }
         } else {
           // 이메일 회원가입 사용자: 바로 민감정보 입력 페이지로 이동
+          console.log('이메일 사용자 → /sensitive-info로 이동');
           if (to.path !== '/sensitive-info') {
             return next('/sensitive-info');
           }

@@ -106,11 +106,13 @@ export default {
                 
                 // Google OAuth 사용자임을 표시
                 sessionStorage.setItem('isOAuthUser', 'true');
+                console.log('Google OAuth 성공, isOAuthUser 설정:', sessionStorage.getItem('isOAuthUser'));
                 
                 // URL 파라미터 제거
                 window.history.replaceState({}, document.title, '/login');
                 
                 // 라우터 가드가 적절한 페이지로 리디렉션하도록 메인 페이지로 이동
+                console.log('/main으로 이동 시도');
                 this.$router.push('/main');
             } else if (error) {
                 this.errorMessage = `Google 로그인 실패: ${error}`;
