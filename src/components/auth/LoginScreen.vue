@@ -111,9 +111,12 @@ export default {
                 // URL 파라미터 제거
                 window.history.replaceState({}, document.title, '/login');
                 
-                // 라우터 가드가 적절한 페이지로 리디렉션하도록 메인 페이지로 이동
-                console.log('/main으로 이동 시도');
-                this.$router.push('/main');
+                // 세션 스토리지 설정이 완전히 반영되도록 nextTick 사용 후 즉시 이동
+                this.$nextTick(() => {
+                    console.log('/main으로 이동 시도, isOAuthUser 재확인:', sessionStorage.getItem('isOAuthUser'));
+                    // replace를 사용하여 로그인 페이지 히스토리를 남기지 않음
+                    this.$router.replace('/main');
+                });
             } else if (error) {
                 this.errorMessage = `Google 로그인 실패: ${error}`;
                 
@@ -161,6 +164,12 @@ export default {
         },
         async handleLogin() {
             this.errorMessage = '';
+
+            // Google OAuth 사용자라면 이메일 로그인 방지
+            if (sessionStorage.getItem('isOAuthUser') === 'true') {
+                console.log('Google OAuth 사용자는 이메일 로그인 불가');
+                return;
+            }
 
             if (!this.password) {
                 this.errorMessage = '비밀번호를 입력해주세요.';
