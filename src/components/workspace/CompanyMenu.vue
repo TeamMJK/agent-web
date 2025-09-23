@@ -806,17 +806,19 @@ export default {
 .menu-item.danger:hover { background:#402626; color:#ff8585; }
 
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   background-color: var(--color-bg-modal);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1500;
+  z-index: 9999 !important;
   backdrop-filter: blur(12px);
+  min-height: 100vh;
+  min-width: 100vw;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .modal-content {
@@ -830,8 +832,11 @@ export default {
   text-align: center;
   box-shadow: var(--shadow-xl);
   backdrop-filter: blur(20px);
-  position: relative;
-  margin: auto;
+  position: absolute !important;
+  top: 50vh !important;
+  left: 50vw !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
   overflow: visible;
 }
 
