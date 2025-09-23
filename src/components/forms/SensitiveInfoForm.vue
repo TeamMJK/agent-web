@@ -4,7 +4,7 @@
       <div class="icon-wrapper">
         <i class="pi pi-shield"></i>
       </div>
-      <h1 class="title">민감 정보 입력</h1>
+      <h1 class="title">개인 정보 입력</h1>
       <p class="description">안전한 서비스 이용을 위해 추가 정보를 입력해주세요.</p>
     </div>
 
