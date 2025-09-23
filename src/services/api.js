@@ -168,7 +168,14 @@ export const apiService = {
      */
     saveSensitiveInfo: (allSensitiveData) => {
       return apiClient.post('/members/sensitive-member-info', allSensitiveData);
-    }
+    },
+
+    /**
+     * 회원 탈퇴
+     * DELETE /members
+     * @returns {Promise}
+     */
+    deleteAccount: () => apiClient.delete('/members')
   },
 
   // 회사 관련 API

@@ -40,6 +40,20 @@
             <span class="info-label">세션 ID</span>
             <span class="info-value session-id">{{ sessionId }}</span>
           </div>
+          
+          <!-- 호텔 세부 정보 추가 -->
+          <div v-if="hotelDetails?.hotel_destination" class="info-item">
+            <span class="info-label">목적지</span>
+            <span class="info-value">{{ hotelDetails.hotel_destination }}</span>
+          </div>
+          <div v-if="hotelDetails?.booking_dates" class="info-item">
+            <span class="info-label">여행 기간</span>
+            <span class="info-value">{{ hotelDetails.booking_dates }}</span>
+          </div>
+          <div v-if="hotelDetails?.guests" class="info-item">
+            <span class="info-label">인원</span>
+            <span class="info-value">{{ hotelDetails.guests }}</span>
+          </div>
         </div>
 
         <!-- 유효한 요청이 있는 경우만 표시 -->

@@ -39,6 +39,8 @@
   --color-warning: #F5A623;
   --color-info: #50E3C2;
   --color-danger: #ff4d4d;
+  --color-danger-hover: #ff3333;
+  --color-danger-rgb: 255, 77, 77;
   --color-bg-disabled: #3a3a3a;
 
   /* 타이포그래피 */

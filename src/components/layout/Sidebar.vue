@@ -229,6 +229,92 @@
               전체 저장
             </button>
           </div>
+          
+          <!-- 회원탈퇴 섹션 -->
+          <div class="danger-section">
+            <div class="section-title danger">
+              <i class="pi pi-exclamation-triangle"></i>
+              <span>계정 삭제</span>
+            </div>
+            <p class="danger-description">
+              계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
+            </p>
+            <button @click="showWithdrawModal" class="btn btn-danger">
+              <i class="pi pi-trash"></i>
+              회원 탈퇴
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 회원탈퇴 확인 팝업 -->
+    <div v-if="showWithdrawConfirmModal" class="modal-overlay" @click="closeWithdrawModal">
+      <div class="modal-content withdraw-modal" @click.stop>
+        <div class="modal-header danger-header">
+          <div class="header-info">
+            <div class="profile-icon danger-icon">
+              <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <div class="header-text">
+              <h3>회원 탈퇴</h3>
+              <p class="header-subtitle">정말로 계정을 삭제하시겠습니까?</p>
+            </div>
+          </div>
+          <button class="btn btn-close" @click="closeWithdrawModal">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="withdraw-content">
+            <div class="warning-message">
+              <i class="pi pi-exclamation-triangle"></i>
+              <div>
+                <h4>계정 삭제 시 다음 정보가 영구적으로 삭제됩니다:</h4>
+                <ul>
+                  <li>개인정보 및 프로필 데이터</li>
+                  <li>저장된 출장 일정 및 기록</li>
+                  <li>업로드한 영수증 및 파일</li>
+                </ul>
+                <p><strong>이 작업은 되돌릴 수 없습니다.</strong></p>
+              </div>
+            </div>
+            
+            <div class="confirmation-input">
+              <label>계속하려면 아래 입력란에 <strong>"회원 탈퇴"</strong>를 정확히 입력하세요:</label>
+              <input 
+                v-model="withdrawConfirmText"
+                type="text"
+                placeholder="회원 탈퇴"
+                class="confirm-input"
+                @input="checkWithdrawConfirmation"
+              />
+            </div>
+            
+            <!-- 에러 메시지 -->
+            <div v-if="withdrawMessage.show" class="withdraw-message">
+              <BaseMessage :type="withdrawMessage.type" @close="withdrawMessage.show = false">
+                {{ withdrawMessage.text }}
+              </BaseMessage>
+            </div>
+            
+            <div class="withdraw-actions">
+              <button type="button" @click="closeWithdrawModal" class="btn btn-cancel">
+                <i class="pi pi-times"></i>
+                취소
+              </button>
+              <button 
+                @click="confirmWithdraw" 
+                class="btn btn-danger-confirm" 
+                :disabled="!isWithdrawConfirmed || isWithdrawing"
+              >
+                <i class="pi pi-trash"></i>
+                <span v-if="isWithdrawing">탈퇴 중...</span>
+                <span v-else>탈퇴 확정</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -251,6 +337,7 @@ export default {
   data() {
     return {
       showUserModal: false,
+      showWithdrawConfirmModal: false,
       userInfo: {
         name: '',
         email: '',
@@ -267,6 +354,15 @@ export default {
       message: {
         show: false,
         type: 'success',
+        text: ''
+      },
+      // 회원탈퇴 관련 데이터
+      withdrawConfirmText: '',
+      isWithdrawConfirmed: false,
+      isWithdrawing: false,
+      withdrawMessage: {
+        show: false,
+        type: 'error',
         text: ''
       },
       basicFields: [
@@ -418,6 +514,62 @@ export default {
       this.message = { show: true, type, text };
       setTimeout(() => {
         this.message.show = false;
+      }, 3000);
+    },
+    
+    // 회원탈퇴 관련 메서드
+    showWithdrawModal() {
+      this.showUserModal = false; // 내 정보 모달 닫기
+      this.showWithdrawConfirmModal = true;
+      this.withdrawConfirmText = '';
+      this.isWithdrawConfirmed = false;
+      this.withdrawMessage.show = false;
+    },
+    
+    closeWithdrawModal() {
+      this.showWithdrawConfirmModal = false;
+      this.withdrawConfirmText = '';
+      this.isWithdrawConfirmed = false;
+      this.isWithdrawing = false;
+      this.withdrawMessage.show = false;
+    },
+    
+    checkWithdrawConfirmation() {
+      this.isWithdrawConfirmed = this.withdrawConfirmText === '회원 탈퇴';
+    },
+    
+    async confirmWithdraw() {
+      if (!this.isWithdrawConfirmed) {
+        this.showWithdrawMessage('error', '"회원 탈퇴"를 정확히 입력해주세요.');
+        return;
+      }
+      
+      this.isWithdrawing = true;
+      
+      try {
+        await apiService.user.deleteAccount();
+        
+        // 성공 시 로그아웃 처리
+        this.closeWithdrawModal();
+        pushMessage({ type: 'success', text: '회원탈퇴가 완료되었습니다.' });
+        
+        // 로그인 페이지로 이동
+        setTimeout(() => {
+          this.$router.push('/login');
+        }, 1000);
+        
+      } catch (error) {
+        console.error('회원탈퇴 실패:', error);
+        this.showWithdrawMessage('error', '회원탈퇴 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      } finally {
+        this.isWithdrawing = false;
+      }
+    },
+    
+    showWithdrawMessage(type, text) {
+      this.withdrawMessage = { show: true, type, text };
+      setTimeout(() => {
+        this.withdrawMessage.show = false;
       }, 3000);
     }
   },
@@ -933,10 +1085,221 @@ export default {
   filter: brightness(0.95);
 }
 
+/* 회원탈퇴 섹션 스타일 */
+.danger-section {
+  padding: var(--spacing-3xl);
+  border-top: 1px solid var(--color-border-secondary);
+  background: var(--color-bg-tertiary);
+}
+
+.section-title.danger {
+  color: var(--color-danger);
+}
+
+.section-title.danger i {
+  color: var(--color-danger);
+}
+
+.danger-description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--spacing-md) 0 var(--spacing-2xl);
+  line-height: 1.5;
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: 44px;
+  padding: 0 var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-danger:hover {
+  background: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
+  transform: translateY(-1px);
+}
+
+/* 회원탈퇴 확인 모달 스타일 */
+.withdraw-modal {
+  max-width: 480px;
+  width: 90vw;
+  box-sizing: border-box;
+}
+
+.danger-header {
+  background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger-hover) 100%);
+}
+
+.danger-icon {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.withdraw-content {
+  padding: var(--spacing-2xl);
+  box-sizing: border-box;
+}
+
+.warning-message {
+  display: flex;
+  gap: var(--spacing-lg);
+  background: rgba(var(--color-danger-rgb), 0.1);
+  border: 1px solid rgba(var(--color-danger-rgb), 0.2);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.warning-message > i {
+  color: var(--color-danger);
+  font-size: var(--font-size-lg);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.warning-message h4 {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--spacing-md);
+}
+
+.warning-message ul {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--spacing-md);
+  padding-left: var(--spacing-xl);
+}
+
+.warning-message li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.warning-message p {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.confirmation-input {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.confirmation-input label {
+  display: block;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-md);
+}
+
+.confirm-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--color-border-secondary);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.confirm-input:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(var(--color-danger-rgb), 0.1);
+}
+
+.confirm-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.withdraw-message {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.withdraw-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+.withdraw-actions .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  height: 50px;
+  padding: 0 var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  line-height: 1;
+}
+
+.withdraw-actions .btn-cancel {
+  flex: 1;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-secondary);
+}
+
+.withdraw-actions .btn-cancel:hover {
+  background: var(--color-bg-card-hover);
+  color: var(--color-text-primary);
+}
+
+.withdraw-actions .btn-danger-confirm {
+  flex: 2;
+  background: var(--color-danger);
+  color: var(--color-text-primary);
+  border-color: var(--color-danger);
+}
+
+.withdraw-actions .btn-danger-confirm:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
+  transform: translateY(-1px);
+}
+
+.withdraw-actions .btn-danger-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .modal-overlay {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
+  }
+  
+  .withdraw-modal {
+    width: 95vw;
+    max-width: none;
   }
   
   .modal-content {
@@ -980,6 +1343,30 @@ export default {
     justify-content: center;
     width: 100%;
   }
+  
+  .danger-section {
+    padding: var(--spacing-2xl);
+  }
+  
+  .withdraw-content {
+    padding: var(--spacing-xl);
+  }
+  
+  .warning-message {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+  }
+  
+  .withdraw-actions {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  .withdraw-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -993,6 +1380,29 @@ export default {
   
   .section-title {
     font-size: var(--font-size-base);
+  }
+  
+  .withdraw-modal {
+    width: 98vw;
+    margin: 0;
+  }
+  
+  .withdraw-content {
+    padding: var(--spacing-md);
+  }
+  
+  .warning-message {
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+  
+  .confirmation-input label {
+    font-size: var(--font-size-xs);
+  }
+  
+  .confirm-input {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-sm);
   }
 }
 </style>
