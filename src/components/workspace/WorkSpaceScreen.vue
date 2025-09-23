@@ -1,42 +1,85 @@
 <template>
   <div class="workspace-container">
-    <!-- 헤더 영역 -->
-    <div class="workspace-header">
-      <div class="header-content">
-        <h1 class="workspace-title">워크 스페이스</h1>
-        <p class="workspace-subtitle">회사의 출장 일정을 확인하고 관리하세요</p>
+    <!-- 로딩 중 화면 -->
+    <div v-if="isLoadingCompany" class="loading-screen">
+      <div class="loading-content">
+        <i class="pi pi-spin pi-spinner loading-spinner"></i>
+        <h2 class="loading-title">회사 정보를 확인하는 중...</h2>
+        <p class="loading-description">잠시만 기다려주세요</p>
       </div>
-      <div class="header-actions">
-        <CompanyMenu />
-        <div class="schedule-buttons">
-          <button class="add-schedule-btn mjk-btn" @click="openAddScheduleModal('mjk')">
+    </div>
+
+    <!-- 회사가 없는 경우 표시할 화면 -->
+    <div v-else-if="!hasCompany" class="no-company-screen">
+      <div class="no-company-content">
+        <i class="pi pi-building no-company-icon"></i>
+        <h2 class="no-company-title">회사 정보가 필요합니다</h2>
+        <p class="no-company-description">
+          워크스페이스 기능을 사용하기 위해서는 먼저 회사를 생성하거나 기존 회사에 참여해야 합니다.
+        </p>
+        <div class="no-company-actions">
+          <BaseButton variant="primary" @click="openCreateCompanyModal" class="company-action-btn">
             <i class="pi pi-plus"></i>
-            <span>MJK 일정 추가</span>
-          </button>
-          <button class="add-schedule-btn company-btn" @click="openAddScheduleModal('company')">
-            <i class="pi pi-plus"></i>
-            <span>기업 일정 추가</span>
-          </button>
+            회사 생성하기
+          </BaseButton>
+          <BaseButton variant="secondary" @click="openJoinCompanyModal" class="company-action-btn">
+            <i class="pi pi-users"></i>
+            회사 참여하기
+          </BaseButton>
         </div>
       </div>
     </div>
 
-    <div class="workspace-content">
-      <CalendarGrid
-          :events="events"
-          :selected-date="selectedDate"
-          @update:selectedDate="handleDateSelected"
-          @change-month="handleMonthChanged"
-      />
+    <!-- CompanyMenu 컴포넌트 재사용 (메뉴는 숨기고 모달만 사용) -->
+    <CompanyMenu 
+      :hide-menu="true"
+      :external-show-create-modal="showCreateCompanyModal"
+      :external-show-join-modal="showJoinCompanyModal"
+      @company-updated="handleCompanyUpdated"
+      @modal-closed="handleModalClosed"
+    />
 
-      <EventDetails
-          v-if="selectedDate"
-          :selected-date="selectedDate"
-          :events="events"
-          @delete-event="handleDeleteEvent"
-          @edit-event="handleEditEvent"
-      />
+    <!-- 회사가 있는 경우 기존 화면 -->
+    <div v-if="hasCompany">
+      <!-- 헤더 영역 -->
+      <div class="workspace-header">
+        <div class="header-content">
+          <h1 class="workspace-title">워크 스페이스</h1>
+          <p class="workspace-subtitle">회사의 출장 일정을 확인하고 관리하세요</p>
+        </div>
+        <div class="header-actions">
+          <CompanyMenu @company-updated="checkUserCompany" />
+          <div class="schedule-buttons">
+            <button class="add-schedule-btn mjk-btn" @click="openAddScheduleModal('mjk')">
+              <i class="pi pi-plus"></i>
+              <span>MJK 일정 추가</span>
+            </button>
+            <button class="add-schedule-btn company-btn" @click="openAddScheduleModal('company')">
+              <i class="pi pi-plus"></i>
+              <span>기업 일정 추가</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="workspace-content">
+        <CalendarGrid
+            :events="events"
+            :selected-date="selectedDate"
+            @update:selectedDate="handleDateSelected"
+            @change-month="handleMonthChanged"
+        />
+
+        <EventDetails
+            v-if="selectedDate"
+            :selected-date="selectedDate"
+            :events="events"
+            @delete-event="handleDeleteEvent"
+            @edit-event="handleEditEvent"
+        />
+      </div>
     </div>
+    <!-- 회사가 있는 경우 div 닫기 -->
 
     <ScheduleModal
         :show="showAddScheduleModal"
@@ -78,6 +121,7 @@ import ScheduleModal from './ScheduleModal.vue';
 import CompanyMenu from './CompanyMenu.vue';
 import BaseConfirm from '../common/BaseConfirm.vue';
 import BaseMessage from '../common/BaseMessage.vue';
+import BaseButton from '../common/BaseButton.vue';
 import { apiService } from '../../services/api.js';
 
 export default {
@@ -89,6 +133,7 @@ export default {
     CompanyMenu,
     BaseConfirm,
     BaseMessage,
+    BaseButton,
   },
   data() {
     return {
@@ -104,7 +149,12 @@ export default {
         show: false,
         type: 'success',
         text: ''
-      }
+      },
+      // 회사 관련 상태
+      isLoadingCompany: true,
+      hasCompany: false,
+      showCreateCompanyModal: false,
+      showJoinCompanyModal: false
     };
   },
   methods: {
@@ -242,10 +292,50 @@ export default {
         // 에러 발생 시 빈 배열로 설정
         this.events = [];
       }
+    },
+    
+    // 회사 관련 메서드들
+    async checkUserCompany() {
+      this.isLoadingCompany = true;
+      try {
+        const response = await apiService.company.getList();
+        this.hasCompany = !!response.data;
+        console.log('사용자 회사 상태:', this.hasCompany ? '있음' : '없음');
+        
+        // 회사가 있으면 출장 목록 조회
+        if (this.hasCompany) {
+          await this.fetchSchedules();
+        }
+      } catch (error) {
+        console.error('회사 정보 확인 실패:', error);
+        this.hasCompany = false;
+      } finally {
+        this.isLoadingCompany = false;
+      }
+    },
+    
+    openCreateCompanyModal() {
+      this.showCreateCompanyModal = true;
+    },
+    
+    openJoinCompanyModal() {
+      this.showJoinCompanyModal = true;
+    },
+    
+    handleCompanyUpdated() {
+      // 회사 정보가 업데이트되면 다시 확인
+      this.checkUserCompany();
+      this.showCreateCompanyModal = false;
+      this.showJoinCompanyModal = false;
+    },
+    
+    handleModalClosed() {
+      this.showCreateCompanyModal = false;
+      this.showJoinCompanyModal = false;
     }
   },
   mounted() {
-    this.fetchSchedules();
+    this.checkUserCompany();
   }
 }
 </script>
@@ -448,6 +538,109 @@ export default {
     
     .workspace-content {
         padding: 8px;
+    }
+}
+
+/* 로딩 화면 */
+.loading-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--color-bg-primary);
+}
+
+.loading-content {
+    text-align: center;
+    color: var(--color-text-primary);
+}
+
+.loading-spinner {
+    font-size: 3rem;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.loading-title {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+.loading-description {
+    color: var(--color-text-muted);
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* 회사 없음 화면 */
+.no-company-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--color-bg-primary);
+}
+
+.no-company-content {
+    text-align: center;
+    max-width: 500px;
+    padding: var(--spacing-4xl);
+    margin: 0 auto;
+}
+
+.no-company-icon {
+    font-size: 4rem;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.no-company-title {
+    font-size: 2rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-xl) 0;
+}
+
+.no-company-description {
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 var(--spacing-4xl) 0;
+}
+
+.no-company-actions {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: center;
+}
+
+.company-action-btn {
+    min-width: 160px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .no-company-content {
+        padding: var(--spacing-2xl);
+    }
+    
+    .no-company-title {
+        font-size: 1.8rem;
+    }
+    
+    .no-company-description {
+        font-size: 1rem;
+    }
+    
+    .no-company-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .company-action-btn {
+        width: 100%;
+        max-width: 280px;
     }
 }
 </style>

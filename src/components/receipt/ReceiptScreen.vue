@@ -1962,39 +1962,35 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 200px);
-  padding: var(--spacing-4xl);
+  min-height: 100vh;
+  background: var(--color-bg-primary);
 }
 
 .no-company-content {
   text-align: center;
   max-width: 500px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-2xl);
+  padding: var(--spacing-4xl);
+  margin: 0 auto;
 }
 
 .no-company-icon {
   font-size: 4rem;
   color: var(--color-primary);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
 }
 
 .no-company-title {
   font-size: 2rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
-  margin: 0;
-  margin-bottom: var(--spacing-md);
+  margin: 0 0 var(--spacing-xl) 0;
 }
 
 .no-company-description {
-  font-size: 1.1rem;
   color: var(--color-text-secondary);
+  font-size: 1.1rem;
   line-height: 1.6;
-  margin: 0;
-  margin-bottom: var(--spacing-2xl);
+  margin: 0 0 var(--spacing-4xl) 0;
 }
 
 .no-company-actions {
@@ -2014,7 +2010,7 @@ export default {
   }
   
   .no-company-title {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
   
   .no-company-description {
@@ -2023,12 +2019,12 @@ export default {
   
   .no-company-actions {
     flex-direction: column;
-    width: 100%;
+    align-items: center;
   }
   
   .company-action-btn {
     width: 100%;
-    min-width: auto;
+    max-width: 280px;
   }
 }
 </style>
