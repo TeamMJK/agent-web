@@ -89,6 +89,9 @@ export default {
         };
     },
     mounted() {
+        console.log('LoginScreen mounted, 현재 URL:', window.location.href);
+        console.log('현재 sessionStorage isOAuthUser:', sessionStorage.getItem('isOAuthUser'));
+        
         // OAuth 성공 후 처리
         this.checkOAuthCallback();
     },
@@ -99,6 +102,14 @@ export default {
             const token = urlParams.get('token');
             const refreshToken = urlParams.get('refreshToken');
             const error = urlParams.get('error');
+
+            console.log('checkOAuthCallback 실행:', {
+                url: window.location.href,
+                success,
+                token: token ? '***토큰있음***' : null,
+                refreshToken: refreshToken ? '***리프레시토큰있음***' : null,
+                error
+            });
 
             if (success === 'true' && token) {
                 // OAuth 성공 시 기존 tokenManager 사용
