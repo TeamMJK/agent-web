@@ -102,7 +102,9 @@ export default {
   this.closePopup();
       } catch (error) {
         console.error('회원가입 실패:', error);
-        if (error.response && error.response.data && error.response.data.message) {
+        if (error.response && error.response.status === 409) {
+          this.showMessage('error', '이메일이 이미 존재합니다.');
+        } else if (error.response && error.response.data && error.response.data.message) {
           this.showMessage('error', error.response.data.message);
         } else {
           this.showMessage('error', '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');

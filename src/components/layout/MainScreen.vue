@@ -17,20 +17,23 @@
                     <i class="pi pi-user"></i>
                 </button>
 
-                <!-- 검색창 -->
-                <input type="text" v-model="prompt" placeholder="어떤 출장을 계획하고 계신가요?"
-                    class="prompt-input" @keyup.enter="submitPrompt" />
+                <!-- 프롬프트 창 -->
+                <input type="text" v-model="prompt" placeholder="10월 1일부터 10월 5일까지 부산으로 출장을 갈거야. 최저가 호텔로 예약해줘."
+                    class="prompt-input" @keyup.enter="submitPrompt" :disabled="isSubmitting" />
 
                 <!-- 전송 버튼 -->
-                <button class="icon-btn submit-btn" @click="submitPrompt" title="전송">
-                    <i class="pi pi-send"></i>
+                <button class="icon-btn submit-btn" @click="submitPrompt" title="전송" :disabled="isSubmitting">
+                    <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
+                    <i v-else class="pi pi-send"></i>
                 </button>
             </div>
 
             <!-- 필터 버튼 그룹 -->
             <div class="filter-buttons">
                 <button v-for="filter in filters" :key="filter.id"
-                    :class="['filter-btn', { active: activeFilter === filter.id }]" @click="setActiveFilter(filter.id)">
+                    :class="['filter-btn', { active: activeFilter === filter.id }]" 
+                    @click="setActiveFilter(filter.id)"
+                    :disabled="isSubmitting">
                     {{ filter.label }}
                 </button>
             </div>
@@ -47,6 +50,7 @@
 <script>
 import CompanyMenu from '../workspace/CompanyMenu.vue';
 import { apiService } from '../../services/api';
+import { pushMessage } from '../../utils/notify.js';
 
 export default {
     name: 'MainScreen',
@@ -63,38 +67,77 @@ export default {
                 { id: 'flight', label: '항공' },
             ],
             chatResponse: '', // 챗봇 응답 (임시)
-            isFocusMode: false // 검색 초점 모드 상태
+            isFocusMode: false, // 검색 초점 모드 상태
+            isSubmitting: false // 프롬프트 제출 중 상태
         };
     },
     methods: {
         // 프롬프트 제출 로직
         async submitPrompt() {
             const text = this.prompt.trim();
-            if (!text) return; // 입력 내용이 없으면 무시
+            if (!text || this.isSubmitting) return; // 입력 내용이 없거나 이미 제출 중이면 무시
+
+            this.isSubmitting = true;
 
             try {
                 let requestFn;
+                let filterName = '';
+
                 // 활성 필터에 따른 엔드포인트 결정
                 if (this.activeFilter === 'all') {
                     requestFn = apiService.prompts.integration;
+                    filterName = '숙박+항공';
                 } else if (this.activeFilter === 'hotel') {
                     requestFn = apiService.prompts.hotel;
+                    filterName = '숙박';
                 } else if (this.activeFilter === 'flight') {
-                    requestFn = apiService.prompts.businessTrip;
+                    requestFn = apiService.prompts.flight;
+                    filterName = '항공';
                 } else {
                     // 정의되지 않은 필터인 경우 방어적으로 통합 엔드포인트 사용
                     requestFn = apiService.prompts.integration;
+                    filterName = '숙박+항공';
                 }
 
                 const response = await requestFn({ prompt: text });
 
-                // 응답 본문을 그대로 표시 (스키마를 가정하지 않음)
-                this.chatResponse = typeof response.data === 'string'
-                    ? response.data
-                    : JSON.stringify(response.data);
+                // 응답 데이터 구조 확인
+                const responseData = response.data;
+                console.log('API Response:', responseData);
 
-                // 성공 시 입력창 비우기
-                this.prompt = '';
+                // 성공 시 PromptScreen으로 이동
+                const promptText = this.prompt; // 이동 전에 프롬프트 텍스트 저장
+                this.prompt = ''; // 입력창 비우기
+                
+                // API 응답에서 필요한 데이터 추출
+                const queryParams = {
+                    prompt: promptText,
+                    filter: this.activeFilter
+                };
+
+                // novnc_url이 있으면 추가
+                if (responseData.novnc_url) {
+                    queryParams.novnc_url = responseData.novnc_url;
+                }
+
+                // session_id가 있으면 추가
+                if (responseData.session_id) {
+                    queryParams.session_id = responseData.session_id;
+                }
+
+                // detail 정보가 있으면 JSON 문자열로 추가
+                if (responseData.detail) {
+                    queryParams.detail = JSON.stringify(responseData.detail);
+                }
+
+                // PromptScreen으로 이동
+                this.$router.push({
+                    name: 'PromptScreen',
+                    query: queryParams
+                });
+                
+                pushMessage({ type: 'success', text: `${filterName} 요청이 성공적으로 전송되었습니다.` });
+
             } catch (error) {
                 // 서버에서 내려준 메시지를 우선 표시
                 const serverMsg = error?.response?.data?.message;
@@ -106,6 +149,8 @@ export default {
                 } else {
                     this.chatResponse = '요청 처리 중 알 수 없는 오류가 발생했습니다.';
                 }
+            } finally {
+                this.isSubmitting = false;
             }
         },
         // 활성 필터 설정
@@ -207,6 +252,11 @@ export default {
     font-family: inherit;
 }
 
+.prompt-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .prompt-input::placeholder {
     color: #888888;
 }
@@ -225,9 +275,14 @@ export default {
     height: 44px;
 }
 
-.icon-btn:hover {
+.icon-btn:hover:not(:disabled) {
     color: #ffffff;
     background-color: rgba(255, 255, 255, 0.1);
+}
+
+.icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .submit-btn:hover {
@@ -252,6 +307,11 @@ export default {
     border: 1px solid #333333;
     cursor: pointer;
     white-space: nowrap;
+}
+
+.filter-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .filter-btn.active {
