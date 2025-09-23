@@ -104,6 +104,9 @@ export default {
                 // OAuth 성공 시 기존 tokenManager 사용
                 tokenManager.setTokens(token, refreshToken || token);
                 
+                // Google OAuth 사용자임을 표시
+                sessionStorage.setItem('isOAuthUser', 'true');
+                
                 // URL 파라미터 제거
                 window.history.replaceState({}, document.title, '/login');
                 
@@ -183,6 +186,10 @@ export default {
 
                 if (response.data && response.data.accessToken && response.data.refreshToken) {
                     tokenManager.setTokens(response.data.accessToken, response.data.refreshToken);
+                    
+                    // 이메일 로그인 사용자는 OAuth 사용자가 아님을 명시
+                    sessionStorage.removeItem('isOAuthUser');
+                    
                     this.$router.push('/main');
                 } else {
                     this.errorMessage = '로그인 응답 형식이 올바르지 않습니다.';

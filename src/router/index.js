@@ -101,16 +101,26 @@ router.beforeEach(async (to, from, next) => {
     } catch (error) {
       // 500 에러는 민감 정보가 없다는 의미
       if (error.response && error.response.status === 500) {
-        // 민감 정보가 없으면 개인정보 동의 상태 확인
-        const privacyConsent = sessionStorage.getItem('privacyConsent');
-        const hasConsented = privacyConsent && JSON.parse(privacyConsent);
+        // Google OAuth 사용자인지 확인 (세션 스토리지에 OAuth 플래그가 있는지 확인)
+        const isOAuthUser = sessionStorage.getItem('isOAuthUser') === 'true';
 
-        if (!hasConsented && to.path !== '/privacy-consent') {
-          // 개인정보 동의하지 않았으면 동의 페이지로 리디렉션
-          return next('/privacy-consent');
-        } else if (hasConsented && to.path !== '/sensitive-info') {
-          // 개인정보 동의했지만 민감정보 없으면 sensitive-info 페이지로 리디렉션
-          return next('/sensitive-info');
+        if (isOAuthUser) {
+          // Google OAuth 사용자: 개인정보 동의 상태 확인
+          const privacyConsent = sessionStorage.getItem('privacyConsent');
+          const hasConsented = privacyConsent && JSON.parse(privacyConsent);
+
+          if (!hasConsented && to.path !== '/privacy-consent') {
+            // 개인정보 동의하지 않았으면 동의 페이지로 리디렉션
+            return next('/privacy-consent');
+          } else if (hasConsented && to.path !== '/sensitive-info') {
+            // 개인정보 동의했지만 민감정보 없으면 sensitive-info 페이지로 리디렉션
+            return next('/sensitive-info');
+          }
+        } else {
+          // 이메일 회원가입 사용자: 바로 민감정보 입력 페이지로 이동
+          if (to.path !== '/sensitive-info') {
+            return next('/sensitive-info');
+          }
         }
       } else {
         // 다른 종류의 에러 (네트워크 등)
