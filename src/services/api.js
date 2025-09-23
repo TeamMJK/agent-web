@@ -132,7 +132,24 @@ export const apiService = {
     logout: () => {
       tokenManager.clearTokens();
       return Promise.resolve();
-    }
+    },
+
+    /**
+     * 이메일 인증 코드 발송
+     * POST /emails/send
+     * @param {string} email 인증할 이메일 주소
+     * @returns {Promise}
+     */
+    sendVerificationCode: (email) => apiClient.post('/emails/send', { email }),
+
+    /**
+     * 이메일 인증 코드 검증
+     * POST /emails/verify
+     * @param {string} email 이메일 주소
+     * @param {string} code 인증 코드
+     * @returns {Promise}
+     */
+    verifyEmail: (email, code) => apiClient.post('/emails/verify', { email, code })
   },
 
   // 사용자 정보 관련 API
