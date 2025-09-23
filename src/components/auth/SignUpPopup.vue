@@ -21,7 +21,48 @@
                 v-model="email" 
                 placeholder="example@email.com" 
                 required 
+                :disabled="emailVerification.isVerified"
               />
+              <button 
+                type="button" 
+                class="verify-btn"
+                @click="sendVerificationCode"
+                :disabled="emailVerification.isSending || emailVerification.isVerified"
+              >
+                <span v-if="!emailVerification.isSending && !emailVerification.isVerified">인증</span>
+                <span v-else-if="emailVerification.isSending">
+                  <i class="pi pi-spinner pi-spin"></i>
+                </span>
+                <span v-else-if="emailVerification.isVerified">
+                  <i class="pi pi-check"></i>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 이메일 인증 코드 입력 필드 (동적 표시) -->
+          <div v-if="emailVerification.showVerificationField && !emailVerification.isVerified" class="input-group">
+            <label for="verificationCode">인증 번호</label>
+            <div class="input-wrapper">
+              <i class="pi pi-key input-icon"></i>
+              <input 
+                type="text" 
+                id="verificationCode" 
+                v-model="emailVerification.verificationCode" 
+                placeholder="인증 번호를 입력하세요" 
+                required 
+              />
+              <button 
+                type="button" 
+                class="verify-btn"
+                @click="verifyEmailCode"
+                :disabled="emailVerification.isVerifying"
+              >
+                <span v-if="!emailVerification.isVerifying">확인</span>
+                <span v-else>
+                  <i class="pi pi-spinner pi-spin"></i>
+                </span>
+              </button>
             </div>
           </div>
           
@@ -39,7 +80,7 @@
             </div>
           </div>
           
-          <button type="submit" class="btn btn-submit" :disabled="isLoading">
+          <button type="submit" class="btn btn-submit" :disabled="isLoading || !emailVerification.isVerified">
             <span v-if="!isLoading">다음</span>
             <span v-else>
               <i class="pi pi-spinner pi-spin"></i>
@@ -323,6 +364,14 @@ export default {
         text: ''
       },
       isLoading: false,
+      // 이메일 인증 관련
+      emailVerification: {
+        isSending: false,
+        isVerifying: false,
+        showVerificationField: false,
+        isVerified: false,
+        verificationCode: ''
+      },
       consent: {
         personalInfo: false,
         passportInfo: false,
@@ -344,6 +393,9 @@ export default {
       return this.consent.personalInfo && 
              this.consent.passportInfo && 
              this.consent.thirdParty;
+    },
+    canProceedToPrivacy() {
+      return this.emailVerification.isVerified;
     }
   },
   methods: {
@@ -356,6 +408,13 @@ export default {
       this.email = '';
       this.password = '';
       this.showPrivacySection = false;
+      this.emailVerification = {
+        isSending: false,
+        isVerifying: false,
+        showVerificationField: false,
+        isVerified: false,
+        verificationCode: ''
+      };
       this.consent = {
         personalInfo: false,
         passportInfo: false,
@@ -387,6 +446,11 @@ export default {
         // 이메일 형식 검증
         if (!/^[^@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
           this.showMessage('error', '유효한 이메일 주소를 입력해주세요.');
+          return;
+        }
+        // 이메일 인증 확인
+        if (!this.emailVerification.isVerified) {
+          this.showMessage('error', '이메일 인증을 완료해주세요.');
           return;
         }
 
@@ -460,6 +524,64 @@ export default {
     
     toggleDetails(section) {
       this.showDetails[section] = !this.showDetails[section];
+    },
+
+    // 이메일 인증 코드 발송
+    async sendVerificationCode() {
+      if (!this.email) {
+        this.showMessage('error', '이메일을 입력해주세요.');
+        return;
+      }
+      
+      // 이메일 형식 검증
+      if (!/^[^@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
+        this.showMessage('error', '유효한 이메일 주소를 입력해주세요.');
+        return;
+      }
+
+      this.emailVerification.isSending = true;
+      this.message.show = false;
+
+      try {
+        await apiService.auth.sendVerificationCode(this.email);
+        this.emailVerification.showVerificationField = true;
+        this.showMessage('success', '인증 코드가 이메일로 발송되었습니다.');
+      } catch (error) {
+        console.error('인증 코드 발송 실패:', error);
+        if (error.response && error.response.data && error.response.data.message) {
+          this.showMessage('error', error.response.data.message);
+        } else {
+          this.showMessage('error', '인증 코드 발송 중 오류가 발생했습니다.');
+        }
+      } finally {
+        this.emailVerification.isSending = false;
+      }
+    },
+
+    // 이메일 인증 코드 검증
+    async verifyEmailCode() {
+      if (!this.emailVerification.verificationCode) {
+        this.showMessage('error', '인증 코드를 입력해주세요.');
+        return;
+      }
+
+      this.emailVerification.isVerifying = true;
+      this.message.show = false;
+
+      try {
+        await apiService.auth.verifyEmail(this.email, this.emailVerification.verificationCode);
+        this.emailVerification.isVerified = true;
+        this.showMessage('success', '이메일 인증이 완료되었습니다.');
+      } catch (error) {
+        console.error('이메일 인증 실패:', error);
+        if (error.response && error.response.data && error.response.data.message) {
+          this.showMessage('error', error.response.data.message);
+        } else {
+          this.showMessage('error', '인증 코드가 올바르지 않습니다.');
+        }
+      } finally {
+        this.emailVerification.isVerifying = false;
+      }
     }
   },
 };
@@ -597,6 +719,60 @@ export default {
 .input-wrapper input::placeholder {
   color: var(--color-text-placeholder);
 }
+
+.input-wrapper input:disabled {
+  background-color: var(--color-bg-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* 인증 버튼 스타일 */
+.verify-btn {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 60px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.verify-btn:disabled {
+  background: var(--color-bg-disabled);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+
+
+/* 인증 완료된 이메일 필드 스타일 */
+.input-wrapper input:disabled {
+  background-color: var(--color-bg-card);
+  border-color: var(--color-success);
+}
+
+/* 입력 필드가 인증 버튼과 겹치지 않도록 패딩 조정 */
+.input-wrapper:has(.verify-btn) input {
+  padding-right: 80px;
+}
+
+
 
 .message-container {
   padding: 0 var(--spacing-3xl) var(--spacing-2xl);
@@ -945,5 +1121,18 @@ export default {
   .btn-submit {
     width: 100%;
   }
+
+  /* 모바일에서 인증 버튼 크기 조정 */
+  .verify-btn {
+    min-width: 50px;
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .input-wrapper:has(.verify-btn) input {
+    padding-right: 70px;
+  }
+
+
 }
 </style>
