@@ -337,10 +337,10 @@ export const apiService = {
 
     /**
      * 항공 전용 프롬프트
-     * POST /prompts/business-trip
+     * POST /prompts/flight
      * @param {{ prompt: string }} payload
      */
-    businessTrip: (payload) => apiClient.post('/prompts/business-trip', payload),
+    flight: (payload) => apiClient.post('/prompts/flight', payload),
   },
 
   // 출장 관련 API

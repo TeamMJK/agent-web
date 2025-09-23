@@ -5,6 +5,7 @@ import ReceiptScreen from '../components/receipt/ReceiptScreen.vue';
 import SensitiveInfoForm from '../components/forms/SensitiveInfoForm.vue';
 import LoginScreen from '../components/auth/LoginScreen.vue';
 import TestPromptScreen from '../components/test/TestPromptScreen.vue';
+import PromptScreen from '../components/prompt/PromptScreen.vue';
 import { apiService, tokenManager } from '../services/api';
 
 const routes = [
@@ -47,6 +48,12 @@ const routes = [
     name: 'TestPromptScreen',
     component: TestPromptScreen,
     meta: { requiresAuth: false, hideUI: true },
+  },
+  {
+    path: '/prompt',
+    name: 'PromptScreen',
+    component: PromptScreen,
+    meta: { requiresAuth: true },
   },
 ];
 

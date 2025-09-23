@@ -5,7 +5,11 @@
     <Sidebar v-if="!$route.meta.hideUI" />
     
     <main class="main-content">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
   </div>
 </template>
@@ -44,5 +48,16 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   height: 100vh;
+}
+
+/* 페이지 전환 애니메이션 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.1s ease-in-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

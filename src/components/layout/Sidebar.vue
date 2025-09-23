@@ -22,6 +22,11 @@
           <i class="pi pi-receipt"></i>
         </router-link>
       </li>
+      <li data-label="출장 요청" :class="{ active: $route.name === 'PromptScreen' }">
+        <router-link to="/prompt">
+          <i class="pi pi-send"></i>
+        </router-link>
+      </li>
     </ul>
     <div class="sidebar-footer">
       <button data-label="내 정보" class="footer-button" @click="showUserInfo">
