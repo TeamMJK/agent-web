@@ -226,7 +226,7 @@ export default {
     },
     setIframeUrl() {
       // 임시 URL 설정 - 실제로는 API 응답에서 받아온 URL을 사용
-      this.iframeUrl = 'https://www.google.com/maps';
+      this.iframeUrl = 'http://1.228.118.20:6081/vnc.html?autoconnect=true&resize=scale';
       
       // 로딩 시뮬레이션
       setTimeout(() => {

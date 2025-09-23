@@ -4,6 +4,7 @@ import WorkSpaceScreen from '../components/workspace/WorkSpaceScreen.vue';
 import ReceiptScreen from '../components/receipt/ReceiptScreen.vue';
 import SensitiveInfoForm from '../components/forms/SensitiveInfoForm.vue';
 import LoginScreen from '../components/auth/LoginScreen.vue';
+import PrivacyConsentScreen from '../components/auth/PrivacyConsentScreen.vue';
 import TestPromptScreen from '../components/test/TestPromptScreen.vue';
 import PromptScreen from '../components/prompt/PromptScreen.vue';
 import { apiService, tokenManager } from '../services/api';
@@ -36,6 +37,12 @@ const routes = [
     name: 'ReceiptScreen',
     component: ReceiptScreen,
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/privacy-consent',
+    name: 'PrivacyConsentScreen',
+    component: PrivacyConsentScreen,
+    meta: { requiresAuth: true, hideUI: true },
   },
   {
     path: '/sensitive-info',
@@ -87,15 +94,22 @@ router.beforeEach(async (to, from, next) => {
     // 인증이 필요한 페이지 접근 시 민감 정보 확인
     try {
       await apiService.user.getProfile();
-      // 민감 정보가 있으면, sensitive-info 페이지 접근 시 main으로 리디렉션
-      if (to.path === '/sensitive-info') {
+      // 민감 정보가 있으면, privacy-consent나 sensitive-info 페이지 접근 시 main으로 리디렉션
+      if (to.path === '/privacy-consent' || to.path === '/sensitive-info') {
         return next('/main');
       }
     } catch (error) {
       // 500 에러는 민감 정보가 없다는 의미
       if (error.response && error.response.status === 500) {
-        // 민감 정보가 없으면 sensitive-info 페이지로 리디렉션
-        if (to.path !== '/sensitive-info') {
+        // 민감 정보가 없으면 개인정보 동의 상태 확인
+        const privacyConsent = sessionStorage.getItem('privacyConsent');
+        const hasConsented = privacyConsent && JSON.parse(privacyConsent);
+
+        if (!hasConsented && to.path !== '/privacy-consent') {
+          // 개인정보 동의하지 않았으면 동의 페이지로 리디렉션
+          return next('/privacy-consent');
+        } else if (hasConsented && to.path !== '/sensitive-info') {
+          // 개인정보 동의했지만 민감정보 없으면 sensitive-info 페이지로 리디렉션
           return next('/sensitive-info');
         }
       } else {

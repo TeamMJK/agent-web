@@ -93,7 +93,7 @@ export default {
         this.checkOAuthCallback();
     },
     methods: {
-        checkOAuthCallback() {
+        async checkOAuthCallback() {
             const urlParams = new URLSearchParams(window.location.search);
             const success = urlParams.get('success');
             const token = urlParams.get('token');
@@ -107,8 +107,21 @@ export default {
                 // URL 파라미터 제거
                 window.history.replaceState({}, document.title, '/login');
                 
-                // 메인 페이지로 이동
-                this.$router.push('/main');
+                // 민감정보 확인 후 적절한 페이지로 이동
+                try {
+                    await apiService.user.getProfile();
+                    // 민감정보가 있으면 메인 페이지로 이동
+                    this.$router.push('/main');
+                } catch (error) {
+                    if (error.response && error.response.status === 500) {
+                        // 민감정보가 없으면 개인정보 동의 페이지로 이동
+                        this.$router.push('/privacy-consent');
+                    } else {
+                        // 다른 에러는 기존과 동일하게 처리
+                        console.error('OAuth 후 프로필 확인 실패:', error);
+                        this.$router.push('/main');
+                    }
+                }
             } else if (error) {
                 this.errorMessage = `Google 로그인 실패: ${error}`;
                 
