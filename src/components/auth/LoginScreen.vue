@@ -103,7 +103,7 @@ export default {
             const refreshToken = urlParams.get('refreshToken');
             const error = urlParams.get('error');
 
-            console.log('checkOAuthCallback 실행:', {
+            console.log('checkOAuthCallback 실행 (LoginScreen):', {
                 url: window.location.href,
                 success,
                 token: token ? '***토큰있음***' : null,
@@ -111,6 +111,7 @@ export default {
                 error
             });
 
+            // 주의: 현재 OAuth 콜백은 라우터에서 처리되므로 여기는 실행되지 않을 수 있음
             if (success === 'true' && token) {
                 // OAuth 성공 시 기존 tokenManager 사용
                 tokenManager.setTokens(token, refreshToken || token);
