@@ -11,7 +11,7 @@
 
         <!-- 프롬프트 입력 영역 -->
         <div class="prompt-section">
-            <div class="prompt-input-wrapper">
+            <div class="prompt-input-wrapper" :class="{ submitting: isSubmitting }">
                 <!-- 파일 업로드 아이콘 -->
                 <button class="icon-btn file-upload-btn">
                     <i class="pi pi-user"></i>
@@ -40,9 +40,29 @@
         </div>
 
         <!-- 챗봇 응답 표시 영역 -->
-        <div class="chat-response-area">
+        <div v-if="!isSubmitting" class="chat-response-area">
             <p v-if="!chatResponse" class="placeholder-text">에이전트에게 출장 자동 예약을 요청하세요.</p>
             <p v-else class="response-text">{{ chatResponse }}</p>
+        </div>
+
+        <!-- 로딩 상태 표시 영역 -->
+        <div v-else class="loading-area">
+            <div class="loading-container">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <div class="loading-content">
+                    <h3 class="loading-title">에이전트가 요청을 준비 중입니다</h3>
+                    <p class="loading-subtitle">프롬프트를 분석중입니다...</p>
+                    <div class="loading-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -240,6 +260,12 @@ export default {
     padding: 4px 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.prompt-input-wrapper.submitting {
+    opacity: 0.7;
+    transform: scale(0.98);
 }
 
 .prompt-input {
@@ -348,6 +374,105 @@ export default {
     font-weight: 400;
 }
 
+/* 로딩 상태 스타일 */
+.loading-area {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.loading-spinner {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.spinner-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 3px solid transparent;
+    border-top: 3px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1.5s linear infinite;
+}
+
+.spinner-ring:nth-child(2) {
+    animation-delay: 0.2s;
+    border-top-color: var(--color-primary-light);
+}
+
+.spinner-ring:nth-child(3) {
+    animation-delay: 0.4s;
+    border-top-color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.loading-title {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #ffffff;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.5px;
+}
+
+.loading-subtitle {
+    font-size: 0.95rem;
+    color: #888888;
+    margin: 0 0 1.5rem 0;
+    font-weight: 400;
+}
+
+.loading-progress {
+    width: 100%;
+    max-width: 300px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+    border-radius: 2px;
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .main-container {
@@ -372,6 +497,24 @@ export default {
         padding: 8px 16px;
         font-size: 0.8rem;
     }
+
+    .loading-container {
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+    }
+
+    .loading-title {
+        font-size: 1.2rem;
+    }
+
+    .loading-subtitle {
+        font-size: 0.9rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -392,6 +535,24 @@ export default {
         width: 40px;
         height: 40px;
         font-size: 1rem;
+    }
+
+    .loading-container {
+        padding: 1rem;
+        min-height: 150px;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+    }
+
+    .loading-title {
+        font-size: 1.1rem;
+    }
+
+    .loading-subtitle {
+        font-size: 0.85rem;
     }
 }
 </style>
