@@ -357,7 +357,7 @@ export const apiService = {
      * POST /prompts/hotel
      * @param {{ prompt: string }} payload
      */
-    hotel: (payload) => apiClient.post('/prompts/hotel', payload),
+    hotel: (payload) => apiClient.post('/prompts/hotel', payload, { timeout: 0 }),
 
     /**
      * 항공 전용 프롬프트

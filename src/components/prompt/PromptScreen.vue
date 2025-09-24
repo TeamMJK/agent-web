@@ -3,12 +3,12 @@
     <!-- 왼쪽 사이드 패널 -->
     <div class="side-panel">
       <div class="panel-header">
-        <h2 class="panel-title">출장 요청</h2>
+        <h2 class="panel-title">숙박 요청</h2>
       </div>
       
       <div class="panel-content">
-        <!-- 유효한 요청이 없는 경우 표시 -->
-        <div v-if="!hasValidRequest" class="no-request-message">
+        <!-- 요청 리스트가 없는 경우 표시 -->
+        <div v-if="!hotelRequests || hotelRequests.length === 0" class="no-request-message">
           <div class="no-request-icon">
             <i class="pi pi-info-circle"></i>
           </div>
@@ -22,69 +22,62 @@
           </router-link>
         </div>
         
-        <!-- 유효한 요청이 있는 경우 표시 -->
-        <div v-else class="request-info">
-          <div class="info-item">
-            <span class="info-label">요청 유형</span>
-            <span class="info-value">{{ requestType }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">상태</span>
-            <span class="status-badge processing">처리 중</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">요청 시간</span>
-            <span class="info-value">{{ requestTime }}</span>
-          </div>
-          <div v-if="sessionId" class="info-item">
-            <span class="info-label">세션 ID</span>
-            <span class="info-value session-id">{{ sessionId }}</span>
-          </div>
-          
-          <!-- 호텔 세부 정보 추가 -->
-          <div v-if="hotelDetails?.hotel_destination" class="info-item">
-            <span class="info-label">목적지</span>
-            <span class="info-value">{{ hotelDetails.hotel_destination }}</span>
-          </div>
-          <div v-if="hotelDetails?.booking_dates" class="info-item">
-            <span class="info-label">여행 기간</span>
-            <span class="info-value">{{ hotelDetails.booking_dates }}</span>
-          </div>
-          <div v-if="hotelDetails?.guests" class="info-item">
-            <span class="info-label">인원</span>
-            <span class="info-value">{{ hotelDetails.guests }}</span>
+        <!-- 요청 리스트 표시 -->
+        <div v-else class="request-list">
+          <div 
+            v-for="(request, index) in hotelRequests" 
+            :key="request.session_id"
+            class="request-item"
+            :class="{ active: selectedRequestIndex === index }"
+            @click="selectRequest(index)"
+          >
+            <div class="request-header">
+              <h3 class="request-title">{{ request.detail.hotel_destination }}</h3>
+              <span class="request-type">숙박</span>
+            </div>
+            <div class="request-summary">
+              <div class="summary-item">
+                <i class="pi pi-calendar"></i>
+                <span>{{ request.detail.booking_dates }}</span>
+              </div>
+              <div class="summary-item">
+                <i class="pi pi-users"></i>
+                <span>{{ request.detail.guests }}명</span>
+              </div>
+              <div v-if="request.detail.budget" class="summary-item">
+                <i class="pi pi-dollar"></i>
+                <span>{{ formatBudget(request.detail.budget) }}</span>
+              </div>
+            </div>
+            <div class="request-status">
+              <span class="status-badge processing">처리 중</span>
+            </div>
           </div>
         </div>
 
-        <!-- 유효한 요청이 있는 경우만 표시 -->
-        <template v-if="hasValidRequest">
-          <div class="request-details">
-            <h3 class="details-title">요청 내용</h3>
-            <div class="prompt-text">
-              {{ promptText }}
-            </div>
+        <!-- 선택된 요청의 상세 정보 표시 -->
+        <div v-if="selectedRequest" class="selected-request-details">
+          <div class="detail-header">
+            <h3 class="detail-title">{{ selectedRequest.detail.hotel_destination }}</h3>
+            <span class="session-id">{{ selectedRequest.session_id }}</span>
           </div>
-
-          <!-- 호텔 상세 정보 (API 응답에서 받은 경우만 표시) -->
-          <div v-if="hotelDetails" class="hotel-details">
-            <h3 class="details-title">상세 정보</h3>
-            <div class="details-grid">
-              <div v-if="hotelDetails.hotel_destination" class="detail-item">
-                <span class="detail-label">목적지</span>
-                <span class="detail-value">{{ hotelDetails.hotel_destination }}</span>
-              </div>
-              <div v-if="hotelDetails.booking_dates" class="detail-item">
-                <span class="detail-label">여행 기간</span>
-                <span class="detail-value">{{ hotelDetails.booking_dates }}</span>
-              </div>
-              <div v-if="hotelDetails.guests" class="detail-item">
-                <span class="detail-label">인원</span>
-                <span class="detail-value">{{ hotelDetails.guests }}</span>
-              </div>
-              <div v-if="hotelDetails.budget" class="detail-item">
-                <span class="detail-label">예산</span>
-                <span class="detail-value">{{ hotelDetails.budget }}</span>
-              </div>
+          
+          <div class="detail-info">
+            <div class="info-item">
+              <span class="info-label">목적지</span>
+              <span class="info-value">{{ selectedRequest.detail.hotel_destination }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">여행 기간</span>
+              <span class="info-value">{{ selectedRequest.detail.booking_dates }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">인원</span>
+              <span class="info-value">{{ selectedRequest.detail.guests }}명</span>
+            </div>
+            <div v-if="selectedRequest.detail.budget" class="info-item">
+              <span class="info-label">예산</span>
+              <span class="info-value">{{ formatBudget(selectedRequest.detail.budget) }}</span>
             </div>
           </div>
 
@@ -105,7 +98,7 @@
               </div>
             </div>
           </div>
-        </template>
+        </div>
       </div>
     </div>
 
@@ -121,18 +114,18 @@
           </button>
         </div>
         <div class="iframe-url">
-          <span class="url-text">{{ iframeUrl || '콘텐츠를 준비하는 중...' }}</span>
+          <span class="url-text">{{ currentIframeUrl || '요청을 선택해주세요...' }}</span>
         </div>
       </div>
       
       <div class="iframe-content" :class="{ loading: isIframeLoading }">
-        <!-- 유효한 요청이 없는 경우 -->
-        <div v-if="!hasValidRequest" class="no-content-message">
+        <!-- 선택된 요청이 없는 경우 -->
+        <div v-if="!selectedRequest" class="no-content-message">
           <i class="pi pi-desktop"></i>
-          <p>출장 요청을 보내면 진행상황을 확인할 수 있습니다</p>
+          <p>왼쪽에서 요청을 선택하면 진행상황을 확인할 수 있습니다</p>
         </div>
         
-        <!-- 유효한 요청이 있는 경우 -->
+        <!-- 선택된 요청이 있는 경우 -->
         <template v-else>
           <div v-if="isIframeLoading" class="iframe-loading">
             <i class="pi pi-spin pi-spinner"></i>
@@ -141,7 +134,7 @@
           <iframe
             v-show="!isIframeLoading"
             ref="mainIframe"
-            :src="iframeUrl"
+            :src="currentIframeUrl"
             frameborder="0"
             allowfullscreen
             @load="onIframeLoad"
@@ -158,67 +151,64 @@ export default {
   name: 'PromptScreen',
   data() {
     return {
-      requestType: '숙박+항공',
-      requestTime: new Date().toLocaleString('ko-KR'),
-      promptText: '',
-      iframeUrl: '',
-      isIframeLoading: true,
-      isFullscreen: false,
-      sessionId: '',
-      hotelDetails: null,
-      hasValidRequest: false
+      hotelRequests: [], // POST /prompts/hotel 응답의 sessionIdAndVncList
+      selectedRequestIndex: -1,
+      isIframeLoading: false,
+      isFullscreen: false
     };
   },
-  created() {
-    // 쿼리 파라미터에서 데이터 가져오기
-    const promptFromQuery = this.$route.query.prompt;
-    
-    // 유효한 요청인지 확인 (프롬프트가 있고 기본값이 아닌 경우)
-    this.hasValidRequest = !!(promptFromQuery && promptFromQuery !== '프롬프트 정보가 없습니다.');
-    
-    this.promptText = promptFromQuery || '프롬프트 정보가 없습니다.';
-    const filter = this.$route.query.filter || 'all';
-    
-    // 필터에 따른 요청 유형 설정
-    switch(filter) {
-      case 'hotel':
-        this.requestType = '숙박';
-        break;
-      case 'flight':
-        this.requestType = '항공';
-        break;
-      default:
-        this.requestType = '숙박+항공';
+  computed: {
+    selectedRequest() {
+      if (this.selectedRequestIndex >= 0 && this.hotelRequests[this.selectedRequestIndex]) {
+        return this.hotelRequests[this.selectedRequestIndex];
+      }
+      return null;
+    },
+    currentIframeUrl() {
+      return this.selectedRequest?.novnc_url || '';
     }
-
-    // API 응답 데이터 처리
-    this.sessionId = this.$route.query.session_id || '';
-    
-    // detail 정보 파싱
-    if (this.$route.query.detail) {
+  },
+  created() {
+    // POST /prompts/hotel 응답 데이터 처리
+    if (this.$route.query.responseData) {
       try {
-        this.hotelDetails = JSON.parse(this.$route.query.detail);
+        const responseData = JSON.parse(this.$route.query.responseData);
+        this.hotelRequests = responseData.sessionIdAndVncList || [];
+        
+        // 첫 번째 요청을 기본 선택
+        if (this.hotelRequests.length > 0) {
+          this.selectedRequestIndex = 0;
+        }
       } catch (error) {
-        console.error('Detail 데이터 파싱 오류:', error);
-        this.hotelDetails = null;
+        console.error('응답 데이터 파싱 오류:', error);
+        this.hotelRequests = [];
       }
     }
-
-    // novnc_url 설정
-    if (this.$route.query.novnc_url) {
-      this.iframeUrl = this.$route.query.novnc_url;
-      this.isIframeLoading = true; // URL이 있으면 로딩 시작
-    } else {
-      // 유효한 요청이 없는 경우 로딩 상태를 해제
-      if (!this.hasValidRequest) {
-        this.isIframeLoading = false;
-      } else {
-        // 임시 URL 설정 (novnc_url이 없는 경우)
-        this.setIframeUrl();
+    
+    // 기존 쿼리 파라미터 방식도 지원 (하위 호환성)
+    const sessionId = this.$route.query.session_id;
+    const novncUrl = this.$route.query.novnc_url;
+    const detail = this.$route.query.detail;
+    
+    if (sessionId && novncUrl && detail) {
+      try {
+        const parsedDetail = JSON.parse(detail);
+        this.hotelRequests = [{
+          session_id: sessionId,
+          novnc_url: novncUrl,
+          detail: parsedDetail
+        }];
+        this.selectedRequestIndex = 0;
+      } catch (error) {
+        console.error('기존 데이터 파싱 오류:', error);
       }
     }
   },
   methods: {
+    selectRequest(index) {
+      this.selectedRequestIndex = index;
+      this.isIframeLoading = true;
+    },
     refreshIframe() {
       this.isIframeLoading = true;
       const iframe = this.$refs.mainIframe;
@@ -238,14 +228,12 @@ export default {
     onIframeLoad() {
       this.isIframeLoading = false;
     },
-    setIframeUrl() {
-      // 임시 URL 설정 - 실제로는 API 응답에서 받아온 URL을 사용
-      this.iframeUrl = 'http://1.228.118.20:6081/vnc.html?autoconnect=true&resize=scale';
-      
-      // 로딩 시뮬레이션
-      setTimeout(() => {
-        this.isIframeLoading = false;
-      }, 2000);
+    formatBudget(budget) {
+      if (!budget) return '';
+      return new Intl.NumberFormat('ko-KR', {
+        style: 'currency',
+        currency: 'KRW'
+      }).format(budget);
     }
   }
 };
@@ -337,9 +325,125 @@ export default {
   transform: translateY(-1px);
 }
 
-/* 요청 정보 */
-.request-info {
+/* 요청 리스트 */
+.request-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
   margin-bottom: var(--spacing-3xl);
+}
+
+.request-item {
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.request-item:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-secondary);
+}
+
+.request-item.active {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+}
+
+.request-title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+  flex: 1;
+}
+
+.request-type {
+  background-color: var(--color-primary);
+  color: white;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  flex-shrink: 0;
+  margin-left: var(--spacing-md);
+}
+
+.request-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.summary-item i {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+}
+
+.request-status {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.status-badge {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.status-badge.processing {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
+}
+
+/* 선택된 요청 상세 정보 */
+.selected-request-details {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.detail-header {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.detail-title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.session-id {
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+
+.detail-info {
+  margin-bottom: var(--spacing-2xl);
 }
 
 .info-item {
@@ -364,87 +468,6 @@ export default {
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-}
-
-.session-id {
-  font-family: 'Monaco', 'Consolas', monospace;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  word-break: break-all;
-}
-
-.status-badge {
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-}
-
-.status-badge.processing {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary-border);
-}
-
-/* 요청 상세 */
-.request-details {
-  margin-bottom: var(--spacing-3xl);
-}
-
-.details-title {
-  color: var(--color-text-primary);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  margin: 0 0 var(--spacing-lg) 0;
-}
-
-.prompt-text {
-  background-color: var(--color-bg-tertiary);
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: 1.6;
-  word-break: break-word;
-}
-
-/* 호텔 상세 정보 */
-.hotel-details {
-  margin-bottom: var(--spacing-3xl);
-}
-
-.details-grid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: var(--spacing-md);
-  background-color: var(--color-bg-tertiary);
-  border: 1px solid var(--color-border-secondary);
-  border-radius: var(--radius-md);
-}
-
-.detail-label {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  flex-shrink: 0;
-}
-
-.detail-value {
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  text-align: right;
-  flex: 1;
-  margin-left: var(--spacing-md);
-  word-break: break-word;
 }
 
 /* 진행 상황 */
