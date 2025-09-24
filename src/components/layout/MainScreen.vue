@@ -43,6 +43,12 @@
         <div v-if="!isSubmitting" class="chat-response-area">
             <p v-if="!chatResponse" class="placeholder-text">에이전트에게 출장 자동 예약을 요청하세요.</p>
             <p v-else class="response-text">{{ chatResponse }}</p>
+            
+            <!-- 에러 메시지 표시 -->
+            <div v-if="errorMessage" class="error-message">
+                <i class="pi pi-times-circle"></i>
+                <span>{{ errorMessage }}</span>
+            </div>
         </div>
 
         <!-- 로딩 상태 표시 영역 -->
@@ -88,7 +94,8 @@ export default {
             ],
             chatResponse: '', // 챗봇 응답 (임시)
             isFocusMode: false, // 검색 초점 모드 상태
-            isSubmitting: false // 프롬프트 제출 중 상태
+            isSubmitting: false, // 프롬프트 제출 중 상태
+            errorMessage: '' // 에러 메시지
         };
     },
     methods: {
@@ -162,13 +169,12 @@ export default {
             } catch (error) {
                 // 서버에서 내려준 메시지를 우선 표시
                 const serverMsg = error?.response?.data?.message;
-                const status = error?.response?.status;
                 if (serverMsg) {
-                    this.chatResponse = `[오류 ${status ?? ''}] ${serverMsg}`.trim();
+                    this.errorMessage = serverMsg;
                 } else if (error?.message) {
-                    this.chatResponse = `요청 실패: ${error.message}`;
+                    this.errorMessage = `요청 실패: ${error.message}`;
                 } else {
-                    this.chatResponse = '요청 처리 중 알 수 없는 오류가 발생했습니다.';
+                    this.errorMessage = '요청 처리 중 알 수 없는 오류가 발생했습니다.';
                 }
             } finally {
                 this.isSubmitting = false;
@@ -358,6 +364,10 @@ export default {
     max-width: 700px;
     text-align: center;
     opacity: 0.7;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
 }
 
 .placeholder-text {
@@ -372,6 +382,27 @@ export default {
     font-size: 1rem;
     margin: 0;
     font-weight: 400;
+}
+
+/* 에러 메시지 스타일 */
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 12px 0;
+    max-width: 500px;
+}
+
+.error-message i {
+    flex-shrink: 0;
+    font-size: 1.1em;
 }
 
 /* 로딩 상태 스타일 */
