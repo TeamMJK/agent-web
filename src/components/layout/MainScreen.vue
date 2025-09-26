@@ -61,7 +61,7 @@
                 </div>
                 <div class="loading-content">
                     <h3 class="loading-title">에이전트가 요청을 준비 중입니다</h3>
-                    <p class="loading-subtitle">프롬프트를 분석중입니다...</p>
+                    <p class="loading-subtitle">{{ loadingMessage }}</p>
                     <div class="loading-progress">
                         <div class="progress-bar">
                             <div class="progress-fill"></div>
@@ -95,7 +95,9 @@ export default {
             chatResponse: '', // 챗봇 응답 (임시)
             isFocusMode: false, // 검색 초점 모드 상태
             isSubmitting: false, // 프롬프트 제출 중 상태
-            errorMessage: '' // 에러 메시지
+            errorMessage: '', // 에러 메시지
+            loadingMessage: '프롬프트를 분석중입니다...', // 로딩 메시지
+            loadingMessageTimer: null // 로딩 메시지 변경 타이머
         };
     },
     methods: {
@@ -105,6 +107,12 @@ export default {
             if (!text || this.isSubmitting) return; // 입력 내용이 없거나 이미 제출 중이면 무시
 
             this.isSubmitting = true;
+            this.loadingMessage = '프롬프트를 분석중입니다...'; // 초기 메시지 설정
+
+            // 10초 후 메시지 변경 타이머 설정
+            this.loadingMessageTimer = setTimeout(() => {
+                this.loadingMessage = '에이전트가 작업을 계획중입니다...';
+            }, 10000);
 
             try {
                 let requestFn;
@@ -120,12 +128,7 @@ export default {
                 } else if (this.activeFilter === 'flight') {
                     requestFn = apiService.prompts.flight;
                     filterName = '항공';
-                } 
-                // else {
-                //     // 정의되지 않은 필터인 경우 방어적으로 통합 엔드포인트 사용
-                //     requestFn = apiService.prompts.integration;
-                //     filterName = '숙박+항공';
-                // }
+                }
 
                 const response = await requestFn({ prompt: text });
 
@@ -137,25 +140,27 @@ export default {
                 const promptText = this.prompt; // 이동 전에 프롬프트 텍스트 저장
                 this.prompt = ''; // 입력창 비우기
                 
-                // API 응답에서 필요한 데이터 추출
+                // API 응답 데이터를 쿼리 파라미터로 전달
                 const queryParams = {
                     prompt: promptText,
                     filter: this.activeFilter
                 };
 
-                // novnc_url이 있으면 추가
-                if (responseData.novnc_url) {
-                    queryParams.novnc_url = responseData.novnc_url;
-                }
-
-                // session_id가 있으면 추가
-                if (responseData.session_id) {
-                    queryParams.session_id = responseData.session_id;
-                }
-
-                // detail 정보가 있으면 JSON 문자열로 추가
-                if (responseData.detail) {
-                    queryParams.detail = JSON.stringify(responseData.detail);
+                // POST /prompts 응답 형식에 맞춰 데이터 전달
+                if (responseData.vncResponseList && responseData.vncResponseList.length > 0) {
+                    // 전체 응답 데이터를 JSON 문자열로 전달
+                    queryParams.responseData = JSON.stringify(responseData);
+                } else {
+                    // 기존 방식 지원 (하위 호환성)
+                    if (responseData.novnc_url) {
+                        queryParams.novnc_url = responseData.novnc_url;
+                    }
+                    if (responseData.session_id) {
+                        queryParams.session_id = responseData.session_id;
+                    }
+                    if (responseData.detail) {
+                        queryParams.detail = JSON.stringify(responseData.detail);
+                    }
                 }
 
                 // PromptScreen으로 이동
@@ -178,6 +183,11 @@ export default {
                 }
             } finally {
                 this.isSubmitting = false;
+                // 타이머 클리어
+                if (this.loadingMessageTimer) {
+                    clearTimeout(this.loadingMessageTimer);
+                    this.loadingMessageTimer = null;
+                }
             }
         },
         // 활성 필터 설정

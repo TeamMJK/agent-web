@@ -365,6 +365,13 @@ export const apiService = {
      * @param {{ prompt: string }} payload
      */
     flight: (payload) => apiClient.post('/prompts/flight', payload),
+
+    /**
+     * VNC 요청 히스토리 조회
+     * GET /vnc
+     * @returns {Promise<{vncResponseList: Array}>} VNC 요청 히스토리 목록 반환
+     */
+    getVncHistory: () => apiClient.get('/vnc'),
   },
 
   // 출장 관련 API

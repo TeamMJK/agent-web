@@ -280,7 +280,7 @@ export default {
       } else {
         this.currentMonth++;
       }
-    },
+    }, 
     previousYearRange() {
       this.yearRangeStart -= 12;
     },

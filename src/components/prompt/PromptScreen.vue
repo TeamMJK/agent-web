@@ -7,94 +7,126 @@
       </div>
       
       <div class="panel-content">
-        <!-- 요청 리스트가 없는 경우 표시 -->
-        <div v-if="!hotelRequests || hotelRequests.length === 0" class="no-request-message">
-          <div class="no-request-icon">
-            <i class="pi pi-info-circle"></i>
-          </div>
-          <h3 class="no-request-title">보낸 요청이 없습니다</h3>
-          <p class="no-request-description">
-            출장 요청을 보내려면 메인 페이지에서 프롬프트를 입력해주세요.
-          </p>
-          <router-link to="/main" class="go-to-main-btn">
-            <i class="pi pi-arrow-left"></i>
-            메인 페이지로 이동
-          </router-link>
-        </div>
-        
-        <!-- 요청 리스트 표시 -->
-        <div v-else class="request-list">
-          <div 
-            v-for="(request, index) in hotelRequests" 
-            :key="request.session_id"
-            class="request-item"
-            :class="{ active: selectedRequestIndex === index }"
-            @click="selectRequest(index)"
-          >
-            <div class="request-header">
-              <h3 class="request-title">{{ request.detail.hotel_destination }}</h3>
-              <span class="request-type">숙박</span>
+        <!-- 히스토리 모드: 요청 리스트 표시 -->
+        <div v-if="sidebarMode === 'history'">
+          <!-- 요청 리스트가 없는 경우 표시 -->
+          <div v-if="!hotelRequests || hotelRequests.length === 0" class="no-request-message">
+            <div class="no-request-icon">
+              <i class="pi pi-info-circle"></i>
             </div>
-            <div class="request-summary">
-              <div class="summary-item">
-                <i class="pi pi-calendar"></i>
-                <span>{{ request.detail.booking_dates }}</span>
-              </div>
-              <div class="summary-item">
-                <i class="pi pi-users"></i>
-                <span>{{ request.detail.guests }}명</span>
-              </div>
-              <div v-if="request.detail.budget" class="summary-item">
-                <i class="pi pi-dollar"></i>
-                <span>{{ formatBudget(request.detail.budget) }}</span>
-              </div>
-            </div>
-            <div class="request-status">
-              <span class="status-badge processing">처리 중</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 선택된 요청의 상세 정보 표시 -->
-        <div v-if="selectedRequest" class="selected-request-details">
-          <div class="detail-header">
-            <h3 class="detail-title">{{ selectedRequest.detail.hotel_destination }}</h3>
-            <span class="session-id">{{ selectedRequest.session_id }}</span>
+            <h3 class="no-request-title">보낸 요청이 없습니다</h3>
+            <p class="no-request-description">
+              출장 요청을 보내려면 메인 페이지에서 프롬프트를 입력해주세요.
+            </p>
+            <router-link to="/main" class="go-to-main-btn">
+              <i class="pi pi-arrow-left"></i>
+              메인 페이지로 이동
+            </router-link>
           </div>
           
-          <div class="detail-info">
-            <div class="info-item">
-              <span class="info-label">목적지</span>
-              <span class="info-value">{{ selectedRequest.detail.hotel_destination }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">여행 기간</span>
-              <span class="info-value">{{ selectedRequest.detail.booking_dates }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">인원</span>
-              <span class="info-value">{{ selectedRequest.detail.guests }}명</span>
-            </div>
-            <div v-if="selectedRequest.detail.budget" class="info-item">
-              <span class="info-label">예산</span>
-              <span class="info-value">{{ formatBudget(selectedRequest.detail.budget) }}</span>
+          <!-- 요청 리스트 표시 -->
+          <div v-else class="request-list">
+            <div 
+              v-for="(request, index) in hotelRequests" 
+              :key="request.session_id"
+              class="request-item"
+              :class="{ 
+                active: selectedRequestIndex === index,
+                error: request.isError 
+              }"
+              @click="!request.isError && selectRequest(index)"
+            >
+              <div class="request-header">
+                <h3 class="request-title">{{ request.vncBusinessInfo?.hotel_destination || '목적지 정보 없음' }}</h3>
+                <span class="request-type">숙박</span>
+              </div>
+              <div class="request-summary">
+                <div class="summary-item">
+                  <i class="pi pi-calendar"></i>
+                  <span>{{ request.vncBusinessInfo?.booking_dates || '날짜 정보 없음' }}</span>
+                </div>
+                <div class="summary-item">
+                  <i class="pi pi-users"></i>
+                  <span>{{ request.vncBusinessInfo?.guests ? `${request.vncBusinessInfo.guests}명` : '인원 정보 없음' }}</span>
+                </div>
+                <div v-if="request.vncBusinessInfo?.budget" class="summary-item">
+                  <i class="pi pi-dollar"></i>
+                  <span>{{ formatBudget(request.vncBusinessInfo.budget) }}</span>
+                </div>
+              </div>
+              <div class="request-status">
+                <span class="status-badge" :class="getStatusClass(request.status)">{{ getStatusText(request.status) }}</span>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="progress-section">
-            <h3 class="progress-title">진행 상황</h3>
-            <div class="progress-list">
-              <div class="progress-item completed">
-                <i class="pi pi-check-circle"></i>
-                <span>요청 접수</span>
+        <!-- 디테일 모드: 선택된 요청 상세 정보 표시 -->
+        <div v-else-if="sidebarMode === 'detail' && selectedRequest">
+          <!-- 뒤로가기 버튼 -->
+          <div class="back-button-container">
+            <button class="back-button" @click="goBackToHistory">
+              <i class="pi pi-arrow-left"></i>
+              뒤로가기
+            </button>
+          </div>
+
+          <div class="selected-request-details">
+            <div class="detail-header">
+              <h3 class="detail-title" :class="{ error: selectedRequest.isError }">
+                {{ selectedRequest.isError ? '요청 처리 오류' : (selectedRequest.vncBusinessInfo?.hotel_destination || '목적지 정보 없음') }}
+              </h3>
+              <span class="session-id">{{ selectedRequest.session_id }}</span>
+            </div>
+            
+            <div v-if="selectedRequest.isError" class="error-message">
+              <i class="pi pi-exclamation-triangle"></i>
+              <div class="error-content">
+                <h4>요청 처리 중 오류가 발생했습니다</h4>
+                <p>서버에서 요청을 처리하는 도중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
               </div>
-              <div class="progress-item active">
-                <i class="pi pi-spin pi-spinner"></i>
-                <span>정보 처리 중</span>
+            </div>
+            
+            <div v-else class="detail-info">
+              <div class="info-item">
+                <span class="info-label">목적지</span>
+                <span class="info-value">{{ selectedRequest.vncBusinessInfo?.hotel_destination || '정보 없음' }}</span>
               </div>
-              <div class="progress-item">
-                <i class="pi pi-circle"></i>
-                <span>결과 생성</span>
+              <div class="info-item">
+                <span class="info-label">여행 기간</span>
+                <span class="info-value">{{ selectedRequest.vncBusinessInfo?.booking_dates || '정보 없음' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">인원</span>
+                <span class="info-value">{{ selectedRequest.vncBusinessInfo?.guests ? `${selectedRequest.vncBusinessInfo.guests}명` : '정보 없음' }}</span>
+              </div>
+              <div v-if="selectedRequest.vncBusinessInfo?.budget" class="info-item">
+                <span class="info-label">예산</span>
+                <span class="info-value">{{ formatBudget(selectedRequest.vncBusinessInfo.budget) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">상태</span>
+                <span class="info-value">
+                  <span class="status-badge" :class="getStatusClass(selectedRequest.status)">{{ getStatusText(selectedRequest.status) }}</span>
+                </span>
+              </div>
+            </div>
+
+            <div v-if="!selectedRequest.isError" class="progress-section">
+              <h3 class="progress-title">진행 상황</h3>
+              <div class="progress-list">
+                <div class="progress-item completed">
+                  <i class="pi pi-check-circle"></i>
+                  <span>요청 접수</span>
+                </div>
+                <div class="progress-item active">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>요청 처리 중</span>
+                </div>
+                <div class="progress-item">
+                  <i class="pi pi-circle"></i>
+                  <span>결과 생성</span>
+                </div>
               </div>
             </div>
           </div>
@@ -125,7 +157,14 @@
           <p>왼쪽에서 요청을 선택하면 진행상황을 확인할 수 있습니다</p>
         </div>
         
-        <!-- 선택된 요청이 있는 경우 -->
+        <!-- 선택된 요청이 오류인 경우 -->
+        <div v-else-if="selectedRequest.isError" class="error-content-message">
+          <i class="pi pi-exclamation-triangle"></i>
+          <h3>콘텐츠를 불러올 수 없습니다</h3>
+          <p>요청 처리 중 오류가 발생하여 콘텐츠를 표시할 수 없습니다.</p>
+        </div>
+        
+        <!-- 선택된 요청이 정상인 경우 -->
         <template v-else>
           <div v-if="isIframeLoading" class="iframe-loading">
             <i class="pi pi-spin pi-spinner"></i>
@@ -147,6 +186,8 @@
 </template>
 
 <script>
+import { apiService } from '@/services/api.js';
+
 export default {
   name: 'PromptScreen',
   data() {
@@ -154,12 +195,13 @@ export default {
       hotelRequests: [], // POST /prompts/hotel 응답의 sessionIdAndVncList
       selectedRequestIndex: -1,
       isIframeLoading: false,
-      isFullscreen: false
+      isFullscreen: false,
+      sidebarMode: 'history' // 'history' or 'detail'
     };
   },
   computed: {
     selectedRequest() {
-      if (this.selectedRequestIndex >= 0 && this.hotelRequests[this.selectedRequestIndex]) {
+      if (this.selectedRequestIndex >= 0 && this.hotelRequests && this.hotelRequests[this.selectedRequestIndex]) {
         return this.hotelRequests[this.selectedRequestIndex];
       }
       return null;
@@ -169,45 +211,126 @@ export default {
     }
   },
   created() {
-    // POST /prompts/hotel 응답 데이터 처리
-    if (this.$route.query.responseData) {
-      try {
-        const responseData = JSON.parse(this.$route.query.responseData);
-        this.hotelRequests = responseData.sessionIdAndVncList || [];
-        
-        // 첫 번째 요청을 기본 선택
-        if (this.hotelRequests.length > 0) {
-          this.selectedRequestIndex = 0;
-        }
-      } catch (error) {
-        console.error('응답 데이터 파싱 오류:', error);
-        this.hotelRequests = [];
-      }
-    }
-    
-    // 기존 쿼리 파라미터 방식도 지원 (하위 호환성)
-    const sessionId = this.$route.query.session_id;
-    const novncUrl = this.$route.query.novnc_url;
-    const detail = this.$route.query.detail;
-    
-    if (sessionId && novncUrl && detail) {
-      try {
-        const parsedDetail = JSON.parse(detail);
-        this.hotelRequests = [{
-          session_id: sessionId,
-          novnc_url: novncUrl,
-          detail: parsedDetail
-        }];
-        this.selectedRequestIndex = 0;
-      } catch (error) {
-        console.error('기존 데이터 파싱 오류:', error);
-      }
-    }
+    // GET /vnc API로 히스토리 조회 (페이지 로드 시마다 호출)
+    this.loadVncHistory();
   },
   methods: {
+    async loadVncHistory() {
+      try {
+        const response = await apiService.prompts.getVncHistory();
+        console.log('GET /vnc API 응답 데이터:', response.data); // 응답 데이터 콘솔 출력
+
+        let rawList = [];
+
+        // API 응답 구조에 따라 다르게 처리
+        if (Array.isArray(response.data)) {
+          // 응답이 배열인 경우: [{vncResponseList: [...]}, {vncResponseList: [...]}]
+          rawList = response.data.flatMap(item => item.vncResponseList || []);
+        } else if (response.data.vncResponseList) {
+          // 응답이 객체이고 vncResponseList가 있는 경우: {vncResponseList: [...]}
+          rawList = response.data.vncResponseList;
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          // 응답이 {data: [...]} 형태인 경우
+          rawList = response.data.data.flatMap(item => item.vncResponseList || []);
+        } else {
+          console.warn('예상하지 못한 API 응답 구조:', response.data);
+          rawList = [];
+        }
+
+        console.log('처리된 rawList:', rawList); // 처리된 데이터 확인용
+
+        // GET /vnc에서는 유효한 요청만 필터링 (null이나 session_id 없는 것은 제외)
+        this.hotelRequests = rawList.filter(request => request && request.session_id);
+
+        // 쿼리 파라미터로 특정 요청 선택 (하위 호환성)
+        this.handleQueryParameters();
+
+        // 히스토리 모드에서는 자동 선택하지 않음 - 사용자가 직접 선택하도록 함
+        // const validRequestIndex = this.hotelRequests.findIndex(req => !req.isError);
+        // if (validRequestIndex >= 0) {
+        //   this.selectedRequestIndex = validRequestIndex;
+        // } else if (this.hotelRequests.length > 0) {
+        //   this.selectedRequestIndex = 0;
+        // }
+      } catch (error) {
+        console.error('VNC 히스토리 조회 오류:', error);
+        this.hotelRequests = [];
+      }
+    },
+
+    handleQueryParameters() {
+      // POST /prompts 응답 데이터 처리 (새로운 형식) - 우선순위 높음
+      if (this.$route.query.responseData) {
+        try {
+          const responseData = JSON.parse(this.$route.query.responseData);
+          const rawList = responseData.vncResponseList || [];
+
+          // null 값이 있는 항목을 오류 항목으로 변환
+          const queryRequests = rawList.map((request, index) => {
+            if (!request || !request.session_id) {
+              return {
+                session_id: `error-${index}`,
+                novnc_url: '',
+                vncBusinessInfo: {
+                  hotel_destination: '요청 처리 중 오류 발생',
+                  booking_dates: '정보 없음',
+                  guests: 0,
+                  budget: 0
+                },
+                status: 'ERROR',
+                isError: true
+              };
+            }
+            return request;
+          });
+
+          // 기존 요청들의 session_id를 Set으로 저장하여 중복 방지
+          const existingSessionIds = new Set(this.hotelRequests.map(req => req.session_id));
+          
+          // 중복되지 않은 요청만 필터링
+          const newRequests = queryRequests.filter(req => !existingSessionIds.has(req.session_id));
+          
+          // 쿼리 파라미터의 요청들을 히스토리에 추가
+          this.hotelRequests = [...this.hotelRequests, ...newRequests];
+        } catch (error) {
+          console.error('쿼리 파라미터 응답 데이터 파싱 오류:', error);
+        }
+      }
+
+      // 기존 쿼리 파라미터 방식도 지원 (하위 호환성)
+      const sessionId = this.$route.query.session_id;
+      const novncUrl = this.$route.query.novnc_url;
+      const detail = this.$route.query.detail;
+
+      if (sessionId && novncUrl && detail) {
+        try {
+          // 이미 존재하는 session_id인지 확인
+          const existingRequest = this.hotelRequests.find(req => req.session_id === sessionId);
+          if (!existingRequest) {
+            const parsedDetail = JSON.parse(detail);
+            const legacyRequest = {
+              session_id: sessionId,
+              novnc_url: novncUrl,
+              vncBusinessInfo: parsedDetail,
+              status: 'ING' // 기본 상태
+            };
+            this.hotelRequests.push(legacyRequest);
+          }
+        } catch (error) {
+          console.error('기존 쿼리 파라미터 데이터 파싱 오류:', error);
+        }
+      }
+    },
+
     selectRequest(index) {
       this.selectedRequestIndex = index;
+      this.sidebarMode = 'detail'; // 디테일 모드로 변경
       this.isIframeLoading = true;
+    },
+    goBackToHistory() {
+      this.sidebarMode = 'history'; // 히스토리 모드로 변경
+      this.selectedRequestIndex = -1; // 선택 해제
+      this.isIframeLoading = false;
     },
     refreshIframe() {
       this.isIframeLoading = true;
@@ -234,6 +357,34 @@ export default {
         style: 'currency',
         currency: 'KRW'
       }).format(budget);
+    },
+    getStatusText(status) {
+      switch (status) {
+        case 'ING':
+          return '실행 중';
+        case 'END':
+          return '종료됨';
+        case 'PAUSE':
+          return '일시중지';
+        case 'ERROR':
+          return '오류';
+        default:
+          return '알 수 없음';
+      }
+    },
+    getStatusClass(status) {
+      switch (status) {
+        case 'ING':
+          return 'processing';
+        case 'END':
+          return 'completed';
+        case 'PAUSE':
+          return 'paused';
+        case 'ERROR':
+          return 'error';
+        default:
+          return 'unknown';
+      }
     }
   }
 };
@@ -325,6 +476,31 @@ export default {
   transform: translateY(-1px);
 }
 
+.back-button-container {
+  margin-bottom: var(--spacing-lg);
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.back-button:hover {
+  background-color: var(--color-bg-tertiary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
 /* 요청 리스트 */
 .request-list {
   display: flex;
@@ -347,9 +523,17 @@ export default {
   background-color: var(--color-bg-secondary);
 }
 
-.request-item.active {
-  border-color: var(--color-primary);
-  background-color: var(--color-primary-light);
+.request-item.error {
+  border-color: var(--color-error);
+  background-color: var(--color-error-light);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.request-item.error:hover {
+  border-color: var(--color-error);
+  background-color: var(--color-error-light);
+  transform: none;
 }
 
 .request-header {
@@ -417,6 +601,30 @@ export default {
   border: 1px solid var(--color-primary-border);
 }
 
+.status-badge.completed {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
+}
+
+.status-badge.paused {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning-border);
+}
+
+.status-badge.error {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+  border: 1px solid var(--color-error-border);
+}
+
+.status-badge.unknown {
+  background-color: var(--color-text-muted);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-secondary);
+}
+
 /* 선택된 요청 상세 정보 */
 .selected-request-details {
   margin-bottom: var(--spacing-3xl);
@@ -464,10 +672,40 @@ export default {
   font-weight: var(--font-weight-medium);
 }
 
-.info-value {
-  color: var(--color-text-primary);
+.detail-title.error {
+  color: var(--color-error);
+}
+
+.error-message {
+  background-color: var(--color-error-light);
+  border: 1px solid var(--color-error-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+.error-message i {
+  color: var(--color-error);
+  font-size: var(--font-size-xl);
+  flex-shrink: 0;
+  margin-top: var(--spacing-xs);
+}
+
+.error-content h4 {
+  color: var(--color-error);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.error-content p {
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  margin: 0;
 }
 
 /* 진행 상황 */
@@ -623,11 +861,45 @@ export default {
   text-align: center;
 }
 
+.error-content-message {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-primary);
+  color: var(--color-error);
+  gap: var(--spacing-lg);
+  text-align: center;
+}
+
+.error-content-message i {
+  font-size: var(--font-size-4xl);
+  color: var(--color-error);
+}
+
+.error-content-message h3 {
+  color: var(--color-error);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.error-content-message p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  margin: 0;
+  max-width: 300px;
+}
+
 .main-iframe {
   width: 100%;
   height: 100%;
   border: none;
-  background-color: white;
 }
 
 /* 반응형 디자인 */
