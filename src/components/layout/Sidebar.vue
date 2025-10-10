@@ -1,10 +1,7 @@
 <template>
   <nav class="sidebar">
     <div class="sidebar-header">
-      <button class="sidebar-logo-button" @click="goToHome">
-        <img src="@/assets/icon.png" alt="logo" class="sidebar-logo-img" />
-      </button>
-
+      <img src="@/assets/icon.png" alt="logo" class="sidebar-logo-img" @click="goToHome" />
     </div>
     <ul class="menu-items">
       <li data-label="메인" :class="{ active: $route.name === 'Main' }">
@@ -600,33 +597,22 @@ export default {
   padding: 0 var(--spacing-lg);
 }
 
-.sidebar-logo-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-primary);
-  font-size: 1.8rem;
-  padding: var(--spacing-md);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-}
-
-.sidebar-logo-button:hover {
-  background-color: var(--color-bg-card-hover);
-}
-
 .sidebar-logo-img {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   object-fit: cover;
-  border-radius: 40%;
+  border-radius: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  background: var(--color-bg-card);
+  background: transparent;
   display: block;
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 9px;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-logo-img:hover {
+  background-color: var(--color-bg-card-hover);
 }
 
 .menu-items {
