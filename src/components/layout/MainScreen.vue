@@ -328,6 +328,12 @@ export default {
     position: relative;
 }
 
+@media (max-width: 768px) {
+    .main-container {
+        padding-left: 20px;
+    }
+}
+
 .top-right-menu {
     position: absolute;
     top: 20px;
@@ -688,7 +694,6 @@ export default {
 @media (max-width: 768px) {
     .main-container {
         padding: 0 16px;
-        padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2 + 16px);
     }
     
     .logo-text {
@@ -736,7 +741,7 @@ export default {
 
 @media (max-width: 480px) {
     .main-container {
-        padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2 + 16px);
+        padding: 0 16px;
     }
     
     .logo-text {

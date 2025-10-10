@@ -50,6 +50,13 @@ body {
   height: 100vh;
 }
 
+/* 모바일: 하단 네비게이션을 위한 여백 */
+@media (max-width: 768px) {
+  .main-content {
+    padding-bottom: 68px; /* 하단 네비게이션 높이만큼 여백 */
+  }
+}
+
 /* 페이지 전환 애니메이션 */
 .fade-enter-active,
 .fade-leave-active {

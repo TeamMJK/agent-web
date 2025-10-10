@@ -1025,6 +1025,12 @@ export default {
   box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+  .receipt-container {
+    padding-left: 0;
+  }
+}
+
 .receipt-header {
   position: sticky;
   top: 0;
@@ -1647,19 +1653,29 @@ export default {
 
 // 반응형 디자인
 @media (max-width: 768px) {
-  .receipt-container {
-    padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
-  }
   
   .receipt-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 20px;
-    padding: 24px 16px 20px;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
+  }
+  
+  .header-content {
+    text-align: center;
   }
   
   .receipt-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-xs);
+  }
+  
+  .receipt-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .header-actions {
+    justify-content: center;
   }
   
   .receipt-content {
@@ -1713,16 +1729,17 @@ export default {
 }
 
 @media (max-width: 480px) {
-  .receipt-container {
-    padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
-  }
   
   .receipt-header {
-    padding: 20px 12px 16px;
+    padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
   }
   
   .receipt-title {
-    font-size: 1.8rem;
+    font-size: 1.3rem;
+  }
+  
+  .receipt-subtitle {
+    font-size: 0.8rem;
   }
   
   .receipt-content {

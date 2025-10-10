@@ -262,6 +262,12 @@ export default {
   padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2 + 2rem);
 }
 
+@media (max-width: 768px) {
+  .agoda-list-screen {
+    padding-left: 1rem;
+  }
+}
+
 /* 헤더 영역 */
 .header-section {
   max-width: 1400px;
@@ -729,7 +735,6 @@ export default {
 @media (max-width: 768px) {
   .agoda-list-screen {
     padding: 1rem;
-    padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2 + 1rem);
   }
 
   .page-title {
@@ -771,7 +776,7 @@ export default {
 
 @media (max-width: 480px) {
   .agoda-list-screen {
-    padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2 + 1rem);
+    padding: 1rem;
   }
 
   .page-title {

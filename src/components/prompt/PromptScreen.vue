@@ -399,6 +399,12 @@ export default {
   padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
 }
 
+@media (max-width: 768px) {
+  .prompt-screen {
+    padding-left: 0;
+  }
+}
+
 /* 왼쪽 사이드 패널 */
 .side-panel {
   width: 320px;
@@ -917,18 +923,40 @@ export default {
 @media (max-width: 768px) {
   .prompt-screen {
     flex-direction: column;
-    padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
   }
   
   .side-panel {
     width: 100%;
-    height: 200px;
+    height: auto;
+    max-height: 40vh;
     border-right: none;
     border-bottom: 1px solid var(--color-border-primary);
   }
   
+  .panel-header {
+    padding: var(--spacing-lg);
+  }
+  
+  .panel-title {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  
   .panel-content {
     padding: var(--spacing-md);
+    overflow-y: auto;
+  }
+  
+  .request-item {
+    padding: var(--spacing-md);
+  }
+  
+  .request-title {
+    font-size: 0.95rem;
+  }
+  
+  .summary-item {
+    font-size: 0.85rem;
   }
   
   .request-details,

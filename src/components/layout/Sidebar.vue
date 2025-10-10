@@ -5,24 +5,30 @@
     </div>
     <ul class="menu-items">
       <li data-label="메인" :class="{ active: $route.name === 'Main' }">
-        <router-link to="/main">
+        <router-link to="/main" data-label="메인">
           <i class="pi pi-home"></i>
         </router-link>
       </li>
       <li data-label="워크스페이스" :class="{ active: $route.name === 'WorkSpace' }">
-        <router-link to="/workspace">
+        <router-link to="/workspace" data-label="워크스페이스">
           <i class="pi pi-briefcase"></i>
         </router-link>
       </li>
-      <li data-label="영수증 관리" :class="{ active: $route.name === 'ReceiptScreen' }">
-        <router-link to="/receipt">
+      <li data-label="영수증" :class="{ active: $route.name === 'ReceiptScreen' }">
+        <router-link to="/receipt" data-label="영수증">
           <i class="pi pi-receipt"></i>
         </router-link>
       </li>
       <li data-label="출장 요청" :class="{ active: $route.name === 'PromptScreen' }">
-        <router-link to="/prompt">
+        <router-link to="/prompt" data-label="출장 요청">
           <i class="pi pi-send"></i>
         </router-link>
+      </li>
+      <!-- 모바일 전용 메뉴 -->
+      <li data-label="내 정보" class="mobile-only">
+        <a href="#" @click.prevent="showUserInfo" data-label="내 정보">
+          <i class="pi pi-user"></i>
+        </a>
       </li>
     </ul>
     <div class="sidebar-footer">
@@ -767,12 +773,34 @@ export default {
   box-shadow: var(--shadow-lg);
 }
 
+/* 모바일: 하단 네비게이션 바 */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: 68px;
+    top: auto;
+    left: 0;
+    bottom: 0;
+    flex-direction: row;
+    padding: 0;
+    border-radius: 0;
+    border-top: 1px solid var(--color-border-secondary);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
 .sidebar-header {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: var(--spacing-4xl);
   padding: 0 var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .sidebar-header {
+    display: none;
+  }
 }
 
 .sidebar-logo-img {
@@ -804,8 +832,33 @@ export default {
   padding: 0 var(--spacing-lg);
 }
 
+@media (max-width: 768px) {
+  .menu-items {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    padding: 0 var(--spacing-md);
+    gap: 0;
+  }
+}
+
 .menu-items li {
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .menu-items li {
+    flex: 1;
+  }
+  
+  .menu-items li.mobile-only {
+    display: block;
+  }
+}
+
+.menu-items li.mobile-only {
+  display: none;
 }
 
 .menu-items a {
@@ -821,6 +874,16 @@ export default {
   min-height: 48px;
 }
 
+@media (max-width: 768px) {
+  .menu-items a {
+    flex-direction: column;
+    padding: var(--spacing-sm);
+    gap: 2px;
+    min-height: 56px;
+    border-radius: var(--radius-md);
+  }
+}
+
 .menu-items a:hover {
   background-color: var(--color-bg-card-hover);
   color: var(--color-text-primary);
@@ -833,6 +896,20 @@ export default {
 
 .menu-items a i {
   font-size: 1.4rem;
+}
+
+@media (max-width: 768px) {
+  .menu-items a i {
+    font-size: 1.3rem;
+  }
+  
+  .menu-items a::after {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: var(--font-weight-medium);
+    color: currentColor;
+    margin-top: 2px;
+  }
 }
 
 .menu-items li:hover::after {
@@ -853,12 +930,24 @@ export default {
   border: 1px solid var(--color-border-primary);
 }
 
+@media (max-width: 768px) {
+  .menu-items li:hover::after {
+    display: none;
+  }
+}
+
 .sidebar-footer {
   margin-top: auto;
   padding: 0 var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+  .sidebar-footer {
+    display: none;
+  }
 }
 
 .footer-button {
