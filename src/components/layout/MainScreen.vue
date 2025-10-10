@@ -155,28 +155,22 @@ export default {
                     await apiService.user.getProfile();
                     // 200 OK - 민감정보 있음, 계속 진행
                 } catch (error) {
-                    if (error.response?.status === 404) {
-                        // 404 - 민감정보 없음
-                        const confirmed = await showConfirm({
-                            title: '민감정보 입력 필요',
-                            message: '항공/숙박 예약을 위해서는 여권 정보 등 민감정보 입력이 필요합니다.\n지금 입력하시겠습니까?',
-                            confirmText: '입력하기',
-                            cancelText: '취소',
-                            confirmVariant: 'confirm',
-                            iconType: 'info'
-                        });
+                    // 민감정보 조회 실패 시 (404, 500 등 모든 에러)
+                    console.log('민감정보 조회 실패:', error);
+                    const confirmed = await showConfirm({
+                        title: '민감정보 입력 필요',
+                        message: '항공/숙박 예약을 위해서는 여권 정보 등 민감정보 입력이 필요합니다.\n지금 입력하시겠습니까?',
+                        confirmText: '입력하기',
+                        cancelText: '취소',
+                        confirmVariant: 'confirm',
+                        iconType: 'info'
+                    });
 
-                        if (confirmed) {
-                            // 민감정보 입력 화면으로 이동
-                            this.$router.push('/sensitive-info');
-                        }
-                        return; // 프롬프트 제출 중단
-                    } else {
-                        // 다른 에러 발생
-                        console.error('사용자 정보 조회 실패:', error);
-                        this.errorMessage = '사용자 정보를 확인할 수 없습니다. 다시 시도해주세요.';
-                        return;
+                    if (confirmed) {
+                        // 민감정보 입력 화면으로 이동
+                        this.$router.push('/sensitive-info');
                     }
+                    return; // 프롬프트 제출 중단
                 }
             }
 
@@ -191,18 +185,21 @@ export default {
             try {
                 let requestFn;
                 let filterName = '';
+                let targetRoute = 'prompt'; // 기본 라우트
 
                 // 활성 필터에 따른 엔드포인트 결정
                 if (this.activeFilter === 'hotel-vnc') {
                     requestFn = apiService.prompts.hotel;
                     filterName = '숙박 (VNC)';
+                    targetRoute = 'prompt';
                 } else if (this.activeFilter === 'hotel-list') {
-                    // TODO: 숙박 리스트 API 구현 대기
-                    this.errorMessage = '숙박 리스트 기능은 현재 개발 중입니다.';
-                    return;
+                    requestFn = apiService.prompts.agodaSearch;
+                    filterName = '숙박 (리스트)';
+                    targetRoute = 'agoda-list';
                 } else if (this.activeFilter === 'flight-vnc') {
                     requestFn = apiService.prompts.flight;
                     filterName = '항공 (VNC)';
+                    targetRoute = 'prompt';
                 } else if (this.activeFilter === 'flight-list') {
                     // TODO: 항공 리스트 API 구현 대기
                     this.errorMessage = '항공 리스트 기능은 현재 개발 중입니다.';
@@ -215,7 +212,7 @@ export default {
                 const responseData = response.data;
                 console.log('API Response:', responseData);
 
-                // 성공 시 PromptScreen으로 이동
+                // 성공 시 해당 화면으로 이동
                 const promptText = this.prompt; // 이동 전에 프롬프트 텍스트 저장
                 this.prompt = ''; // 입력창 비우기
                 
@@ -225,8 +222,12 @@ export default {
                     filter: this.activeFilter
                 };
 
-                // POST /prompts 응답 형식에 맞춰 데이터 전달
-                if (responseData.vncResponseList && responseData.vncResponseList.length > 0) {
+                // 숙박 리스트의 경우 results와 destination 전달
+                if (targetRoute === 'agoda-list') {
+                    queryParams.responseData = JSON.stringify(responseData);
+                }
+                // VNC 응답 형식에 맞춰 데이터 전달
+                else if (responseData.vncResponseList && responseData.vncResponseList.length > 0) {
                     // 전체 응답 데이터를 JSON 문자열로 전달
                     queryParams.responseData = JSON.stringify(responseData);
                 } else {
@@ -242,9 +243,9 @@ export default {
                     }
                 }
 
-                // PromptScreen으로 이동
+                // 해당 화면으로 이동
                 this.$router.push({
-                    name: 'PromptScreen',
+                    name: targetRoute === 'agoda-list' ? 'AgodaListScreen' : 'PromptScreen',
                     query: queryParams
                 });
                 
