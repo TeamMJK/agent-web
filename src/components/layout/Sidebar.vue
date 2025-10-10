@@ -60,34 +60,131 @@
             </div>
             
             <div class="form-grid">
-              <div class="form-group" v-for="field in nonDateBasicFields" :key="field.key">
-                <label>{{ field.label }}</label>
+              <!-- 이름(한글) 필드 -->
+              <div class="form-group">
+                <label>이름(한글)</label>
                 <div class="field-container">
                   <div class="input-wrapper">
                     <input 
-                      v-if="!editingFields[field.key]"
-                      :value="userInfo[field.key] || '-'"
-                      :type="field.type"
+                      v-if="!editingFields.name"
+                      :value="userInfo.name || '-'"
+                      type="text"
                       readonly
                       class="readonly-field"
                     />
                     <input 
                       v-else
-                      v-model="userInfo[field.key]"
-                      :type="field.type"
+                      v-model="userInfo.name"
+                      type="text"
                       class="editable-field"
-                      @blur="stopEditing(field.key)"
-                      @keyup.enter="stopEditing(field.key)"
+                      @blur="stopEditing('name')"
+                      @keyup.enter="stopEditing('name')"
                       ref="editInput"
                     />
                   </div>
                   <button 
-                    v-if="field.key !== 'email'"
                     class="edit-btn" 
-                    @click="toggleEdit(field.key)"
-                    :title="editingFields[field.key] ? '저장' : '수정'"
+                    @mousedown.prevent="toggleEdit('name')"
+                    :title="editingFields.name ? '저장' : '수정'"
                   >
-                    <i :class="editingFields[field.key] ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                    <i :class="editingFields.name ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 이름(영문)과 성(영문) 필드 - 한 줄에 배치 -->
+              <div class="form-group-row">
+                <div class="form-group half-width">
+                  <label>이름(영문)</label>
+                  <div class="field-container">
+                    <div class="input-wrapper">
+                      <input 
+                        v-if="!editingFields.firstName"
+                        :value="userInfo.firstName || '-'"
+                        type="text"
+                        readonly
+                        class="readonly-field"
+                      />
+                      <input 
+                        v-else
+                        v-model="userInfo.firstName"
+                        type="text"
+                        class="editable-field"
+                        @blur="stopEditing('firstName')"
+                        @keyup.enter="stopEditing('firstName')"
+                        ref="editInput"
+                      />
+                    </div>
+                    <button 
+                      class="edit-btn" 
+                      @mousedown.prevent="toggleEdit('firstName')"
+                      :title="editingFields.firstName ? '저장' : '수정'"
+                    >
+                      <i :class="editingFields.firstName ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group half-width">
+                  <label>성(영문)</label>
+                  <div class="field-container">
+                    <div class="input-wrapper">
+                      <input 
+                        v-if="!editingFields.lastName"
+                        :value="userInfo.lastName || '-'"
+                        type="text"
+                        readonly
+                        class="readonly-field"
+                      />
+                      <input 
+                        v-else
+                        v-model="userInfo.lastName"
+                        type="text"
+                        class="editable-field"
+                        @blur="stopEditing('lastName')"
+                        @keyup.enter="stopEditing('lastName')"
+                        ref="editInput"
+                      />
+                    </div>
+                    <button 
+                      class="edit-btn" 
+                      @mousedown.prevent="toggleEdit('lastName')"
+                      :title="editingFields.lastName ? '저장' : '수정'"
+                    >
+                      <i :class="editingFields.lastName ? 'pi pi-check' : 'pi pi-pencil'"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 전화번호 필드 -->
+              <div class="form-group">
+                <label>전화번호</label>
+                <div class="field-container">
+                  <div class="input-wrapper">
+                    <input 
+                      v-if="!editingFields.phoneNumber"
+                      :value="userInfo.phoneNumber || '-'"
+                      type="tel"
+                      readonly
+                      class="readonly-field"
+                    />
+                    <input 
+                      v-else
+                      v-model="userInfo.phoneNumber"
+                      type="tel"
+                      class="editable-field"
+                      @blur="stopEditing('phoneNumber')"
+                      @keyup.enter="stopEditing('phoneNumber')"
+                      ref="editInput"
+                    />
+                  </div>
+                  <button 
+                    class="edit-btn" 
+                    @mousedown.prevent="toggleEdit('phoneNumber')"
+                    :title="editingFields.phoneNumber ? '저장' : '수정'"
+                  >
+                    <i :class="editingFields.phoneNumber ? 'pi pi-check' : 'pi pi-pencil'"></i>
                   </button>
                 </div>
               </div>
@@ -109,7 +206,7 @@
                   </div>
                   <button 
                     class="edit-btn" 
-                    @click="toggleEdit('birthDate')"
+                    @mousedown.prevent="toggleEdit('birthDate')"
                     :title="editingFields.birthDate ? '저장' : '수정'"
                   >
                     <i :class="editingFields.birthDate ? 'pi pi-check' : 'pi pi-pencil'"></i>
@@ -134,7 +231,7 @@
                   </div>
                   <button 
                     class="edit-btn" 
-                    @click="toggleEdit('gender')"
+                    @mousedown.prevent="toggleEdit('gender')"
                     :title="editingFields.gender ? '저장' : '수정'"
                   >
                     <i :class="editingFields.gender ? 'pi pi-check' : 'pi pi-pencil'"></i>
@@ -174,7 +271,7 @@
                   </div>
                   <button 
                     class="edit-btn" 
-                    @click="toggleEdit(field.key)"
+                    @mousedown.prevent="toggleEdit(field.key)"
                     :title="editingFields[field.key] ? '저장' : '수정'"
                   >
                     <i :class="editingFields[field.key] ? 'pi pi-check' : 'pi pi-pencil'"></i>
@@ -199,7 +296,7 @@
                   </div>
                   <button 
                     class="edit-btn" 
-                    @click="toggleEdit('passportExpireDate')"
+                    @mousedown.prevent="toggleEdit('passportExpireDate')"
                     :title="editingFields.passportExpireDate ? '저장' : '수정'"
                   >
                     <i :class="editingFields.passportExpireDate ? 'pi pi-check' : 'pi pi-pencil'"></i>
@@ -412,8 +509,29 @@ export default {
       }
     },
     async showUserInfo() {
-      this.showUserModal = true;
-      await this.fetchUserInfo();
+      try {
+        const response = await apiService.user.getProfile();
+        // 민감정보 조회 성공 - 모달 표시
+        this.userInfo = { ...response.data };
+        this.originalUserInfo = { ...response.data };
+        this.showUserModal = true;
+      } catch (error) {
+        // 민감정보 조회 실패 시 확인 팝업 표시
+        console.log('민감정보 조회 실패:', error);
+        const confirmed = await showConfirm({
+          title: '민감정보 입력 필요',
+          message: '사용자 정보를 조회하려면 여권 정보 등 민감정보 입력이 필요합니다.\n지금 입력하시겠습니까?',
+          confirmText: '입력하기',
+          cancelText: '취소',
+          confirmVariant: 'confirm',
+          iconType: 'info'
+        });
+
+        if (confirmed) {
+          // 민감정보 입력 화면으로 이동
+          this.$router.push('/sensitive-info');
+        }
+      }
     },
     
     async fetchUserInfo() {
@@ -428,16 +546,38 @@ export default {
     },
     
     toggleEdit(fieldKey) {
-      if (this.editingFields[fieldKey]) {
-        this.stopEditing(fieldKey);
+      // 현재 편집 상태를 직접 토글
+      const isCurrentlyEditing = this.editingFields[fieldKey];
+      
+      if (isCurrentlyEditing) {
+        // 편집 모드 종료
+        this.editingFields = {
+          ...this.editingFields,
+          [fieldKey]: false
+        };
+        console.log(`${fieldKey} 필드 편집 완료 (로컬 저장)`);
       } else {
-        this.startEditing(fieldKey);
+        // 편집 모드 시작
+        this.editingFields = {
+          ...this.editingFields,
+          [fieldKey]: true
+        };
+        this.$nextTick(() => {
+          const inputs = this.$refs.editInput;
+          if (inputs && inputs.length) {
+            const input = inputs[inputs.length - 1];
+            input.focus();
+          }
+        });
       }
     },
     
     startEditing(fieldKey) {
-      // 편집 모드 시작
-      this.editingFields[fieldKey] = true;
+      // 편집 모드 시작 - 반응형 업데이트를 위해 객체 재할당
+      this.editingFields = {
+        ...this.editingFields,
+        [fieldKey]: true
+      };
       this.$nextTick(() => {
         const inputs = this.$refs.editInput;
         if (inputs && inputs.length) {
@@ -449,15 +589,53 @@ export default {
     
     stopEditing(fieldKey) {
       // 개별 필드 편집 완료 (로컬에서만 저장, API 호출 없음)
-      if (this.editingFields[fieldKey]) {
-        this.editingFields[fieldKey] = false;
-        // 로컬 상태만 업데이트, API 호출하지 않음
-        console.log(`${fieldKey} 필드 편집 완료 (로컬 저장)`);
-      }
+      // 반응형 업데이트를 위해 객체 재할당
+      this.editingFields = {
+        ...this.editingFields,
+        [fieldKey]: false
+      };
+      // 로컬 상태만 업데이트, API 호출하지 않음
+      console.log(`${fieldKey} 필드 편집 완료 (로컬 저장)`);
     },
     
     async saveAllChanges() {
       // 전체 저장 버튼을 눌렀을 때만 PATCH API 호출
+      
+      // Validation for name (Korean characters only)
+      if (this.userInfo.name) {
+        const koreanRegex = /^[가-힣\s]+$/;
+        if (!koreanRegex.test(this.userInfo.name)) {
+          this.showMessage('error', '이름(한글)은 한글만 입력해주세요.');
+          return;
+        }
+      }
+
+      // Validation for firstName and lastName (English uppercase letters only)
+      if (this.userInfo.firstName) {
+        const uppercaseEnglishRegex = /^[A-Z\s]+$/;
+        if (!uppercaseEnglishRegex.test(this.userInfo.firstName)) {
+          this.showMessage('error', '이름(영문)은 영문 대문자만 입력해주세요.');
+          return;
+        }
+      }
+      
+      if (this.userInfo.lastName) {
+        const uppercaseEnglishRegex = /^[A-Z\s]+$/;
+        if (!uppercaseEnglishRegex.test(this.userInfo.lastName)) {
+          this.showMessage('error', '성(영문)은 영문 대문자만 입력해주세요.');
+          return;
+        }
+      }
+
+      // Phone number validation
+      if (this.userInfo.phoneNumber) {
+        const phoneRegex = /^\d{10,11}$/;
+        if (!phoneRegex.test(this.userInfo.phoneNumber)) {
+          this.showMessage('error', '전화번호는 10-11자리 숫자로 입력해주세요.');
+          return;
+        }
+      }
+
       try {
         console.log('전체 저장 API 호출:', this.userInfo);
         
@@ -897,6 +1075,23 @@ export default {
   gap: var(--spacing-sm);
 }
 
+/* 영문 이름/성 필드를 한 줄에 배치 */
+.form-group-row {
+  display: flex;
+  gap: var(--spacing-lg);
+  grid-column: 1 / -1;
+}
+
+.form-group-row .form-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-group.half-width {
+  flex: 1;
+  min-width: 0;
+}
+
 .form-group label {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
@@ -1315,6 +1510,12 @@ export default {
   
   .form-grid {
     grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+  }
+  
+  /* 모바일에서는 영문 이름/성 필드도 세로 배치 */
+  .form-group-row {
+    flex-direction: column;
     gap: var(--spacing-xl);
   }
   
