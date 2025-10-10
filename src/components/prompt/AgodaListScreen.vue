@@ -54,7 +54,7 @@
           </div>
 
           <!-- 호텔 정보 -->
-          <div class="hotel-content">
+          <div class="hotel-content" :class="{ 'expanded': hotel.showDetails }">
             <!-- 호텔 이름 및 평점 -->
             <div class="hotel-header">
               <h3 class="hotel-name">{{ hotel.hotelName }}</h3>
@@ -88,38 +88,54 @@
             </div>
 
             <!-- 호텔 상세 정보 -->
-            <div v-if="hotel.agodaHotelInfo" class="hotel-details">
-              <div v-if="hotel.agodaHotelInfo.advantage" class="detail-item">
-                <div class="detail-label">
-                  <i class="pi pi-thumbs-up"></i>
-                  <span>장점</span>
+            <div 
+              v-if="hotel.agodaHotelInfo && hasHotelDetails(hotel)" 
+              class="hotel-details-wrapper"
+              :class="{ 'expanded': hotel.showDetails }"
+            >
+              <div class="hotel-details">
+                <div v-if="hotel.agodaHotelInfo.advantage" class="detail-item">
+                  <div class="detail-label">
+                    <i class="pi pi-thumbs-up"></i>
+                    <span>장점</span>
+                  </div>
+                  <p class="detail-text">{{ hotel.agodaHotelInfo.advantage }}</p>
                 </div>
-                <p class="detail-text">{{ hotel.agodaHotelInfo.advantage }}</p>
+                
+                <div v-if="hotel.agodaHotelInfo.disadvantage" class="detail-item">
+                  <div class="detail-label">
+                    <i class="pi pi-thumbs-down"></i>
+                    <span>단점</span>
+                  </div>
+                  <p class="detail-text">{{ hotel.agodaHotelInfo.disadvantage }}</p>
+                </div>
+
+                <div v-if="hotel.agodaHotelInfo.touristAttraction" class="detail-item">
+                  <div class="detail-label">
+                    <i class="pi pi-map"></i>
+                    <span>관광지</span>
+                  </div>
+                  <p class="detail-text">{{ hotel.agodaHotelInfo.touristAttraction }}</p>
+                </div>
+
+                <div v-if="hotel.agodaHotelInfo.restaurant" class="detail-item">
+                  <div class="detail-label">
+                    <i class="pi pi-shopping-bag"></i>
+                    <span>레스토랑</span>
+                  </div>
+                  <p class="detail-text">{{ hotel.agodaHotelInfo.restaurant }}</p>
+                </div>
               </div>
               
-              <div v-if="hotel.agodaHotelInfo.disadvantage" class="detail-item">
-                <div class="detail-label">
-                  <i class="pi pi-thumbs-down"></i>
-                  <span>단점</span>
-                </div>
-                <p class="detail-text">{{ hotel.agodaHotelInfo.disadvantage }}</p>
-              </div>
-
-              <div v-if="hotel.agodaHotelInfo.touristAttraction" class="detail-item">
-                <div class="detail-label">
-                  <i class="pi pi-map"></i>
-                  <span>관광지</span>
-                </div>
-                <p class="detail-text">{{ hotel.agodaHotelInfo.touristAttraction }}</p>
-              </div>
-
-              <div v-if="hotel.agodaHotelInfo.restaurant" class="detail-item">
-                <div class="detail-label">
-                  <i class="pi pi-shopping-bag"></i>
-                  <span>레스토랑</span>
-                </div>
-                <p class="detail-text">{{ hotel.agodaHotelInfo.restaurant }}</p>
-              </div>
+              <!-- 더보기 버튼 (상세 정보가 잘린 경우에만) -->
+              <button 
+                v-if="!hotel.showDetails"
+                class="expand-details-btn"
+                @click="toggleDetails(hotel)"
+              >
+                <i class="pi pi-chevron-down"></i>
+                <span>더보기</span>
+              </button>
             </div>
 
             <!-- 가격 및 예약 버튼 -->
@@ -182,7 +198,11 @@ export default {
         // 응답이 배열인 경우 첫 번째 요소 사용
         const data = Array.isArray(responseData) ? responseData[0] : responseData;
         
-        this.hotels = data.results || [];
+        // 각 호텔에 showDetails 속성 추가
+        this.hotels = (data.results || []).map(hotel => ({
+          ...hotel,
+          showDetails: false
+        }));
         this.destination = data.destination || '';
         
         console.log(`로드된 호텔 수: ${this.hotels.length}개, 목적지: ${this.destination}`);
@@ -197,6 +217,20 @@ export default {
   methods: {
     goBack() {
       this.$router.push('/main');
+    },
+    toggleDetails(hotel) {
+      // Vue 3의 반응성을 위해 새 배열로 업데이트
+      const index = this.hotels.findIndex(h => h.hotelId === hotel.hotelId);
+      if (index !== -1) {
+        this.hotels[index] = {
+          ...this.hotels[index],
+          showDetails: !this.hotels[index].showDetails
+        };
+      }
+    },
+    hasHotelDetails(hotel) {
+      const info = hotel.agodaHotelInfo;
+      return info && (info.advantage || info.disadvantage || info.touristAttraction || info.restaurant);
     },
     formatPrice(price, currency) {
       if (!price) return '-';
@@ -344,6 +378,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.5rem;
+  align-items: stretch;
 }
 
 /* 호텔 카드 */
@@ -353,6 +388,9 @@ export default {
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .hotel-card:hover {
@@ -407,6 +445,9 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* 호텔 헤더 */
@@ -483,13 +524,76 @@ export default {
   font-size: 0.8rem;
 }
 
+/* 호텔 상세 정보 래퍼 */
+.hotel-details-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hotel-details-wrapper:not(.expanded) {
+  max-height: 200px;
+  overflow: hidden;
+}
+
+.hotel-details-wrapper.expanded {
+  max-height: none;
+  overflow: visible;
+}
+
 /* 호텔 상세 정보 */
 .hotel-details {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--border-color, #333333);
+}
+
+/* 블러 효과 오버레이 */
+.hotel-details-wrapper:not(.expanded)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--bg-secondary, #232323));
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 더보기 버튼 */
+.expand-details-btn {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background-color: var(--bg-secondary, #232323);
+  border: 1px solid var(--color-primary, #4f86f7);
+  border-radius: 16px;
+  color: var(--color-primary, #4f86f7);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.expand-details-btn:hover {
+  background-color: var(--color-primary, #4f86f7);
+  color: white;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 3px 10px rgba(79, 134, 247, 0.4);
+}
+
+.expand-details-btn i {
+  font-size: 0.7rem;
 }
 
 .detail-item {
