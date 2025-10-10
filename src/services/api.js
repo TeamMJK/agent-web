@@ -372,7 +372,7 @@ export const apiService = {
      * @param {{ prompt: string }} payload
      * @returns {Promise<{results: Array, destination: string}>} 호텔 검색 결과 반환
      */
-    agodaSearch: (payload) => apiClient.post('/agodas/search', payload),
+    agodaSearch: (payload) => apiClient.post('/agodas/search', payload, { timeout: 0 }),
 
     /**
      * VNC 요청 히스토리 조회

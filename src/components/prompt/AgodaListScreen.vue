@@ -125,7 +125,7 @@
             <!-- 가격 및 예약 버튼 -->
             <div class="hotel-footer">
               <div class="price-section">
-                <div v-if="hotel.crossedOutRate" class="original-price">
+                <div v-if="hotel.crossedOutRate && hotel.crossedOutRate > 0" class="original-price">
                   {{ formatPrice(hotel.crossedOutRate, hotel.currency) }}
                 </div>
                 <div class="current-price">
@@ -178,8 +178,14 @@ export default {
     if (this.$route.query.responseData) {
       try {
         const responseData = JSON.parse(this.$route.query.responseData);
-        this.hotels = responseData.results || [];
-        this.destination = responseData.destination || '';
+        
+        // 응답이 배열인 경우 첫 번째 요소 사용
+        const data = Array.isArray(responseData) ? responseData[0] : responseData;
+        
+        this.hotels = data.results || [];
+        this.destination = data.destination || '';
+        
+        console.log(`로드된 호텔 수: ${this.hotels.length}개, 목적지: ${this.destination}`);
       } catch (error) {
         console.error('응답 데이터 파싱 오류:', error);
         this.errorMessage = '데이터를 불러오는 중 오류가 발생했습니다.';
