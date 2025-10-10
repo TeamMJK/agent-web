@@ -7,6 +7,7 @@ import LoginScreen from '../components/auth/LoginScreen.vue';
 import PrivacyConsentScreen from '../components/auth/PrivacyConsentScreen.vue';
 import TestPromptScreen from '../components/test/TestPromptScreen.vue';
 import PromptScreen from '../components/prompt/PromptScreen.vue';
+import AgodaListScreen from '../components/prompt/AgodaListScreen.vue';
 import { tokenManager } from '../services/api';
 
 const routes = [
@@ -60,6 +61,12 @@ const routes = [
     path: '/prompt',
     name: 'PromptScreen',
     component: PromptScreen,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/agoda-list',
+    name: 'AgodaListScreen',
+    component: AgodaListScreen,
     meta: { requiresAuth: true },
   },
 ];
