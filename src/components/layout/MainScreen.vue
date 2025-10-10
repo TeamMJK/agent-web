@@ -122,6 +122,7 @@
 import CompanyMenu from '../workspace/CompanyMenu.vue';
 import { apiService } from '../../services/api';
 import { pushMessage } from '../../utils/notify.js';
+import { showConfirm } from '@/utils/dialog.js';
 
 export default {
     name: 'MainScreen',
@@ -146,6 +147,38 @@ export default {
         async submitPrompt() {
             const text = this.prompt.trim();
             if (!text || this.isSubmitting) return; // 입력 내용이 없거나 이미 제출 중이면 무시
+
+            // VNC 요청인 경우 민감정보 체크
+            if (this.activeFilter === 'hotel-vnc' || this.activeFilter === 'flight-vnc') {
+                try {
+                    // /members/me API로 민감정보 존재 여부 확인
+                    await apiService.user.getProfile();
+                    // 200 OK - 민감정보 있음, 계속 진행
+                } catch (error) {
+                    if (error.response?.status === 404) {
+                        // 404 - 민감정보 없음
+                        const confirmed = await showConfirm({
+                            title: '민감정보 입력 필요',
+                            message: '항공/숙박 예약을 위해서는 여권 정보 등 민감정보 입력이 필요합니다.\n지금 입력하시겠습니까?',
+                            confirmText: '입력하기',
+                            cancelText: '취소',
+                            confirmVariant: 'confirm',
+                            iconType: 'info'
+                        });
+
+                        if (confirmed) {
+                            // 민감정보 입력 화면으로 이동
+                            this.$router.push('/sensitive-info');
+                        }
+                        return; // 프롬프트 제출 중단
+                    } else {
+                        // 다른 에러 발생
+                        console.error('사용자 정보 조회 실패:', error);
+                        this.errorMessage = '사용자 정보를 확인할 수 없습니다. 다시 시도해주세요.';
+                        return;
+                    }
+                }
+            }
 
             this.isSubmitting = true;
             this.loadingMessage = '프롬프트를 분석중입니다...'; // 초기 메시지 설정

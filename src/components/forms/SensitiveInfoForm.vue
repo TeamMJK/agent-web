@@ -145,7 +145,7 @@
 </template>
 
 <script>
-import { apiService, tokenManager } from '../../services/api';
+import { apiService } from '../../services/api';
 import ModernDatePicker from '../common/ModernDatePicker.vue';
 
 export default {
@@ -171,10 +171,8 @@ export default {
   },
   methods: {
     goBack() {
-      // 토큰이 있는 상태에서는 /login 진입이 가드에 의해 /main 으로 리다이렉트되고
-      // 다시 민감정보 페이지로 돌아오기 때문에 토큰을 먼저 제거한다.
-      tokenManager.clearTokens();
-      this.$router.push('/login');
+      // 민감정보 입력을 취소하고 메인 화면으로 복귀
+      this.$router.push('/main');
     },
     async handleSubmit() {
       this.errorMessage = '';

@@ -7,7 +7,7 @@ import LoginScreen from '../components/auth/LoginScreen.vue';
 import PrivacyConsentScreen from '../components/auth/PrivacyConsentScreen.vue';
 import TestPromptScreen from '../components/test/TestPromptScreen.vue';
 import PromptScreen from '../components/prompt/PromptScreen.vue';
-import { apiService, tokenManager } from '../services/api';
+import { tokenManager } from '../services/api';
 
 const routes = [
   {
@@ -96,21 +96,7 @@ router.beforeEach(async (to, from, next) => {
     return next('/main');
   }
 
-  if (requiresAuth && hasToken) {
-    // 인증이 필요한 페이지 접근 시 민감 정보 확인 (민감정보 단계 제거됨)
-    try {
-      await apiService.user.getProfile();
-      // 민감 정보가 있으면, privacy-consent나 sensitive-info 페이지 접근 시 main으로 리디렉션
-      if (to.path === '/privacy-consent' || to.path === '/sensitive-info') {
-        return next('/main');
-      }
-    } catch (error) {
-      // 민감정보 단계가 제거되었으므로, 민감정보가 없어도 main으로 이동 가능
-      // 500 에러가 발생해도 로그인 플로우를 계속 진행
-      console.log('프로필 조회 실패 (민감정보 없음) - main으로 이동 허용');
-    }
-  }
-
+  // 민감정보 체크 제거 - MainScreen에서 VNC 요청 시 체크하도록 변경
   next();
 });
 
