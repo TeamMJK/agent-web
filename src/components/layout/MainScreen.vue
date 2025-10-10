@@ -45,13 +45,13 @@
                             class="dropdown-item"
                             :class="{ active: activeFilter === 'hotel-list' }"
                             @click="selectFilter('hotel-list')">
-                            리스트
+                            호텔 받아오기
                         </button>
                         <button 
                             class="dropdown-item"
                             :class="{ active: activeFilter === 'hotel-vnc' }"
                             @click="selectFilter('hotel-vnc')">
-                            VNC
+                            웹 자동화
                         </button>
                     </div>
                 </div>
@@ -71,13 +71,13 @@
                             class="dropdown-item"
                             :class="{ active: activeFilter === 'flight-list' }"
                             @click="selectFilter('flight-list')">
-                            리스트
+                            항공권 받아오기
                         </button>
                         <button 
                             class="dropdown-item"
                             :class="{ active: activeFilter === 'flight-vnc' }"
                             @click="selectFilter('flight-vnc')">
-                            VNC
+                            웹 자동화
                         </button>
                     </div>
                 </div>
@@ -190,15 +190,15 @@ export default {
                 // 활성 필터에 따른 엔드포인트 결정
                 if (this.activeFilter === 'hotel-vnc') {
                     requestFn = apiService.prompts.hotel;
-                    filterName = '숙박 (VNC)';
+                    filterName = '숙박 (웹 자동화)';
                     targetRoute = 'prompt';
                 } else if (this.activeFilter === 'hotel-list') {
                     requestFn = apiService.prompts.agodaSearch;
-                    filterName = '숙박 (리스트)';
+                    filterName = '숙박 (받아오기)';
                     targetRoute = 'agoda-list';
                 } else if (this.activeFilter === 'flight-vnc') {
                     requestFn = apiService.prompts.flight;
-                    filterName = '항공 (VNC)';
+                    filterName = '항공 (받아오기)';
                     targetRoute = 'prompt';
                 } else if (this.activeFilter === 'flight-list') {
                     // TODO: 항공 리스트 API 구현 대기
@@ -287,7 +287,7 @@ export default {
         // 필터 라벨 가져오기
         getFilterLabel(type) {
             const typeLabel = type === 'hotel' ? '숙박' : '항공';
-            const subType = this.activeFilter.includes('list') ? '리스트' : 'VNC';
+            const subType = this.activeFilter.includes('list') ? '받아오기' : '웹 자동화';
             
             // 현재 선택된 필터가 해당 타입인 경우에만 서브타입 표시
             if (this.activeFilter.startsWith(type)) {
