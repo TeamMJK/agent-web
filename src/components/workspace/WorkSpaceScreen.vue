@@ -357,6 +357,12 @@ export default {
     box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+    .workspace-container {
+        padding-left: 0;
+    }
+}
+
 .workspace-header {
     position: sticky;
     top: 0;
@@ -462,62 +468,76 @@ export default {
 
 /* Responsive styles */
 @media (max-width: 768px) {
-    .workspace-container {
-        padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
-    }
     
     .workspace-header {
         flex-direction: column;
         align-items: stretch;
-        gap: 20px;
-        padding: 24px 16px 20px;
+        gap: var(--spacing-lg);
+        padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
+    }
+    
+    .header-content {
+        text-align: center;
     }
 
     .workspace-title {
-        font-size: 2rem;
+        font-size: 1.5rem;
+        margin-bottom: var(--spacing-xs);
     }
 
     .workspace-subtitle {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        width: 100%;
     }
 
     .add-schedule-btn {
         justify-content: center;
-        padding: 18px 24px;
+        padding: var(--spacing-md) var(--spacing-lg);
         width: 100%;
+        font-size: 0.9rem;
+    }
+    
+    .add-schedule-btn span {
+        display: inline;
     }
 
     .schedule-buttons {
         width: 100%;
-        flex-direction: column;
-        gap: var(--spacing-md);
+        flex-direction: row;
+        gap: var(--spacing-sm);
+    }
+    
+    .schedule-buttons .add-schedule-btn {
+        flex: 1;
     }
 
     .workspace-content {
-        padding: 16px;
-        gap: 24px;
+        padding: var(--spacing-lg);
+        gap: var(--spacing-xl);
     }
 }
 
 @media (max-width: 480px) {
-    .workspace-container {
-        padding-left: calc(var(--sidebar-width) + var(--sidebar-margin) * 2);
-    }
     
     .workspace-title {
-        font-size: 1.8rem;
+        font-size: 1.3rem;
     }
 
     .workspace-header {
-        padding: 20px 12px 16px;
+        padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
     }
 
     .workspace-content {
-        padding: 12px;
+        padding: var(--spacing-md);
     }
     
     .add-schedule-btn {
-        font-size: 13px;
+        font-size: 0.85rem;
         padding: 16px 20px;
     }
 }

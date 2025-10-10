@@ -367,6 +367,14 @@ export const apiService = {
     flight: (payload) => apiClient.post('/prompts/flight', payload),
 
     /**
+     * 숙박 리스트 검색 (Agoda)
+     * POST /agodas/search
+     * @param {{ prompt: string }} payload
+     * @returns {Promise<{results: Array, destination: string}>} 호텔 검색 결과 반환
+     */
+    agodaSearch: (payload) => apiClient.post('/agodas/search', payload, { timeout: 0 }),
+
+    /**
      * VNC 요청 히스토리 조회
      * GET /vnc
      * @returns {Promise<{vncResponseList: Array}>} VNC 요청 히스토리 목록 반환
