@@ -97,7 +97,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (requiresAuth && hasToken) {
-    // 인증이 필요한 페이지 접근 시 민감 정보 확인
+    // 인증이 필요한 페이지 접근 시 민감 정보 확인 (민감정보 단계 제거됨)
     try {
       await apiService.user.getProfile();
       // 민감 정보가 있으면, privacy-consent나 sensitive-info 페이지 접근 시 main으로 리디렉션
@@ -105,55 +105,9 @@ router.beforeEach(async (to, from, next) => {
         return next('/main');
       }
     } catch (error) {
-      // 500 에러는 민감 정보가 없다는 의미
-      if (error.response && error.response.status === 500) {
-        // Google OAuth 사용자인지 확인 (세션 스토리지에 OAuth 플래그가 있는지 확인)
-        const isOAuthUser = sessionStorage.getItem('isOAuthUser') === 'true';
-        const privacyConsent = sessionStorage.getItem('privacyConsent');
-        let hasConsented = false;
-
-        if (privacyConsent) {
-          try {
-            const consentData = JSON.parse(privacyConsent);
-            hasConsented = consentData && consentData.personalInfo && consentData.passportInfo && consentData.thirdParty;
-          } catch (e) {
-            console.error('privacyConsent JSON 파싱 에러:', e);
-            hasConsented = false;
-          }
-        }
-
-        console.log('라우터 가드 디버그:', {
-          to: to.path,
-          isOAuthUser,
-          privacyConsent,
-          hasConsented
-        });
-
-        if (isOAuthUser) {
-          // Google OAuth 사용자: 개인정보 동의 상태 확인
-          if (!hasConsented && to.path !== '/privacy-consent') {
-            // 개인정보 동의하지 않았으면 동의 페이지로 리디렉션
-            console.log('Google OAuth 사용자, 개인정보 미동의 → /privacy-consent로 이동');
-            return next('/privacy-consent');
-          } else if (hasConsented && to.path !== '/sensitive-info') {
-            // 개인정보 동의했지만 민감정보 없으면 sensitive-info 페이지로 리디렉션
-            console.log('Google OAuth 사용자, 개인정보 동의완료 → /sensitive-info로 이동');
-            return next('/sensitive-info');
-          }
-        } else {
-          // 이메일 회원가입 사용자: 바로 민감정보 입력 페이지로 이동
-          console.log('이메일 사용자 → /sensitive-info로 이동');
-          if (to.path !== '/sensitive-info') {
-            return next('/sensitive-info');
-          }
-        }
-      } else {
-        // 다른 종류의 에러 (네트워크 등)
-        console.error('An unexpected error occurred during navigation guard:', error);
-        // 여기서 로그아웃 처리나 에러 페이지로 보낼 수 있음
-        tokenManager.clearTokens();
-        return next('/login');
-      }
+      // 민감정보 단계가 제거되었으므로, 민감정보가 없어도 main으로 이동 가능
+      // 500 에러가 발생해도 로그인 플로우를 계속 진행
+      console.log('프로필 조회 실패 (민감정보 없음) - main으로 이동 허용');
     }
   }
 
