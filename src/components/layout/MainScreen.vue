@@ -28,14 +28,59 @@
                 </button>
             </div>
 
-            <!-- 필터 버튼 그룹 -->
+            <!-- 필터 버튼 그룹 (드롭다운) -->
             <div class="filter-buttons">
-                <button v-for="filter in filters" :key="filter.id"
-                    :class="['filter-btn', { active: activeFilter === filter.id }]" 
-                    @click="setActiveFilter(filter.id)"
-                    :disabled="isSubmitting">
-                    {{ filter.label }}
-                </button>
+                <!-- 숙박 필터 -->
+                <div class="filter-dropdown" :class="{ open: openDropdown === 'hotel' }">
+                    <button 
+                        class="filter-btn"
+                        :class="{ active: activeFilter.startsWith('hotel') }"
+                        @click="toggleDropdown('hotel')"
+                        :disabled="isSubmitting">
+                        {{ getFilterLabel('hotel') }}
+                        <i class="pi pi-chevron-down dropdown-icon"></i>
+                    </button>
+                    <div class="dropdown-menu" v-if="openDropdown === 'hotel'">
+                        <button 
+                            class="dropdown-item"
+                            :class="{ active: activeFilter === 'hotel-list' }"
+                            @click="selectFilter('hotel-list')">
+                            리스트
+                        </button>
+                        <button 
+                            class="dropdown-item"
+                            :class="{ active: activeFilter === 'hotel-vnc' }"
+                            @click="selectFilter('hotel-vnc')">
+                            VNC
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 항공 필터 -->
+                <div class="filter-dropdown" :class="{ open: openDropdown === 'flight' }">
+                    <button 
+                        class="filter-btn"
+                        :class="{ active: activeFilter.startsWith('flight') }"
+                        @click="toggleDropdown('flight')"
+                        :disabled="isSubmitting">
+                        {{ getFilterLabel('flight') }}
+                        <i class="pi pi-chevron-down dropdown-icon"></i>
+                    </button>
+                    <div class="dropdown-menu" v-if="openDropdown === 'flight'">
+                        <button 
+                            class="dropdown-item"
+                            :class="{ active: activeFilter === 'flight-list' }"
+                            @click="selectFilter('flight-list')">
+                            리스트
+                        </button>
+                        <button 
+                            class="dropdown-item"
+                            :class="{ active: activeFilter === 'flight-vnc' }"
+                            @click="selectFilter('flight-vnc')">
+                            VNC
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -86,12 +131,8 @@ export default {
     data() {
         return {
             prompt: '', // 사용자 입력 프롬프트
-            activeFilter: 'hotel', // 현재 활성화된 필터
-            filters: [ // 필터 목록,
-                { id: 'hotel', label: '숙박' },
-                { id: 'flight', label: '항공' },
-                { id: 'all', label: '숙박+항공' }
-            ],
+            activeFilter: 'hotel-list', // 현재 활성화된 필터 (기본: 숙박 리스트)
+            openDropdown: null, // 현재 열린 드롭다운 ('hotel' 또는 'flight' 또는 null)
             chatResponse: '', // 챗봇 응답 (임시)
             isFocusMode: false, // 검색 초점 모드 상태
             isSubmitting: false, // 프롬프트 제출 중 상태
@@ -119,15 +160,20 @@ export default {
                 let filterName = '';
 
                 // 활성 필터에 따른 엔드포인트 결정
-                if (this.activeFilter === 'all') {
-                    requestFn = apiService.prompts.integration;
-                    filterName = '숙박+항공';
-                } else if (this.activeFilter === 'hotel') {
+                if (this.activeFilter === 'hotel-vnc') {
                     requestFn = apiService.prompts.hotel;
-                    filterName = '숙박';
-                } else if (this.activeFilter === 'flight') {
+                    filterName = '숙박 (VNC)';
+                } else if (this.activeFilter === 'hotel-list') {
+                    // TODO: 숙박 리스트 API 구현 대기
+                    this.errorMessage = '숙박 리스트 기능은 현재 개발 중입니다.';
+                    return;
+                } else if (this.activeFilter === 'flight-vnc') {
                     requestFn = apiService.prompts.flight;
-                    filterName = '항공';
+                    filterName = '항공 (VNC)';
+                } else if (this.activeFilter === 'flight-list') {
+                    // TODO: 항공 리스트 API 구현 대기
+                    this.errorMessage = '항공 리스트 기능은 현재 개발 중입니다.';
+                    return;
                 }
 
                 const response = await requestFn({ prompt: text });
@@ -190,11 +236,30 @@ export default {
                 }
             }
         },
-        // 활성 필터 설정
-        setActiveFilter(filterId) {
+        // 드롭다운 토글
+        toggleDropdown(type) {
+            if (this.openDropdown === type) {
+                this.openDropdown = null;
+            } else {
+                this.openDropdown = type;
+            }
+        },
+        // 필터 선택
+        selectFilter(filterId) {
             this.activeFilter = filterId;
+            this.openDropdown = null; // 드롭다운 닫기
             console.log(`필터 변경: ${filterId}`);
-            // TODO: 필터 변경에 따른 추가 로직 구현 (예: 검색 결과 재요청)
+        },
+        // 필터 라벨 가져오기
+        getFilterLabel(type) {
+            const typeLabel = type === 'hotel' ? '숙박' : '항공';
+            const subType = this.activeFilter.includes('list') ? '리스트' : 'VNC';
+            
+            // 현재 선택된 필터가 해당 타입인 경우에만 서브타입 표시
+            if (this.activeFilter.startsWith(type)) {
+                return `${typeLabel} (${subType})`;
+            }
+            return typeLabel;
         },
         // 파일 업로드 처리 (구현 예정)
         handleFileUpload() {
@@ -340,6 +405,10 @@ export default {
     justify-content: center;
 }
 
+.filter-dropdown {
+    position: relative;
+}
+
 .filter-btn {
     background-color: #232323;
     color: #888888;
@@ -350,6 +419,11 @@ export default {
     border: 1px solid #333333;
     cursor: pointer;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+    justify-content: center;
 }
 
 .filter-btn:disabled {
@@ -363,10 +437,72 @@ export default {
     border-color: var(--color-primary);
 }
 
-.filter-btn:hover:not(.active) {
+.filter-btn:hover:not(.active):not(:disabled) {
     background-color: #2a2a2a;
     border-color: var(--color-primary);
     color: #ffffff;
+}
+
+.dropdown-icon {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.filter-dropdown.open .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: #232323;
+    border: 1px solid #333333;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    width: 100%;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    color: #888888;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.dropdown-item:hover {
+    background-color: #2a2a2a;
+    color: #ffffff;
+}
+
+.dropdown-item.active {
+    color: var(--color-primary);
+    background-color: rgba(79, 134, 247, 0.1);
+}
+
+.dropdown-item:not(:last-child) {
+    border-bottom: 1px solid #333333;
 }
 
 .chat-response-area {
@@ -537,6 +673,12 @@ export default {
     .filter-btn {
         padding: 8px 16px;
         font-size: 0.8rem;
+        min-width: 120px;
+    }
+
+    .dropdown-item {
+        padding: 10px 16px;
+        font-size: 0.85rem;
     }
 
     .loading-container {
