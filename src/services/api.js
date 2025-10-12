@@ -439,6 +439,45 @@ export const apiService = {
      */
     delete: (tripId) => apiClient.delete(`/business-trips/${tripId}`),
   },
+
+  /**
+   * 리뷰 조회
+   * GET /reviews
+   * @returns {Promise} 사용자의 리뷰 정보 반환 (200 OK면 리뷰 존재)
+   */
+  getReview: async () => {
+    try {
+      const response = await apiClient.get('/reviews');
+      return response.data;
+    } catch (error) {
+      // 404나 다른 에러는 리뷰가 없는 것으로 간주
+      if (error.response?.status === HTTP_STATUS.NOT_FOUND) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * 리뷰 제출
+   * POST /reviews
+   * @param {Object} reviewData 리뷰 데이터
+   * @param {string} reviewData.reviewContent - 리뷰 내용
+   * @param {number} reviewData.rating - 별점 (1-5)
+   * @returns {Promise} 생성된 리뷰 ID 반환
+   */
+  submitReview: async (reviewData) => {
+    try {
+      const response = await apiClient.post('/reviews', reviewData);
+      return response.data;
+    } catch (error) {
+      console.error('리뷰 제출 중 오류:', error);
+      throw new Error(
+        error.response?.data?.message ||
+        '리뷰 제출 중 오류가 발생했습니다'
+      );
+    }
+  },
 };
 
 // 기본 export

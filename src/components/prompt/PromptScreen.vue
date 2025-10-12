@@ -182,21 +182,35 @@
         </template>
       </div>
     </div>
+
+    <!-- 리뷰 모달 -->
+    <ReviewModal
+      :show="showReviewModal"
+      @close="closeReviewModal"
+      @submit="handleReviewSubmit"
+    />
   </div>
 </template>
 
 <script>
 import { apiService } from '@/services/api.js';
+import ReviewModal from '../common/ReviewModal.vue';
+import { pushMessage } from '@/utils/notify.js';
 
 export default {
   name: 'PromptScreen',
+  components: {
+    ReviewModal
+  },
   data() {
     return {
       hotelRequests: [], // POST /prompts/hotel 응답의 sessionIdAndVncList
       selectedRequestIndex: -1,
       isIframeLoading: false,
       isFullscreen: false,
-      sidebarMode: 'history' // 'history' or 'detail'
+      sidebarMode: 'history', // 'history' or 'detail'
+      showReviewModal: false,
+      hasShownReviewModal: false // 세션당 한 번만 표시하기 위한 플래그
     };
   },
   computed: {
@@ -292,6 +306,15 @@ export default {
           
           // 쿼리 파라미터의 요청들을 히스토리에 추가
           this.hotelRequests = [...this.hotelRequests, ...newRequests];
+          
+          // 새로운 응답을 받았고, 에러가 아닌 경우 리뷰 모달 표시
+          if (newRequests.length > 0 && !this.hasShownReviewModal) {
+            const hasValidRequest = newRequests.some(req => !req.isError);
+            if (hasValidRequest) {
+              this.checkAndShowReviewModal();
+              this.hasShownReviewModal = true; // 한 번만 표시
+            }
+          }
         } catch (error) {
           console.error('쿼리 파라미터 응답 데이터 파싱 오류:', error);
         }
@@ -371,6 +394,39 @@ export default {
         default:
           return '알 수 없음';
       }
+    },
+    // 리뷰 존재 여부 확인 후 모달 표시
+    async checkAndShowReviewModal() {
+      try {
+        const existingReview = await apiService.getReview();
+        
+        // 200 OK로 리뷰가 반환되면 이미 작성한 사용자
+        if (existingReview) {
+          console.log('이미 리뷰를 작성한 사용자입니다.');
+          return;
+        }
+        
+        // 리뷰가 없으면 모달 표시 (약간의 딜레이 후)
+        setTimeout(() => {
+          this.showReviewModal = true;
+        }, 2000); // 2초 후 표시 (VNC 화면이 로드되는 시간 고려)
+        
+      } catch (error) {
+        // 에러 발생 시에도 리뷰 모달 표시 (네트워크 오류 등)
+        console.log('리뷰 확인 중 오류 발생, 리뷰 모달을 표시합니다:', error);
+        setTimeout(() => {
+          this.showReviewModal = true;
+        }, 2000);
+      }
+    },
+    // 리뷰 모달 닫기
+    closeReviewModal() {
+      this.showReviewModal = false;
+    },
+    // 리뷰 제출 완료
+    handleReviewSubmit(response) {
+      console.log('리뷰 제출 완료:', response);
+      pushMessage({ type: 'success', text: '소중한 리뷰 감사합니다!' });
     },
     getStatusClass(status) {
       switch (status) {
