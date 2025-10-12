@@ -96,20 +96,42 @@
             allowfullscreen
           ></iframe>
         </div>
+        
+        <!-- 리뷰 모달 테스트 버튼 -->
+        <div class="test-buttons">
+          <button class="test-btn" @click="showReviewModal = true">
+            <i class="pi pi-star"></i>
+            리뷰 모달 테스트
+          </button>
+        </div>
       </div>
     </div>
+
+    <!-- 리뷰 모달 -->
+    <ReviewModal
+      :show="showReviewModal"
+      @close="closeReviewModal"
+      @submit="handleReviewSubmit"
+    />
   </div>
 </template>
 
 <script>
+import ReviewModal from '../common/ReviewModal.vue';
+import { pushMessage } from '@/utils/notify.js';
+
 export default {
   name: 'TestPromptScreen',
+  components: {
+    ReviewModal
+  },
   data() {
     return {
       sidebarOpen: false,
       activeSection: 'flight',
       selectedItem: 'tokyo',
       selectedImageIndex: 0,
+      showReviewModal: false,
       flightItems: [
         { id: 'tokyo', name: 'Tokyo' },
         { id: 'sydney', name: 'Sydney' },
@@ -173,6 +195,13 @@ export default {
     },
     selectImage(index) {
       this.selectedImageIndex = index;
+    },
+    closeReviewModal() {
+      this.showReviewModal = false;
+    },
+    handleReviewSubmit(response) {
+      console.log('리뷰 제출 완료:', response);
+      pushMessage({ type: 'success', text: '테스트: 리뷰가 성공적으로 제출되었습니다!' });
     }
   }
 }
@@ -381,10 +410,12 @@ export default {
 .vnc-viewer {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: var(--spacing-xl);
   background: var(--color-bg-secondary);
+  position: relative;
 }
 
 .viewer-container {
@@ -403,6 +434,44 @@ export default {
   min-height: 600px;
   border: none;
   border-radius: var(--radius-xl);
+}
+
+/* 테스트 버튼 */
+.test-buttons {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.test-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--accent-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  
+  &:hover {
+    background: #2563eb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+  
+  i {
+    font-size: 16px;
+  }
 }
 
 /* Fade 애니메이션 */

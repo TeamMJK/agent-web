@@ -170,23 +170,35 @@
       <h3>검색 결과가 없습니다</h3>
       <p>다른 검색어로 다시 시도해주세요</p>
     </div>
+
+    <!-- 리뷰 모달 -->
+    <ReviewModal
+      :show="showReviewModal"
+      @close="closeReviewModal"
+      @submit="handleReviewSubmit"
+    />
   </div>
 </template>
 
 <script>
 import BaseMessage from '@/components/common/BaseMessage.vue';
+import ReviewModal from '@/components/common/ReviewModal.vue';
+import { apiService } from '@/services/api.js';
+import { pushMessage } from '@/utils/notify.js';
 
 export default {
   name: 'AgodaListScreen',
   components: {
-    BaseMessage
+    BaseMessage,
+    ReviewModal
   },
   data() {
     return {
       hotels: [],
       destination: '',
       isLoading: false,
-      errorMessage: ''
+      errorMessage: '',
+      showReviewModal: false
     };
   },
   created() {
@@ -206,6 +218,11 @@ export default {
         this.destination = data.destination || '';
         
         console.log(`로드된 호텔 수: ${this.hotels.length}개, 목적지: ${this.destination}`);
+        
+        // 호텔 데이터를 성공적으로 받았으면 리뷰 모달 표시
+        if (this.hotels.length > 0) {
+          this.checkAndShowReviewModal();
+        }
       } catch (error) {
         console.error('응답 데이터 파싱 오류:', error);
         this.errorMessage = '데이터를 불러오는 중 오류가 발생했습니다.';
@@ -245,6 +262,39 @@ export default {
     handleImageError(event) {
       // 이미지 로드 실패 시 기본 이미지로 대체
       event.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+    },
+    // 리뷰 존재 여부 확인 후 모달 표시
+    async checkAndShowReviewModal() {
+      try {
+        const existingReview = await apiService.getReview();
+        
+        // 200 OK로 리뷰가 반환되면 이미 작성한 사용자
+        if (existingReview) {
+          console.log('이미 리뷰를 작성한 사용자입니다.');
+          return;
+        }
+        
+        // 리뷰가 없으면 모달 표시 (약간의 딜레이 후)
+        setTimeout(() => {
+          this.showReviewModal = true;
+        }, 1500); // 1.5초 후 표시
+        
+      } catch (error) {
+        // 에러 발생 시에도 리뷰 모달 표시 (네트워크 오류 등)
+        console.log('리뷰 확인 중 오류 발생, 리뷰 모달을 표시합니다:', error);
+        setTimeout(() => {
+          this.showReviewModal = true;
+        }, 1500);
+      }
+    },
+    // 리뷰 모달 닫기
+    closeReviewModal() {
+      this.showReviewModal = false;
+    },
+    // 리뷰 제출 완료
+    handleReviewSubmit(response) {
+      console.log('리뷰 제출 완료:', response);
+      pushMessage({ type: 'success', text: '소중한 리뷰 감사합니다!' });
     }
   }
 };
