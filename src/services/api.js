@@ -1,42 +1,28 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
-import { API_BASE_URL, TOKEN_KEYS, TOKEN_EXPIRY, HTTP_STATUS } from '../utils/constants';
+import { API_BASE_URL, HTTP_STATUS } from '../utils/constants';
 
-// 토큰 관리 유틸리티
+// 토큰 관리 유틸리티 (백엔드 HttpOnly 쿠키 사용)
 export const tokenManager = {
-  // 토큰 저장
-  setTokens(accessToken, refreshToken) {
-    Cookies.set(TOKEN_KEYS.ACCESS_TOKEN, accessToken, {
-      expires: TOKEN_EXPIRY.ACCESS_TOKEN,
-      secure: true,
-      sameSite: 'strict'
-    });
-    Cookies.set(TOKEN_KEYS.REFRESH_TOKEN, refreshToken, {
-      expires: TOKEN_EXPIRY.REFRESH_TOKEN,
-      secure: true,
-      sameSite: 'strict'
-    });
+  // 백엔드에서 HttpOnly 쿠키로 토큰을 관리하므로 인증 상태 확인만 수행
+  async checkAuth() {
+    try {
+      console.log('[checkAuth] /members/me 호출 시작');
+      const response = await apiClient.get('/members/me');
+      console.log('[checkAuth] 응답 상태:', response.status);
+      return response.status === 200;
+    } catch (error) {
+      console.log('[checkAuth] 에러 발생:', error.response?.status || error.message);
+      return false;
+    }
   },
 
-  // 액세스 토큰 조회
-  getAccessToken() {
-    return Cookies.get(TOKEN_KEYS.ACCESS_TOKEN);
-  },
-
-  // 리프레시 토큰 조회
-  getRefreshToken() {
-    return Cookies.get(TOKEN_KEYS.REFRESH_TOKEN);
-  },
-
-  // 토큰 삭제 (로그아웃)
-  clearTokens() {
-    Cookies.remove(TOKEN_KEYS.ACCESS_TOKEN);
-    Cookies.remove(TOKEN_KEYS.REFRESH_TOKEN);
-  },
-
-  // 토큰 존재 여부 확인
-  hasValidToken() {
-    return !!this.getAccessToken();
+  // 로그아웃 시 백엔드 API 호출
+  async clearTokens() {
+    try {
+      await apiClient.post('/logout');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+    }
   }
 };
 
@@ -46,54 +32,24 @@ const apiClient = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true // HttpOnly 쿠키를 포함하여 요청
 });
 
-// 요청 인터셉터: 모든 요청에 자동으로 토큰 추가
-apiClient.interceptors.request.use(
-  (config) => {
-    const accessToken = tokenManager.getAccessToken();
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// 응답 인터셉터: 토큰 만료 시 자동 갱신
+// 응답 인터셉터: 401 에러 시 로그인 페이지로 리디렉션
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    // 401 에러 시 로그인 페이지로 리디렉션 (백엔드에서 토큰 갱신 처리)
+    // 단, 이미 로그인 페이지에 있거나 로그인 관련 페이지인 경우 리디렉션하지 않음
+    if (error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
+      const currentPath = window.location.pathname;
+      const noRedirectPaths = ['/login', '/signup', '/privacy-policy', '/terms-of-service'];
 
-    // 401 에러이고 아직 재시도하지 않은 경우
-    if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = tokenManager.getRefreshToken();
-        if (refreshToken) {
-          // 토큰 갱신 시도
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refreshToken
-          });
-
-          const { accessToken, refreshToken: newRefreshToken } = response.data;
-          tokenManager.setTokens(accessToken, newRefreshToken);
-
-          // 원래 요청에 새 토큰 적용 후 재시도
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // 토큰 갱신 실패 시 로그아웃 처리
-        tokenManager.clearTokens();
-        window.location.href = '/';
-        return Promise.reject(refreshError);
+      if (!noRedirectPaths.includes(currentPath)) {
+        window.location.href = '/login';
       }
     }
-
     return Promise.reject(error);
   }
 );
@@ -126,13 +82,10 @@ export const apiService = {
     register: (userData) => apiClient.post('/members', userData),
 
     /**
-     * 로그아웃 (로컬 토큰 삭제)
-     * 클라이언트에서 토큰만 삭제, 서버 통신 없음
+     * 로그아웃 (백엔드에 로그아웃 요청)
+     * 백엔드에서 HttpOnly 쿠키 삭제
      */
-    logout: () => {
-      tokenManager.clearTokens();
-      return Promise.resolve();
-    },
+    logout: () => tokenManager.clearTokens(),
 
     /**
      * 이메일 인증 코드 발송

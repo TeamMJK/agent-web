@@ -70,7 +70,7 @@
 
 <script>
 import SignUpPopup from './SignUpPopup.vue';
-import { apiService, tokenManager } from '../../services/api';
+import { apiService } from '../../services/api';
 
 export default {
     name: 'LoginScreen',
@@ -113,8 +113,7 @@ export default {
 
             // 주의: 현재 OAuth 콜백은 라우터에서 처리되므로 여기는 실행되지 않을 수 있음
             if (success === 'true' && token) {
-                // OAuth 성공 시 기존 tokenManager 사용
-                tokenManager.setTokens(token, refreshToken || token);
+                // 백엔드에서 HttpOnly 쿠키로 토큰을 설정하므로 프론트에서 별도 처리 불필요
                 
                 // Google OAuth 사용자임을 표시
                 sessionStorage.setItem('isOAuthUser', 'true');
@@ -189,16 +188,25 @@ export default {
             }
 
             try {
-                await apiService.auth.login({
+                const response = await apiService.auth.login({
                     email: this.email,
                     password: this.password,
                 });
 
+                console.log('로그인 성공:', response.status);
+                
                 // 백엔드에서 쿠키로 토큰을 내려주므로 프론트에서 별도 처리 불필요
                 // 이메일 로그인 사용자는 OAuth 사용자가 아님을 명시
                 sessionStorage.removeItem('isOAuthUser');
                 
-                this.$router.push('/main');
+                // 로그인 직후임을 표시 (라우터 가드에서 인증 체크 우회용)
+                sessionStorage.setItem('justLoggedIn', 'true');
+                
+                // 쿠키가 완전히 설정될 때까지 잠시 대기 후 이동
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // replace를 사용하여 로그인 페이지 히스토리를 남기지 않음
+                this.$router.replace('/main');
             } catch (error) {
                 console.error('로그인 실패:', error);
                 if (error.response && error.response.data && error.response.data.message) {

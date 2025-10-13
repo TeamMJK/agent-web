@@ -91,10 +91,9 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-  // OAuth 콜백 처리: /main?token=...&refreshToken=... 파라미터가 있으면 토큰 설정
+  // OAuth 콜백 처리: /main?token=...&refreshToken=... 형태로 오면 쿼리 파라미터만 제거
   if (to.path === '/main' && to.query.token) {
-    console.log('Google OAuth 콜백 처리 - 라우터에서 토큰 설정');
-    tokenManager.setTokens(to.query.token, to.query.refreshToken || to.query.token);
+    console.log('Google OAuth 콜백 처리 - 백엔드에서 이미 쿠키 설정됨');
 
     // Google OAuth 사용자임을 표시
     sessionStorage.setItem('isOAuthUser', 'true');
@@ -105,16 +104,39 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const hasToken = tokenManager.hasValidToken();
 
-  if (requiresAuth && !hasToken) {
-    // 인증이 필요한 페이지에 토큰 없이 접근 시 로그인 페이지로 리디렉션
-    return next('/login');
+  // 인증이 필요 없는 페이지 (로그인, 약관 등)는 바로 진행
+  if (!requiresAuth) {
+    return next();
   }
 
-  if (to.path === '/login' && hasToken) {
-    // 토큰이 있는데 로그인 페이지 접근 시 메인 페이지로 리디렉션
-    return next('/main');
+  // 인증이 필요한 페이지는 서버에 인증 상태 확인 (HttpOnly 쿠키 사용)
+  if (requiresAuth) {
+    // 로그인 직후에는 인증 체크 우회 (쿠키가 즉시 반영되지 않을 수 있음)
+    const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+    if (justLoggedIn === 'true') {
+      console.log('[라우터] 로그인 직후, 인증 체크 우회');
+      sessionStorage.removeItem('justLoggedIn');
+      return next();
+    }
+
+    try {
+      console.log(`[라우터] ${to.path} 페이지 접근, 인증 확인 중...`);
+      const isAuthenticated = await tokenManager.checkAuth();
+      console.log(`[라우터] 인증 상태:`, isAuthenticated);
+
+      if (!isAuthenticated) {
+        console.log(`[라우터] 인증 실패, /login으로 리디렉션`);
+        // 인증이 필요한 페이지에 토큰 없이 접근 시 로그인 페이지로 리디렉션
+        return next('/login');
+      }
+
+      console.log(`[라우터] 인증 성공, ${to.path} 페이지로 진입`);
+    } catch (error) {
+      // 인증 확인 실패 시 로그인 페이지로 리디렉션
+      console.error('[라우터] 인증 확인 중 에러:', error);
+      return next('/login');
+    }
   }
 
   // 민감정보 체크 제거 - MainScreen에서 VNC 요청 시 체크하도록 변경
