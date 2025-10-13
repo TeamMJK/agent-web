@@ -447,7 +447,7 @@ export const apiService = {
    */
   getReview: async () => {
     try {
-      const response = await apiClient.get('/reviews');
+      const response = await apiClient.get('/reviews/written');
       return response.data;
     } catch (error) {
       // 404나 다른 에러는 리뷰가 없는 것으로 간주
