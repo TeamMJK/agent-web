@@ -189,21 +189,16 @@ export default {
             }
 
             try {
-                const response = await apiService.auth.login({
+                await apiService.auth.login({
                     email: this.email,
                     password: this.password,
                 });
 
-                if (response.data && response.data.accessToken && response.data.refreshToken) {
-                    tokenManager.setTokens(response.data.accessToken, response.data.refreshToken);
-                    
-                    // 이메일 로그인 사용자는 OAuth 사용자가 아님을 명시
-                    sessionStorage.removeItem('isOAuthUser');
-                    
-                    this.$router.push('/main');
-                } else {
-                    this.errorMessage = '로그인 응답 형식이 올바르지 않습니다.';
-                }
+                // 백엔드에서 쿠키로 토큰을 내려주므로 프론트에서 별도 처리 불필요
+                // 이메일 로그인 사용자는 OAuth 사용자가 아님을 명시
+                sessionStorage.removeItem('isOAuthUser');
+                
+                this.$router.push('/main');
             } catch (error) {
                 console.error('로그인 실패:', error);
                 if (error.response && error.response.data && error.response.data.message) {
