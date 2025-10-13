@@ -668,7 +668,10 @@ export default {
     }
   },
   mounted() {
-    this.fetchUserCompany();
+    // hideMenu가 true면 부모 컴포넌트에서 회사 정보를 관리하므로 중복 호출 방지
+    if (!this.hideMenu) {
+      this.fetchUserCompany();
+    }
   },
   beforeUnmount() {
     if (this.hideMenuTimeout) {

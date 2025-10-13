@@ -11,8 +11,22 @@ export const tokenManager = {
       console.log('[checkAuth] 응답 상태:', response.status);
       return response.status === 200;
     } catch (error) {
-      console.log('[checkAuth] 에러 발생:', error.response?.status || error.message);
-      return false;
+      const statusCode = error.response?.status;
+      console.log('[checkAuth] 에러 발생!');
+      console.log('[checkAuth] 상태 코드:', statusCode);
+      console.log('[checkAuth] 에러 메시지:', error.response?.data);
+      console.log('[checkAuth] 전체 에러:', error);
+
+      // 401 (Unauthorized)만 인증 실패로 처리
+      // 500 (서버 에러) 등은 인증 성공으로 간주 (서버 문제이므로)
+      if (statusCode === 401 || statusCode === 403) {
+        return false; // 인증 실패
+      }
+
+      // 그 외의 에러(네트워크 에러, 500 등)는 인증 성공으로 간주
+      // 쿠키가 있다면 일시적인 서버 문제로 판단
+      console.log('[checkAuth] 401/403이 아닌 에러, 인증 성공으로 간주');
+      return true;
     }
   },
 
