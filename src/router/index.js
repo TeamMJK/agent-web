@@ -5,6 +5,8 @@ import ReceiptScreen from '../components/receipt/ReceiptScreen.vue';
 import SensitiveInfoForm from '../components/forms/SensitiveInfoForm.vue';
 import LoginScreen from '../components/auth/LoginScreen.vue';
 import PrivacyConsentScreen from '../components/auth/PrivacyConsentScreen.vue';
+import PrivacyPolicyScreen from '../components/policy/PrivacyPolicyScreen.vue';
+import TermsOfServiceScreen from '../components/policy/TermsOfServiceScreen.vue';
 import TestPromptScreen from '../components/test/TestPromptScreen.vue';
 import PromptScreen from '../components/prompt/PromptScreen.vue';
 import AgodaListScreen from '../components/prompt/AgodaListScreen.vue';
@@ -68,6 +70,18 @@ const routes = [
     name: 'AgodaListScreen',
     component: AgodaListScreen,
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/privacy-policy',
+    name: 'PrivacyPolicyScreen',
+    component: PrivacyPolicyScreen,
+    meta: { requiresAuth: false, hideUI: true },
+  },
+  {
+    path: '/terms-of-service',
+    name: 'TermsOfServiceScreen',
+    component: TermsOfServiceScreen,
+    meta: { requiresAuth: false, hideUI: true },
   },
 ];
 

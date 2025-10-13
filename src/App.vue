@@ -10,17 +10,25 @@
           <component :is="Component" />
         </transition>
       </router-view>
+      
+      <!-- Footer는 모든 페이지에 표시 -->
+      <Footer />
     </main>
   </div>
 </template>
 
 <script>
 import Sidebar from './components/layout/Sidebar.vue';
+import Footer from './components/layout/Footer.vue';
 import GlobalMessages from '@/components/common/GlobalMessages.vue';
 
 export default {
   name: 'App',
-  components: { Sidebar, GlobalMessages },
+  components: { 
+    Sidebar, 
+    Footer,
+    GlobalMessages 
+  },
 };
 </script>
 
@@ -37,17 +45,23 @@ body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
   font-family: "Pretendard", sans-serif;
+  overflow-x: hidden;
 }
 
 .app-container {
   display: flex;
   height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .main-content {
   flex-grow: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   height: 100vh;
+  width: 100%;
+  max-width: 100vw;
 }
 
 /* 모바일: 하단 네비게이션을 위한 여백 */
