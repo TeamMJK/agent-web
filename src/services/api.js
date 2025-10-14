@@ -33,7 +33,7 @@ export const tokenManager = {
   // 로그아웃 시 백엔드 API 호출
   async clearTokens() {
     try {
-      await apiClient.post('/logout');
+      await apiClient.post('/auth/logout');
     } catch (error) {
       console.error('로그아웃 실패:', error);
     }
@@ -74,18 +74,18 @@ export const apiService = {
   auth: {
     /**
      * 로그인
-     * POST /login
+     * POST /auth/login
      * @param {Object} credentials { email, password }
      * @returns {Promise} accessToken, refreshToken 반환
      */
-    login: (credentials) => apiClient.post('/login', credentials),
+    login: (credentials) => apiClient.post('/auth/login', credentials),
 
     /**
      * 구글 로그인
-     * GET /login
+     * GET /auth/login
      * @returns {Promise} 구글 로그인 URL 반환
      */
-    googleLogin: () => apiClient.get('/login'),
+    googleLogin: () => apiClient.get('/auth/login'),
 
     /**
      * 회원가입
