@@ -506,10 +506,19 @@ export default {
       if (confirmed) {
         try {
           await apiService.auth.logout();
+          
+          // OAuth 사용자 플래그 삭제 (다음 로그인을 위해)
+          sessionStorage.removeItem('isOAuthUser');
+          sessionStorage.removeItem('justLoggedIn');
+          
           this.$router.push('/login');
         } catch (error) {
           console.error('로그아웃 실패:', error);
-          // 에러가 발생해도 로그인 페이지로 이동
+          
+          // 에러가 발생해도 sessionStorage 정리 및 로그인 페이지로 이동
+          sessionStorage.removeItem('isOAuthUser');
+          sessionStorage.removeItem('justLoggedIn');
+          
           this.$router.push('/login');
         }
       }
