@@ -1,6 +1,21 @@
 import axios from 'axios';
 import { API_BASE_URL, HTTP_STATUS } from '../utils/constants';
 
+// 에이전트 서버 Base URL (환경변수에서 가져옴)
+const AGENT_SERVER_URL = process.env.VUE_APP_AGENT_SERVER_URL;
+
+// 환경변수 로드 확인 (디버깅용)
+console.log('🔧 에이전트 서버 URL:', AGENT_SERVER_URL);
+
+// 에이전트 서버용 Axios 인스턴스 생성
+const agentApiClient = axios.create({
+  baseURL: AGENT_SERVER_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
 // 토큰 관리 유틸리티 (백엔드 HttpOnly 쿠키 사용)
 export const tokenManager = {
   // 백엔드에서 HttpOnly 쿠키로 토큰을 관리하므로 인증 상태 확인만 수행
@@ -445,6 +460,25 @@ export const apiService = {
       );
     }
   },
+
+  // 에이전트 서버 관련 API
+  agent: {
+    /**
+     * 세션 상태 조회
+     * GET /session/{session_id}/status
+     * @param {string} sessionId 세션 ID
+     * @returns {Promise<{session_id: string, status: string}>} 세션 상태 정보 반환
+     */
+    getSessionStatus: async (sessionId) => {
+      try {
+        const response = await agentApiClient.get(`/session/${sessionId}/status`);
+        return response.data;
+      } catch (error) {
+        console.error(`세션 ${sessionId} 상태 조회 오류:`, error);
+        throw error;
+      }
+    }
+  }
 };
 
 // 기본 export

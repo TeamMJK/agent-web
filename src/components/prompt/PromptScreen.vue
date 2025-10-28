@@ -55,7 +55,14 @@
                 </div>
               </div>
               <div class="request-status">
-                <span class="status-badge" :class="getStatusClass(request.status)">{{ getStatusText(request.status) }}</span>
+                <!-- 에이전트가 종료되지 않았을 때만 기존 상태 표시 -->
+                <span v-if="request.agentStatus !== 'stopped'" class="status-badge" :class="getStatusClass(request.status)">
+                  {{ getStatusText(request.status) }}
+                </span>
+                <!-- 에이전트 상태 표시 -->
+                <span v-if="request.agentStatus" class="agent-status-badge" :class="{ stopped: request.agentStatus === 'stopped' }">
+                  {{ request.agentStatus === 'running' ? '실행 중' : '종료됨' }}
+                </span>
               </div>
             </div>
           </div>
@@ -107,12 +114,20 @@
               <div class="info-item">
                 <span class="info-label">상태</span>
                 <span class="info-value">
-                  <span class="status-badge" :class="getStatusClass(selectedRequest.status)">{{ getStatusText(selectedRequest.status) }}</span>
+                  <!-- 에이전트가 종료되지 않았을 때만 기존 상태 표시 -->
+                  <span v-if="selectedRequest.agentStatus !== 'stopped'" class="status-badge" :class="getStatusClass(selectedRequest.status)">
+                    {{ getStatusText(selectedRequest.status) }}
+                  </span>
+                  <!-- 에이전트 상태 표시 -->
+                  <span v-if="selectedRequest.agentStatus" class="agent-status-badge" :class="{ stopped: selectedRequest.agentStatus === 'stopped' }">
+                    {{ selectedRequest.agentStatus === 'running' ? '실행 중' : '종료됨' }}
+                  </span>
                 </span>
               </div>
             </div>
 
-            <div v-if="!selectedRequest.isError" class="progress-section">
+            <!-- 에이전트가 실행 중일 때만 진행 상황 표시 -->
+            <div v-if="!selectedRequest.isError && selectedRequest.agentStatus !== 'stopped'" class="progress-section">
               <h3 class="progress-title">진행 상황</h3>
               <div class="progress-list">
                 <div class="progress-item completed">
@@ -146,7 +161,7 @@
           </button>
         </div>
         <div class="iframe-url">
-          <span class="url-text">{{ currentIframeUrl || '요청을 선택해주세요...' }}</span>
+          <span class="url-text">{{ selectedRequest ? '실시간 진행 상황' : '요청을 선택해주세요...' }}</span>
         </div>
       </div>
       
@@ -164,7 +179,15 @@
           <p>요청 처리 중 오류가 발생하여 콘텐츠를 표시할 수 없습니다.</p>
         </div>
         
-        <!-- 선택된 요청이 정상인 경우 -->
+        <!-- 세션이 종료된 경우 -->
+        <div v-else-if="isSessionStopped" class="stopped-session-message">
+          <i class="pi pi-power-off"></i>
+          <h3>종료된 에이전트입니다</h3>
+          <p>이 에이전트 세션은 이미 종료되었습니다.</p>
+          <p class="session-info">세션 ID: {{ selectedRequest.session_id }}</p>
+        </div>
+        
+        <!-- 선택된 요청이 정상이고 실행 중인 경우 -->
         <template v-else>
           <div v-if="isIframeLoading" class="iframe-loading">
             <i class="pi pi-spin pi-spinner"></i>
@@ -210,7 +233,8 @@ export default {
       isFullscreen: false,
       sidebarMode: 'history', // 'history' or 'detail'
       showReviewModal: false,
-      hasShownReviewModal: false // 세션당 한 번만 표시하기 위한 플래그
+      hasShownReviewModal: false, // 세션당 한 번만 표시하기 위한 플래그
+      statusPollingInterval: null // 상태 폴링 타이머
     };
   },
   computed: {
@@ -222,11 +246,23 @@ export default {
     },
     currentIframeUrl() {
       return this.selectedRequest?.novnc_url || '';
+    },
+    // 세션이 종료되었는지 확인
+    isSessionStopped() {
+      return this.selectedRequest?.agentStatus === 'stopped';
     }
   },
   created() {
     // GET /vnc API로 히스토리 조회 (페이지 로드 시마다 호출)
     this.loadVncHistory();
+  },
+  mounted() {
+    // 세션 상태 폴링 시작 (30초마다)
+    this.startStatusPolling();
+  },
+  beforeUnmount() {
+    // 폴링 중지
+    this.stopStatusPolling();
   },
   methods: {
     async loadVncHistory() {
@@ -258,6 +294,9 @@ export default {
 
         // 쿼리 파라미터로 특정 요청 선택 (하위 호환성)
         this.handleQueryParameters();
+
+        // VNC 히스토리 로드 후 즉시 에이전트 서버에 세션 상태 조회
+        await this.updateAllSessionStatuses();
 
         // 히스토리 모드에서는 자동 선택하지 않음 - 사용자가 직접 선택하도록 함
         // const validRequestIndex = this.hotelRequests.findIndex(req => !req.isError);
@@ -440,6 +479,85 @@ export default {
           return 'error';
         default:
           return 'unknown';
+      }
+    },
+    
+    // 세션 상태 폴링 시작
+    startStatusPolling() {
+      // 30초마다 반복 실행 (초기 실행은 loadVncHistory에서 이미 수행됨)
+      this.statusPollingInterval = setInterval(() => {
+        this.updateAllSessionStatuses();
+      }, 30000); // 30초
+    },
+    
+    // 세션 상태 폴링 중지
+    stopStatusPolling() {
+      if (this.statusPollingInterval) {
+        clearInterval(this.statusPollingInterval);
+        this.statusPollingInterval = null;
+      }
+    },
+    
+    // 모든 세션의 상태를 한번에 업데이트
+    async updateAllSessionStatuses() {
+      if (!this.hotelRequests || this.hotelRequests.length === 0) {
+        return;
+      }
+      
+      try {
+        // 유효한 세션들만 필터링 (에러 상태가 아니고 session_id가 있는 것)
+        const validRequests = this.hotelRequests.filter(
+          req => !req.isError && req.session_id && !req.session_id.startsWith('error-')
+        );
+        
+        if (validRequests.length === 0) {
+          return;
+        }
+        
+        console.log('[세션 상태 업데이트] 조회할 세션 수:', validRequests.length);
+        
+        // 모든 세션의 상태를 병렬로 조회
+        const statusPromises = validRequests.map(async (request) => {
+          try {
+            const statusData = await apiService.agent.getSessionStatus(request.session_id);
+            return {
+              session_id: request.session_id,
+              agentStatus: statusData.status, // 'running' or 'stopped'
+              success: true
+            };
+          } catch (error) {
+            console.error(`세션 ${request.session_id} 상태 조회 실패:`, error);
+            return {
+              session_id: request.session_id,
+              agentStatus: null,
+              success: false
+            };
+          }
+        });
+        
+        // 모든 요청이 완료될 때까지 대기
+        const results = await Promise.all(statusPromises);
+        
+        // 한번에 상태 업데이트
+        results.forEach(result => {
+          const requestIndex = this.hotelRequests.findIndex(
+            req => req.session_id === result.session_id
+          );
+          
+          if (requestIndex !== -1 && result.success) {
+            // Vue 3: 직접 할당으로 반응성 유지
+            this.hotelRequests[requestIndex] = {
+              ...this.hotelRequests[requestIndex],
+              agentStatus: result.agentStatus
+            };
+            
+            console.log(`[세션 ${result.session_id}] 상태: ${result.agentStatus}`);
+          }
+        });
+        
+        console.log('[세션 상태 업데이트] 완료');
+      } catch (error) {
+        console.error('세션 상태 업데이트 중 오류:', error);
       }
     }
   }
@@ -648,6 +766,9 @@ export default {
 .request-status {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
 }
 
 .status-badge {
@@ -956,6 +1077,74 @@ export default {
   font-size: var(--font-size-base);
   margin: 0;
   max-width: 300px;
+}
+
+/* 종료된 세션 메시지 */
+.stopped-session-message {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-muted);
+  gap: var(--spacing-lg);
+  text-align: center;
+  padding: var(--spacing-2xl);
+}
+
+.stopped-session-message i {
+  font-size: var(--font-size-5xl);
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.stopped-session-message h3 {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.stopped-session-message p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.stopped-session-message .session-info {
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-top: var(--spacing-md);
+  word-break: break-all;
+  max-width: 400px;
+}
+
+/* 에이전트 상태 배지 */
+.agent-status-badge {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
+  margin-left: var(--spacing-xs);
+}
+
+.agent-status-badge.stopped {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+  border: 1px solid var(--color-error-border);
 }
 
 .main-iframe {
