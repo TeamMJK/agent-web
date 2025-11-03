@@ -471,7 +471,7 @@ export const apiService = {
      */
     getSessionStatus: async (sessionId) => {
       try {
-        const response = await agentApiClient.get(`/session/${sessionId}/status`);
+        const response = await agentApiClient.get(`/agentapi/session/${sessionId}/status`);
         return response.data;
       } catch (error) {
         console.error(`세션 ${sessionId} 상태 조회 오류:`, error);
