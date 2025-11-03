@@ -7,7 +7,6 @@ import LoginScreen from '../components/auth/LoginScreen.vue';
 import PrivacyConsentScreen from '../components/auth/PrivacyConsentScreen.vue';
 import PrivacyPolicyScreen from '../components/policy/PrivacyPolicyScreen.vue';
 import TermsOfServiceScreen from '../components/policy/TermsOfServiceScreen.vue';
-import TestPromptScreen from '../components/test/TestPromptScreen.vue';
 import PromptScreen from '../components/prompt/PromptScreen.vue';
 import AgodaListScreen from '../components/prompt/AgodaListScreen.vue';
 import { tokenManager } from '../services/api';
@@ -52,12 +51,6 @@ const routes = [
     name: 'SensitiveInfoForm',
     component: SensitiveInfoForm,
     meta: { requiresAuth: true, hideUI: true },
-  },
-  {
-    path: '/test-prompt-screen',
-    name: 'TestPromptScreen',
-    component: TestPromptScreen,
-    meta: { requiresAuth: false, hideUI: true },
   },
   {
     path: '/prompt',
