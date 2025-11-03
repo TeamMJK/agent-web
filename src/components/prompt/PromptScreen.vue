@@ -111,6 +111,16 @@
                 <span class="info-label">예산</span>
                 <span class="info-value">{{ formatBudget(selectedRequest.vncBusinessInfo.budget) }}</span>
               </div>
+              <!-- 추가 사항 (requirements) -->
+              <div v-if="selectedRequest.vncBusinessInfo?.requirements && selectedRequest.vncBusinessInfo.requirements.length > 0" class="info-item">
+                <span class="info-label">추가 사항</span>
+                <div class="info-value requirements-list">
+                  <div v-for="(requirement, index) in selectedRequest.vncBusinessInfo.requirements" :key="index" class="requirement-item">
+                    <i class="pi pi-check"></i>
+                    <span>{{ requirement }}</span>
+                  </div>
+                </div>
+              </div>
               <div class="info-item">
                 <span class="info-label">상태</span>
                 <span class="info-value">
@@ -853,6 +863,31 @@ export default {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
+}
+
+/* 추가 사항 (requirements) 스타일 */
+.requirements-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background-color: rgba(79, 134, 247, 0.1);
+  border: 1px solid rgba(79, 134, 247, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.requirement-item i {
+  color: var(--color-primary);
+  font-size: 0.85rem;
 }
 
 .detail-title.error {
